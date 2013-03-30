@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public abstract class ReactiveColumnBase<T>: IReactiveColumn<T>
     {
         public string ColumnId { get; protected set; }
 
-        private readonly List<IColumnObserver<T>> _observers = new List<IColumnObserver<T>>();
+        private readonly List<IColumnObserver> _observers = new List<IColumnObserver>();
 
-        public IDisposable Subscribe(IColumnObserver<T> observer)
+        public IDisposable Subscribe(IColumnObserver observer)
         {
             var token = new ReactiveColumnToken(this, observer);
             _observers.Add(observer);
@@ -18,7 +18,7 @@ namespace ReactiveTables
 
         protected virtual void Unsubscribe(object observer)
         {
-            _observers.Remove((IColumnObserver<T>)observer);
+            _observers.Remove((IColumnObserver)observer);
         }
 
         private class ReactiveColumnToken : IDisposable
@@ -38,9 +38,9 @@ namespace ReactiveTables
             }
         }
 
-        internal void NotifyObserversOnNext(T value, int index)
+        internal void NotifyObserversOnNext(int index)
         {
-            _observers.ForEach(observer => observer.OnNext(value, index));
+            _observers.ForEach(observer => observer.OnNext(index));
         }
 
         internal void NotifyObserversOnError(Exception error, int index)
@@ -54,8 +54,14 @@ namespace ReactiveTables
         }
 
         public abstract void AddField();
+        public virtual IReactiveColumn Clone()
+        {
+            throw new NotImplementedException();
+        }
 
-        public abstract void SetValue(int index, T value);
+        public abstract void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
+
+        public abstract void SetValue(int rowIndex, T value);
 
         public abstract IReactiveField<T> GetValue(int index);
     }

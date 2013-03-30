@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public class SubscriptionAggregator<TOutput>
     {
@@ -13,16 +13,16 @@ namespace ReactiveTables
             _outputColumn = outputColumn;
         }
 
-        public IColumnObserver<T> GetObserver<T>()
+        public IColumnObserver GetObserver<T>()
         {
             var observer = new Observer<T>(this);
             _observers.Add(observer);
             return observer;
         }
 
-        private void OnNext<T>(T value, int index)
+        private void OnNext(int index)
         {
-            _outputColumn.NotifyObserversOnNext(_outputColumn.GetValue(index).Value, index);
+            _outputColumn.NotifyObserversOnNext(index);
         }
 
         private void OnError<T>(Exception error, int index)
@@ -35,7 +35,7 @@ namespace ReactiveTables
             _outputColumn.NotifyObserversOnCompleted(index);
         }
 
-        class Observer<T>:IColumnObserver<T>
+        class Observer<T>:IColumnObserver
         {
             private readonly SubscriptionAggregator<TOutput> _subscriptionAggregator;
 
@@ -44,19 +44,19 @@ namespace ReactiveTables
                 _subscriptionAggregator = subscriptionAggregator;
             }
 
-            public void OnNext(T value, int index)
+            public void OnNext(int rowIndex)
             {
-                _subscriptionAggregator.OnNext(value, index);
+                _subscriptionAggregator.OnNext(rowIndex);
             }
 
-            public void OnError(Exception error, int index)
+            public void OnError(Exception error, int rowIndex)
             {
-                _subscriptionAggregator.OnError<T>(error, index);
+                _subscriptionAggregator.OnError<T>(error, rowIndex);
             }
 
-            public void OnCompleted(int index)
+            public void OnCompleted(int rowIndex)
             {
-                _subscriptionAggregator.OnCompleted<T>(index);
+                _subscriptionAggregator.OnCompleted<T>(rowIndex);
             }
         }
     }

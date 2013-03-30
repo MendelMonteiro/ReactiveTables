@@ -58,21 +58,25 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="DelegateObserver.cs" />
+    <Compile Include="Framework\ColumnUpdate.cs" />
+    <Compile Include="Framework\DelegateObserver.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="HumanColumns.cs" />
-    <Compile Include="IColumnObserver.cs" />
-    <Compile Include="IObservableColumn.cs" />
+    <Compile Include="Framework\IColumnObserver.cs" />
+    <Compile Include="Framework\IObservableColumn.cs" />
+    <Compile Include="IThreadMarshaller.cs" />
     <Compile Include="NormalViewModel.cs" />
-    <Compile Include="ReactiveCalculatedColumn2.cs" />
-    <Compile Include="ReactiveColumn.cs" />
-    <Compile Include="ReactiveColumnBase.cs" />
-    <Compile Include="ReactiveField.cs" />
-    <Compile Include="ReactiveTable.cs" />
+    <Compile Include="Framework\ReactiveCalculatedColumn2.cs" />
+    <Compile Include="Framework\ReactiveColumn.cs" />
+    <Compile Include="Framework\ReactiveColumnBase.cs" />
+    <Compile Include="Framework\ReactiveField.cs" />
+    <Compile Include="Framework\ReactiveTable.cs" />
     <Compile Include="HumanViewModel.cs" />
-    <Compile Include="ReactiveVirtualField.cs" />
-    <Compile Include="SubscriptionAggregator.cs" />
-    <Compile Include="SubscriptionToken.cs" />
+    <Compile Include="Framework\ReactiveVirtualField.cs" />
+    <Compile Include="Framework\SubscriptionAggregator.cs" />
+    <Compile Include="Framework\SubscriptionToken.cs" />
+    <Compile Include="TableSynchroniser.cs" />
+    <Compile Include="WpfThreadMarshaller.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -1,6 +1,6 @@
 using System;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public class SubscriptionToken<TObservable, TObserver> : IDisposable where TObservable : ISubscribable<TObserver>
     {

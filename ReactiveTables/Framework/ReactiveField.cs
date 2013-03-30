@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     /*public interface IWritableReactiveField<T>:IReactiveField<T>
     {

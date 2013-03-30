@@ -1,15 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using ReactiveTables.Framework;
 
 namespace ReactiveTables
 {
-    public interface IReactiveConsumer
+    public interface IReactivePropertyNotifiedConsumer
     {
         void OnPropertyChanged(string propertyName);
     }
 
-    public class ReactiveViewModelBase: INotifyPropertyChanged, IReactiveConsumer
+    public class ReactiveViewModelBase: INotifyPropertyChanged, IReactivePropertyNotifiedConsumer
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public virtual void OnPropertyChanged(string propertyName)
@@ -29,7 +30,7 @@ namespace ReactiveTables
             _rowIndex = rowIndex;
             _humans = humans;
 //            Change = new DelegateCommand(() => Name += "was changed");
-            humans.RegisterConsumer(this, _rowIndex);
+            humans.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
         public string Name
@@ -103,7 +104,7 @@ namespace ReactiveTables
         public ReactiveObservableCollection(ReactiveTable table)
         {
             _table = table;
-            _table.RegisterConsumer(this);
+            _table.RegisterPropertyNotifiedConsumer(this);
         }
     }*/
 }

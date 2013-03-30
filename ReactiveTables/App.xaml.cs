@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using ReactiveTables.Framework;
 
 namespace ReactiveTables
 {
@@ -19,17 +17,27 @@ namespace ReactiveTables
         public App()
         {
             Console.WriteLine("In constructor");
-            
+
             Humans = new ReactiveTable();
+            List<IReactiveColumn> baseColumns = new List<IReactiveColumn>
+                                                    {
+                                                        new ReactiveColumn<int>(HumanColumns.IdColumn), 
+                                                        new ReactiveColumn<string>(HumanColumns.NameColumn)
+                                                    };
+
+            ReactiveTable humansWire;
+            int id = CreateTestData((IWritableReactiveTable) Humans, baseColumns, out humansWire, Dispatcher);
+            
             Thread dataThread = new Thread(StreamData);
-            dataThread.Start(Humans);
+            dataThread.IsBackground = true;
+            dataThread.Start(humansWire);
         }
 
         private static void StreamData(object o)
         {
             IWritableReactiveTable humans = (IWritableReactiveTable) o;
             Thread.Sleep(1000);
-            int id = CreateTestData(humans);
+            var id = 3;
             while (true)
             {
                 Thread.Sleep(1000);
@@ -37,18 +45,24 @@ namespace ReactiveTables
             }
         }
 
-        private static int CreateTestData(IWritableReactiveTable humans)
+        private static int CreateTestData(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, out ReactiveTable humansWire, Dispatcher dispatcher)
         {
-            var idCol = humans.AddColumn(new ReactiveColumn<int>(HumanColumns.IdColumn));
-            var nameCol = humans.AddColumn(new ReactiveColumn<string>(HumanColumns.NameColumn));
+            baseColumns.ForEach(c => humans.AddColumn(c));
+
+            // Wire up the two tables before the dynamic columns
+            humansWire = new ReactiveTable(Humans);
+            new TableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher));
+
             var idNameCol = humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                                   HumanColumns.IdNameColumn,
-                                                  idCol,
-                                                  nameCol,
+                                                  (IReactiveColumn<int>) baseColumns[0],
+                                                  (IReactiveColumn<string>) baseColumns[1],
                                                   (idVal, nameVal) => idVal + nameVal));
+
+
             var id = 1;
-            var _rowIndex = AddHuman(humans, id++, "Mendel");
-            _rowIndex = AddHuman(humans, id++, "Marie");
+            var _rowIndex = AddHuman(humansWire, id++, "Mendel");
+            _rowIndex = AddHuman(humansWire, id++, "Marie");
             return id;
         }
 
@@ -61,12 +75,7 @@ namespace ReactiveTables
         }
     }
 
-    class DataCache
-    {
-         
-    }
 
-    
     /*public class EntryPoint
     {
         [STAThread]

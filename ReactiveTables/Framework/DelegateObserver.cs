@@ -1,6 +1,6 @@
 using System;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public class DelegateObserver<T> : IObserver<T>
     {

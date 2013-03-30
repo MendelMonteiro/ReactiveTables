@@ -1,14 +1,14 @@
 using System;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public class ReactiveCalculatedColumn2<T, T1, T2> : ReactiveColumnBase<T>
     {
         private readonly IReactiveColumn<T1> _inputColumn1;
         private readonly IReactiveColumn<T2> _inputColumn2;
         private readonly Func<T1, T2, T> _converter;
-        private IDisposable _col1Subscription;
-        private IDisposable _col2Subscription;
+        private readonly IDisposable _col1Subscription;
+        private readonly IDisposable _col2Subscription;
 
         public ReactiveCalculatedColumn2(string columnId, 
                                          IReactiveColumn<T1> inputColumn1, 
@@ -25,7 +25,12 @@ namespace ReactiveTables
             _converter = converter;
         }
 
-        public override void SetValue(int index, T value)
+        public override void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetValue(int rowIndex, T value)
         {
             throw new NotImplementedException();
         }
@@ -34,16 +39,16 @@ namespace ReactiveTables
         /// For optimisation - worth it?
         /// </summary>
         /// <typeparam name="TColumn"></typeparam>
-        /// <param name="index"></param>
+        /// <param name="rowIndex"></param>
         /// <param name="column"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IReactiveField<T> GetValueOnDependentUpdate<TColumn>(int index, IReactiveColumn<TColumn> column, TColumn value)
+        public IReactiveField<T> GetValueOnDependentUpdate<TColumn>(int rowIndex, IReactiveColumn<TColumn> column, TColumn value)
         {
             if (column == _inputColumn1)
             {
                 T1 
-                return GetValue(value, _inputColumn2.GetValue(index).Value);
+                return GetValue(value, _inputColumn2.GetValue(rowIndex).Value);
             }
         }*/
 

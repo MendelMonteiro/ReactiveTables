@@ -5,3 +5,4 @@ ReactiveTables/bin/.*
 syntax: glob
 ReactiveTables.sln.DotSettings.user
 ReactiveTables.v11.suo
+ReactiveTables/ReactiveTables.csproj.DotSettings.user

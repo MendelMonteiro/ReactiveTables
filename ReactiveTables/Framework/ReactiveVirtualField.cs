@@ -1,4 +1,4 @@
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     public struct ReactiveVirtualField<T>:IReactiveField<T>
     {
