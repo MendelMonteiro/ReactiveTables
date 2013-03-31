@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Threading;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     internal class WpfThreadMarshaller : IThreadMarshaller
     {

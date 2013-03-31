@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace ReactiveTables
+namespace ReactiveTables.Utils
 {
     public class DelegateCommand : ICommand
     {

@@ -57,26 +57,35 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DelegateCommand.cs" />
+    <Compile Include="AccountViewModel.cs" />
+    <Compile Include="Framework\IReactiveTableJoiner.cs" />
+    <Compile Include="Framework\JoinedTable.cs" />
+    <Compile Include="Framework\RowUpdate.cs" />
+    <Compile Include="Framework\RowUpdateAggregator.cs" />
+    <Compile Include="Framework\UI\ReactiveViewModelBase.cs" />
+    <Compile Include="HumansViewModel.cs" />
+    <Compile Include="Framework\Joins\InnerJoin.cs" />
+    <Compile Include="MainViewModel.cs" />
+    <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Framework\ColumnUpdate.cs" />
     <Compile Include="Framework\DelegateObserver.cs" />
-    <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="Utils\DictionaryExtensions.cs" />
     <Compile Include="HumanColumns.cs" />
     <Compile Include="Framework\IColumnObserver.cs" />
     <Compile Include="Framework\IObservableColumn.cs" />
-    <Compile Include="IThreadMarshaller.cs" />
+    <Compile Include="Framework\IThreadMarshaller.cs" />
     <Compile Include="NormalViewModel.cs" />
-    <Compile Include="Framework\ReactiveCalculatedColumn2.cs" />
-    <Compile Include="Framework\ReactiveColumn.cs" />
-    <Compile Include="Framework\ReactiveColumnBase.cs" />
+    <Compile Include="Framework\Columns\Calculated\ReactiveCalculatedColumn2.cs" />
+    <Compile Include="Framework\Columns\ReactiveColumn.cs" />
+    <Compile Include="Framework\Columns\ReactiveColumnBase.cs" />
     <Compile Include="Framework\ReactiveField.cs" />
     <Compile Include="Framework\ReactiveTable.cs" />
     <Compile Include="HumanViewModel.cs" />
-    <Compile Include="Framework\ReactiveVirtualField.cs" />
+    <Compile Include="Framework\Columns\Calculated\ReactiveVirtualField.cs" />
     <Compile Include="Framework\SubscriptionAggregator.cs" />
     <Compile Include="Framework\SubscriptionToken.cs" />
-    <Compile Include="TableSynchroniser.cs" />
-    <Compile Include="WpfThreadMarshaller.cs" />
+    <Compile Include="Framework\TableSynchroniser.cs" />
+    <Compile Include="Framework\WpfThreadMarshaller.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -120,6 +129,7 @@
   <ItemGroup>
     <Resource Include="Notes.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

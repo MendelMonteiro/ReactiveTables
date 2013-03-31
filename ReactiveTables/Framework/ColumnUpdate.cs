@@ -1,3 +1,5 @@
+using ReactiveTables.Framework.Columns;
+
 namespace ReactiveTables.Framework
 {
     public struct ColumnUpdate

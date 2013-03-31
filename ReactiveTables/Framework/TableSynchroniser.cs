@@ -1,10 +1,9 @@
 using System;
 using System.Diagnostics;
-using ReactiveTables.Framework;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
-    internal class TableSynchroniser : IObserver<int>, IObserver<ColumnUpdate>, IDisposable
+    internal class TableSynchroniser : IObserver<RowUpdate>, IObserver<ColumnUpdate>, IDisposable
     {
         private readonly IReactiveTable _sourceTable;
         private readonly IWritableReactiveTable _targetTable;
@@ -18,26 +17,29 @@ namespace ReactiveTables
             _targetTable = targetTable;
             _threadMarshaller = threadMarshaller;
 
-            _rowSubscription = _sourceTable.Subscribe((IObserver<int>)this);
+            _rowSubscription = _sourceTable.Subscribe((IObserver<RowUpdate>)this);
             _columnSubscription = _sourceTable.Subscribe((IObserver<ColumnUpdate>) this);
         }
 
-        public void OnNext(int rowIndex)
+        public void OnNext(RowUpdate rowUpdate)
         {
             _threadMarshaller.Dispatch(
                 () =>
                     {
                         // TODO: Handle deletes!
-                        if (rowIndex >= _targetTable.RowCount)
+                        if (rowUpdate.Action == RowUpdate.RowUpdateAction.Add)
                         {
-                            var newRowIndex = _targetTable.AddRow();
-                            Debug.Assert(rowIndex == newRowIndex);
-                        }
+                            if (rowUpdate.RowIndex >= _targetTable.RowCount)
+                            {
+                                var newRowIndex = _targetTable.AddRow();
+                                Debug.Assert(rowUpdate.RowIndex == newRowIndex);
+                            }
 
-                        // Copy the values
-                        foreach (var column in _sourceTable.Columns)
-                        {
-                            _targetTable.SetValue(column.Key, rowIndex, column.Value, rowIndex);
+                            // Copy the values
+                            foreach (var column in _sourceTable.Columns)
+                            {
+                                _targetTable.SetValue(column.Key, rowUpdate.RowIndex, column.Value, rowUpdate.RowIndex);
+                            }
                         }
                     });
         }
@@ -48,12 +50,12 @@ namespace ReactiveTables
                 () => _targetTable.SetValue(value.Column.ColumnId, value.RowIndex, value.Column, value.RowIndex));
         }
 
-        void IObserver<int>.OnError(Exception error)
+        void IObserver<RowUpdate>.OnError(Exception error)
         {
             throw new NotImplementedException();
         }
 
-        void IObserver<int>.OnCompleted()
+        void IObserver<RowUpdate>.OnCompleted()
         {
             throw new NotImplementedException();
         }

@@ -1,6 +1,10 @@
 ﻿TODO:
 1. Calculated fields	- done
 2. Use in grid			- done
-3. Joining tables		- 
+3. Joining tables		- done
 4. Aggregate fields		- 
 5. Feed data from different thread - done
+6. Update data from GUI - 
+7. Handle deletes       - 
+8. Search by primary key - 
+9. Searching            -

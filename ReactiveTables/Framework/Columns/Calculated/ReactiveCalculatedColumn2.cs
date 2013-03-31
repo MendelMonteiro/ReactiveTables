@@ -1,14 +1,15 @@
 using System;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Columns.Calculated
 {
-    public class ReactiveCalculatedColumn2<T, T1, T2> : ReactiveColumnBase<T>
+    public class ReactiveCalculatedColumn2<T, T1, T2> : ReactiveColumnBase<T>, IReactiveJoinableColumn
     {
         private readonly IReactiveColumn<T1> _inputColumn1;
         private readonly IReactiveColumn<T2> _inputColumn2;
         private readonly Func<T1, T2, T> _converter;
         private readonly IDisposable _col1Subscription;
         private readonly IDisposable _col2Subscription;
+        private IReactiveTableJoiner _joiner = DefaultJoiner.DefaultJoinerInstance;
 
         public ReactiveCalculatedColumn2(string columnId, 
                                          IReactiveColumn<T1> inputColumn1, 
@@ -52,16 +53,23 @@ namespace ReactiveTables.Framework
             }
         }*/
 
-        public override IReactiveField<T> GetValue(int index)
+        public override IReactiveField<T> GetValue(int rowIndex)
         {
             // TODO: cache values??
-            return GetValue(_inputColumn1.GetValue(index).Value, _inputColumn2.GetValue(index).Value);
+            var rowIndex1 = _joiner.GetRowIndex(_inputColumn1, rowIndex);
+            var rowIndex2 = _joiner.GetRowIndex(_inputColumn2, rowIndex);
+            return GetValue(_inputColumn1.GetValue(rowIndex1).Value, _inputColumn2.GetValue(rowIndex2).Value);
         }
 
         private IReactiveField<T> GetValue(T1 value1, T2 value2)
         {
             var value = _converter(value1, value2);
             return new ReactiveVirtualField<T> {Value = value};
+        }
+
+        public void SetJoiner(IReactiveTableJoiner joiner)
+        {
+            _joiner = joiner;
         }
 
         public override void AddField()
@@ -73,6 +81,19 @@ namespace ReactiveTables.Framework
             _col1Subscription.Dispose();
             _col2Subscription.Dispose();
             base.Unsubscribe(observer);
+        }
+    }
+
+    class DefaultJoiner : IReactiveTableJoiner
+    {
+        public static readonly DefaultJoiner DefaultJoinerInstance = new DefaultJoiner();
+
+        private DefaultJoiner(){}
+
+        public int RowCount { get; private set; }
+        public int GetRowIndex(IReactiveColumn column, int rowIndex)
+        {
+            return rowIndex;
         }
     }
 }

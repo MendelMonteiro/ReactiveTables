@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Columns
 {
     public interface IReactiveColumn : IObservableColumn
     {
@@ -17,6 +17,11 @@ namespace ReactiveTables.Framework
     {
         void SetValue(int rowIndex, T value);
         IReactiveField<T> GetValue(int index);
+    }
+
+    public interface IReactiveJoinableColumn
+    {
+        void SetJoiner(IReactiveTableJoiner joiner);
     }
 
     public class ReactiveColumn<T> : ReactiveColumnBase<T>
@@ -46,9 +51,10 @@ namespace ReactiveTables.Framework
 
         private List<ReactiveField<T>> Fields { get; set; }
 
-        public override IReactiveField<T> GetValue(int index)
+        public override IReactiveField<T> GetValue(int rowIndex)
         {
-            return Fields[index];
+            if (rowIndex < 0) return ReactiveField<T>.Empty;
+            return Fields[rowIndex];
         }
 
         public override void SetValue(int rowIndex, T value)

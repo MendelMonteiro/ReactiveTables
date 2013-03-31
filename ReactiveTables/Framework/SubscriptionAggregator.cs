@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {

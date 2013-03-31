@@ -1,6 +1,6 @@
 using System;
 
-namespace ReactiveTables
+namespace ReactiveTables.Framework
 {
     internal interface IThreadMarshaller
     {

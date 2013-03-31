@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using ReactiveTables.Utils;
 
 namespace ReactiveTables
 {

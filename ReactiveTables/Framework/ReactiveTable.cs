@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.UI;
+using ReactiveTables.Utils;
+using System.Linq;
 
 namespace ReactiveTables.Framework
 {
-    public interface IReactiveTable : IObservable<int>, ISubscribable<IObserver<int>>, IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
+    public interface IReactiveTable : IObservable<RowUpdate>, ISubscribable<IObserver<RowUpdate>>, IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
     {
         IReactiveColumn AddColumn(IReactiveColumn column);
         T GetValue<T>(string columnId, int rowIndex);
@@ -11,6 +15,7 @@ namespace ReactiveTables.Framework
         void UnregisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex);
         int RowCount { get; }
         Dictionary<string, IReactiveColumn> Columns { get; }
+        IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
     }
 
     public interface IWritableReactiveTable : IReactiveTable
@@ -25,7 +30,7 @@ namespace ReactiveTables.Framework
         private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
         private int _lastRowIndex = -1;
         private readonly Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>> _consumersByRowIndex = new Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>>();
-        private readonly HashSet<IObserver<int>> _rowObservers = new HashSet<IObserver<int>>();
+        private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
         private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
@@ -72,7 +77,7 @@ namespace ReactiveTables.Framework
 
             foreach (var observer in _rowObservers)
             {
-                observer.OnNext(_lastRowIndex);
+                observer.OnNext(new RowUpdate(_lastRowIndex, RowUpdate.RowUpdateAction.Add));
             }
             return _lastRowIndex;
         }
@@ -95,8 +100,13 @@ namespace ReactiveTables.Framework
             var consumers = _consumersByRowIndex[rowIndex];
             foreach (var consumer in consumers)
             {
-                consumer.OnPropertyChanged(columnId);
+                consumer.OnPropertyChanged(GetPropertyName(columnId));
             }
+        }
+
+        private static string GetPropertyName(string columnId)
+        {
+            return columnId.Substring(columnId.LastIndexOf('.') + 1);
         }
 
         public int RowCount { get { return _lastRowIndex + 1; } }
@@ -106,11 +116,21 @@ namespace ReactiveTables.Framework
             get { return _columns; }
         }
 
+        public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            return new JoinedTable(this, otherTable, joiner);
+        }
+
         public ReactiveTable()
         {
         }
 
         public ReactiveTable(IReactiveTable reactiveTable)
+        {
+            CloneColumns(reactiveTable);
+        }
+
+        public void CloneColumns(IReactiveTable reactiveTable)
         {
             foreach (var column in reactiveTable.Columns)
             {
@@ -118,13 +138,13 @@ namespace ReactiveTables.Framework
             }
         }
 
-        public IDisposable Subscribe(IObserver<int> observer)
+        public IDisposable Subscribe(IObserver<RowUpdate> observer)
         {
             _rowObservers.Add(observer);
-            return new SubscriptionToken<ReactiveTable, IObserver<int>>(this, observer);
+            return new SubscriptionToken<ReactiveTable, IObserver<RowUpdate>>(this, observer);
         }
 
-        public void Unsubscribe(IObserver<int> observer)
+        public void Unsubscribe(IObserver<RowUpdate> observer)
         {
             _rowObservers.Remove(observer);
         }

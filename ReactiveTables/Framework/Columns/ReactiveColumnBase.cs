@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Columns
 {
     public abstract class ReactiveColumnBase<T>: IReactiveColumn<T>
     {
@@ -63,6 +63,6 @@ namespace ReactiveTables.Framework
 
         public abstract void SetValue(int rowIndex, T value);
 
-        public abstract IReactiveField<T> GetValue(int index);
+        public abstract IReactiveField<T> GetValue(int rowIndex);
     }
 }
