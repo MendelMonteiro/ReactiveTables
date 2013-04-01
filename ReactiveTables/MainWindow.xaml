@@ -24,20 +24,23 @@
         <Button Margin="20,20,0,0" Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Command="{Binding Humans.CurrentHuman.Change}" Grid.Column="3" Height="20" Width="44"  />
         <ScrollViewer Grid.Row="1" Grid.ColumnSpan="4">
         <StackPanel >
-            <DataGrid ItemsSource="{Binding Humans.Humans}">
+                <Label Content="People" HorizontalAlignment="Center" />
+                <DataGrid ItemsSource="{Binding Humans.Humans}">
             </DataGrid>
 <!--            <Button Content="Add" Command="{Binding Humans.Add}" />-->
         </StackPanel>
         </ScrollViewer>
         <ScrollViewer Grid.Row="1" Grid.Column="4">
         <StackPanel  >
-            <DataGrid ItemsSource="{Binding Accounts.Accounts}">
-            </DataGrid>
+                <Label Content="Accounts" HorizontalAlignment="Center" />
+                <DataGrid ItemsSource="{Binding Accounts.Accounts}">
+                </DataGrid>
 <!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->
         </StackPanel>
         </ScrollViewer>
         <ScrollViewer Grid.Row="1" Grid.Column="5">
             <StackPanel>
+                <Label Content="Account details joined" HorizontalAlignment="Center" />
                 <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}">
                 </DataGrid>
                 <!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->

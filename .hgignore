@@ -2,7 +2,13 @@ syntax: regexp
 _ReSharper.ReactiveTables/.*
 ReactiveTables/obj/.*
 ReactiveTables/bin/.*
+ReactiveTables.Framework.Tests/bin/.*
+ReactiveTables.Framework.Tests/obj/.*
+ReactiveTables.Framework/bin/.*
+ReactiveTables.Framework/obj/.*
 syntax: glob
 ReactiveTables.sln.DotSettings.user
 ReactiveTables.v11.suo
 ReactiveTables/ReactiveTables.csproj.DotSettings.user
+ReactiveTables/ReactiveTables.csproj.user
+ReactiveTables.Framework/obj/.*

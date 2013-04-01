@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables", "ReactiveTables\ReactiveTables.csproj", "{5F235481-E866-4533-A67E-590ABE24CF5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework", "ReactiveTables.Framework\ReactiveTables.Framework.csproj", "{A2A116D0-98CC-40B0-9C09-9151A657F5C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Tests", "ReactiveTables.Framework.Tests\ReactiveTables.Framework.Tests.csproj", "{4E030EED-7E39-45D0-B309-D5E091E657B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +17,14 @@ Global
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2A116D0-98CC-40B0-9C09-9151A657F5C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2A116D0-98CC-40B0-9C09-9151A657F5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2A116D0-98CC-40B0-9C09-9151A657F5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2A116D0-98CC-40B0-9C09-9151A657F5C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E030EED-7E39-45D0-B309-D5E091E657B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E030EED-7E39-45D0-B309-D5E091E657B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E030EED-7E39-45D0-B309-D5E091E657B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E030EED-7E39-45D0-B309-D5E091E657B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -19,6 +19,9 @@ namespace ReactiveTables
         public static IReactiveTable Accounts { get; private set; }
         public static IReactiveTable AccountHumans { get; private set; }
 
+        private const int humanOffset = 1000;
+        private const int accountOffset = 10000;
+
         public App()
         {
             Console.WriteLine("In constructor");
@@ -56,8 +59,16 @@ namespace ReactiveTables
 
         private IReactiveTable SetupAccountHumansTable(IReactiveTable accounts, IReactiveTable humans)
         {
-            IReactiveTable joinedTable = accounts.Join(humans, new InnerJoin<int>(accounts, 
-                AccountColumns.HumanId, humans, HumanColumns.IdColumn));
+            IReactiveTable joinedTable = humans.Join(accounts, new InnerJoin<int>(
+                humans, HumanColumns.IdColumn,
+                accounts, AccountColumns.HumanId));
+
+            joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
+                                      HumanAccountColumns.AccountDetails,
+                                      (IReactiveColumn<string>) humans.Columns[HumanColumns.NameColumn],
+                                      (IReactiveColumn<decimal>) accounts.Columns[AccountColumns.AccountBalance],
+                                      (name, balance) => string.Format("{0} has {1} in their account.", name, balance)));
+
             return joinedTable;
         }
 
@@ -70,17 +81,16 @@ namespace ReactiveTables
             accountsWire.CloneColumns(accounts);
             new TableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher));
 
-            AddAccount(accountsWire, 1, 10m);
-            AddAccount(accountsWire, 2, 100m);
-            AddAccount(accountsWire, 2, 10000m);
+            AddAccount(accountsWire, 1, 1, 10m);
+            AddAccount(accountsWire, 2, 1, 100m);
+            AddAccount(accountsWire, 3, 2, 10000m);
         }
 
-        private static void AddAccount(IWritableReactiveTable accountsWire, int humanId, decimal balance)
+        private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
         {
             int rowId = accountsWire.AddRow();
-            const int accountIdOffset = 1000;
-            accountsWire.SetValue(AccountColumns.IdColumn, rowId, accountIdOffset + humanId);
-            accountsWire.SetValue(AccountColumns.HumanId, rowId, humanId);
+            accountsWire.SetValue(AccountColumns.IdColumn, rowId, accountOffset + accountId);
+            accountsWire.SetValue(AccountColumns.HumanId, rowId, humanOffset + humanId);
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
@@ -106,7 +116,7 @@ namespace ReactiveTables
         private static void AddHuman(IWritableReactiveTable humans, int id, string name)
         {
             int rowIndex = humans.AddRow();
-            humans.SetValue(HumanColumns.IdColumn, rowIndex, id);
+            humans.SetValue(HumanColumns.IdColumn, rowIndex, humanOffset + id);
             humans.SetValue(HumanColumns.NameColumn, rowIndex, name);
         }
 
@@ -146,7 +156,7 @@ namespace ReactiveTables
             while (true)
             {
                 Thread.Sleep(1000);
-                AddAccount(accounts, id, 66666m);
+                AddAccount(accounts, id, id, 66666m);
 
                 UpdateRandomAccount(accounts, id, random);
                 id++;

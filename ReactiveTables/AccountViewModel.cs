@@ -14,7 +14,8 @@ namespace ReactiveTables
             _accounts = accounts;
             _rowIndex = rowIndex;
 
-            _accounts.RegisterPropertyNotifiedConsumer(this, _rowIndex);
+            var notifier = new PropertyChangedNotifier(_accounts);
+            notifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
         public int AccountId
