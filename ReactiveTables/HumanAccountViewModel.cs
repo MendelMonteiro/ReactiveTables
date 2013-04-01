@@ -13,8 +13,7 @@ namespace ReactiveTables
             _rowIndex = rowIndex;
             _humanAccounts = humanAccounts;
 
-            var notifier = new PropertyChangedNotifier(_humanAccounts);
-            notifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
+            _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
         }
 
         public int AccountId { get { return _humanAccounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); } }

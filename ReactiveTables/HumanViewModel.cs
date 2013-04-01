@@ -14,8 +14,7 @@ namespace ReactiveTables
             _rowIndex = rowIndex;
             _humans = humans;
 //            Change = new DelegateCommand(() => Name += "was changed");
-            var notifier = new PropertyChangedNotifier(_humans);
-            notifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
+            _humans.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
         public int HumanId

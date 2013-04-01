@@ -19,11 +19,11 @@ namespace ReactiveTables.Framework.Columns.Calculated
             ColumnId = columnId;
             _inputColumn1 = inputColumn1;
             _inputColumn2 = inputColumn2;
+            _converter = converter;
 
             _aggregator = new ColumnSubscriptionAggregator<T>(this);
             _aggregator.SubscribeToColumn(_inputColumn1);
             _aggregator.SubscribeToColumn(_inputColumn2);
-            _converter = converter;
         }
 
         public override void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
@@ -84,7 +84,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
         protected override void Unsubscribe(object observer)
         {
             _aggregator.Unsubscribe();
-            base.Unsubscribe(observer);
+//            base.Unsubscribe(observer);
         }
     }
 }

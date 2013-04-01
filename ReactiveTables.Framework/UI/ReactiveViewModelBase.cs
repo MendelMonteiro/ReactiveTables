@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace ReactiveTables.Framework.UI
@@ -14,6 +15,7 @@ namespace ReactiveTables.Framework.UI
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            else Console.WriteLine("No handler for property " + propertyName);
         }
     }
 }

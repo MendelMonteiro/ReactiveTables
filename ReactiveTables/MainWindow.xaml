@@ -18,16 +18,19 @@
             <ColumnDefinition Width="Auto" MinWidth="104"/>
             <ColumnDefinition Width="Auto" MinWidth="29"/>
         </Grid.ColumnDefinitions>
-        <Label Margin="20,20,0,0" Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="44" />
-        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.Name}" VerticalAlignment="Top" Grid.Column="1" Height="16" Width="0"  />
-        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.IdName}" VerticalAlignment="Top" Grid.Column="2" Height="16" Width="0"  />
-        <Button Margin="20,20,0,0" Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Command="{Binding Humans.CurrentHuman.Change}" Grid.Column="3" Height="20" Width="44"  />
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="4">
+        <StackPanel Orientation="Horizontal">
+            <TextBox Text="{Binding HumanAccounts.CurrentRowIndex, Mode=TwoWay}" />
+            <Label Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding HumanAccounts.AccountDetails}" VerticalAlignment="Top"  />
+<!--        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.IdName}" VerticalAlignment="Top" Grid.Column="2" Height="16" Width="0"  />-->
+            <Button Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Command="{Binding HumanAccounts.Change}" Grid.Column="3" />
+        </StackPanel>
+        <!--<ScrollViewer Grid.Row="1" Grid.ColumnSpan="4">
         <StackPanel >
                 <Label Content="People" HorizontalAlignment="Center" />
                 <DataGrid ItemsSource="{Binding Humans.Humans}">
             </DataGrid>
-<!--            <Button Content="Add" Command="{Binding Humans.Add}" />-->
+~1~            <Button Content="Add" Command="{Binding Humans.Add}" />@1@
         </StackPanel>
         </ScrollViewer>
         <ScrollViewer Grid.Row="1" Grid.Column="4">
@@ -35,9 +38,9 @@
                 <Label Content="Accounts" HorizontalAlignment="Center" />
                 <DataGrid ItemsSource="{Binding Accounts.Accounts}">
                 </DataGrid>
-<!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->
+~1~            <Button Content="Add" Command="{Binding Accounts.Add}" />@1@
         </StackPanel>
-        </ScrollViewer>
+        </ScrollViewer>-->
         <ScrollViewer Grid.Row="1" Grid.Column="5">
             <StackPanel>
                 <Label Content="Account details joined" HorizontalAlignment="Center" />

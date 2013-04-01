@@ -128,7 +128,7 @@ namespace ReactiveTables
         {
             var random = new Random();
             IWritableReactiveTable humans = (IWritableReactiveTable)o;
-            Thread.Sleep(1000);
+            Thread.Sleep(6000);
             var id = 3;
             while (true)
             {
@@ -144,14 +144,16 @@ namespace ReactiveTables
         {
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
+            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
+            humans.SetValue(HumanColumns.NameColumn, rowIndex, "*" + currentValue);
+//            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
         }
 
         private static void StreamAccountData(object o)
         {
             var random = new Random();
             IWritableReactiveTable accounts = (IWritableReactiveTable)o;
-            Thread.Sleep(1000);
+            Thread.Sleep(3000);
             var id = 3;
             while (true)
             {

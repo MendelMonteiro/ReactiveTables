@@ -8,7 +8,7 @@ namespace ReactiveTables.Framework
     /// <summary>
     /// Maybe we should store an instance of this on the table directly?
     /// </summary>
-    public class PropertyChangedNotifier : IObserver<ColumnUpdate>
+    public class PropertyChangedNotifier : IObserver<ColumnUpdate>, IDisposable
     {
         private readonly Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>> _consumersByRowIndex = new Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>>();
         private readonly IDisposable _subscription;
@@ -26,7 +26,14 @@ namespace ReactiveTables.Framework
 
         public void UnregisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex)
         {
-            _consumersByRowIndex[rowIndex].Remove(consumer);
+            if (_consumersByRowIndex.ContainsKey(rowIndex))
+            {
+                _consumersByRowIndex[rowIndex].Remove(consumer);
+            }
+        }
+
+        public void Dispose()
+        {
             _subscription.Dispose();
         }
 
@@ -35,13 +42,14 @@ namespace ReactiveTables.Framework
             HashSet<IReactivePropertyNotifiedConsumer> consumers;
             if (_consumersByRowIndex.TryGetValue(value.RowIndex, out consumers))
             {
+                string propertyName = GetPropertyName(value.Column.ColumnId);
                 foreach (var consumer in consumers)
                 {
-                    consumer.OnPropertyChanged(GetPropertyName(value.Column.ColumnId));
+                    consumer.OnPropertyChanged(propertyName);
                 }
             }
         }
-        
+
         private static string GetPropertyName(string columnId)
         {
             return columnId.Substring(columnId.LastIndexOf('.') + 1);

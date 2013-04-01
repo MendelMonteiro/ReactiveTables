@@ -40,9 +40,9 @@ namespace ReactiveTables.Framework.Columns
             _outputColumn.NotifyObserversOnCompleted(index);
         }
 
-        public void SubscribeToColumn(IReactiveColumn reactiveColumn)
+        public void SubscribeToColumn(IReactiveColumn column)
         {
-             _subscriptions.Add(reactiveColumn.Subscribe(GetObserver()));
+             _subscriptions.Add(column.Subscribe(GetObserver()));
         }
 
         public void Unsubscribe()

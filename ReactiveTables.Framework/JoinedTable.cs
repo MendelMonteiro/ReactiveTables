@@ -11,6 +11,8 @@ namespace ReactiveTables.Framework
         private readonly IReactiveTable _rightTable;
         private readonly IReactiveTableJoiner _joiner;
         private RowUpdateAggregator _rowUpdateAggregator;
+        private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
+        private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
 
         public JoinedTable(IReactiveTable leftTable, IReactiveTable rightTable, IReactiveTableJoiner joiner)
         {
@@ -21,23 +23,28 @@ namespace ReactiveTables.Framework
             Columns = new Dictionary<string, IReactiveColumn>();
             _leftTable.Columns.CopyTo(Columns);
             _rightTable.Columns.CopyTo(Columns);
+            
+            ChangeNotifier = new PropertyChangedNotifier(this);
         }
 
         public IDisposable Subscribe(IObserver<RowUpdate> observer)
         {
             _rowUpdateAggregator = new RowUpdateAggregator(_leftTable, _rightTable, observer);
+            _rowObservers.Add(observer);
             return new SubscriptionToken<JoinedTable, IObserver<RowUpdate>>(this, observer);
         }
 
         public void Unsubscribe(IObserver<RowUpdate> observer)
         {
             _rowUpdateAggregator.Unsubscribe();
+            _rowObservers.Remove(observer);
         }
 
         public IDisposable Subscribe(IObserver<ColumnUpdate> observer)
         {
             _leftTable.Subscribe(observer);
             _rightTable.Subscribe(observer);
+            _columnObservers.Add(observer);
             return new SubscriptionToken<JoinedTable, IObserver<ColumnUpdate>>(this, observer);
         }
 
@@ -45,6 +52,7 @@ namespace ReactiveTables.Framework
         {
             _leftTable.Unsubscribe(observer);
             _rightTable.Unsubscribe(observer);
+            _columnObservers.Remove(observer);
         }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
@@ -54,6 +62,9 @@ namespace ReactiveTables.Framework
             var joinableCol = column as IReactiveJoinableColumn;
             if (joinableCol != null)
                 joinableCol.SetJoiner(_joiner);
+
+            // Need to subscribe to changes in calculated columns
+            column.Subscribe(new ColumnChangePublisher(column, _rowObservers, _columnObservers));
                 
             return column;
         }
@@ -90,6 +101,8 @@ namespace ReactiveTables.Framework
         }
 
         public Dictionary<string, IReactiveColumn> Columns { get; private set; }
+
+        public PropertyChangedNotifier ChangeNotifier { get; private set; }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
-using ReactiveTables.Utils;
-using System.Linq;
 
 namespace ReactiveTables.Framework.Joins
 {
@@ -11,6 +9,11 @@ namespace ReactiveTables.Framework.Joins
     {
         public int? LeftRowId;
         public List<JoinRows> Rows;
+
+        public override string ToString()
+        {
+            return string.Format("LeftRowId: {0}, Rows: {1}", LeftRowId, Rows);
+        }
     }
 
     public struct JoinRows
@@ -18,16 +21,18 @@ namespace ReactiveTables.Framework.Joins
         public int RowId;
         public int? LeftRowId;
         public int? RightRowId;
+
+        public override string ToString()
+        {
+            return string.Format("RowId: {0}, LeftRowId: {1}, RightRowId: {2}", RowId, LeftRowId, RightRowId);
+        }
     }
 
     public class InnerJoin<TKey> : IReactiveTableJoiner, IObserver<ColumnUpdate>
     {
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
-        private int _lastRowIndex = -1;
 
-//        private readonly List<JoinRows> _joinRowsToKeys = new List<JoinRows>(); 
-        private readonly Dictionary<TKey, JoinEntry<TKey>> _keys = new Dictionary<TKey, JoinEntry<TKey>>();
         private readonly Dictionary<int, int> _leftColumnRowsToJoinRows = new Dictionary<int, int>();
         private readonly Dictionary<int, int> _rightColumnRowsToJoinRows = new Dictionary<int, int>();
         private readonly IReactiveColumn _leftColumn;
@@ -61,6 +66,8 @@ namespace ReactiveTables.Framework.Joins
 
         public int GetRowIndex(IReactiveColumn column, int joinRowIndex)
         {
+            if (joinRowIndex >= _rows.Count) return -1;
+
             if (_leftTable.Columns.ContainsKey(column.ColumnId) 
                 && _leftTable.Columns[column.ColumnId] == column)
             {
@@ -98,26 +105,32 @@ namespace ReactiveTables.Framework.Joins
         private void UpdateLeftSide(int columnRowIndex)
         {
             var key = _leftTable.GetValue<TKey>(_leftColumn.ColumnId, columnRowIndex);
-            AddNewJoinEntry(key, columnRowIndex);
 
             JoinedRow keyRows;
-            int joinedRowId = -1;
+            int joinedRowId;
             if (_rowsByKey.TryGetValue(key, out keyRows))
             {
                 // Try to join to an empty one
                 int unlinkedIndex = keyRows.Rows.FindIndex(r => !r.LeftRowId.HasValue);
                 if (unlinkedIndex >= 0)
                 {
+                    keyRows.LeftRowId = columnRowIndex;
                     for (int i = unlinkedIndex; i < keyRows.Rows.Count; i++)
                     {
+                        // Link the left to the joined row.
                         var unlinked = keyRows.Rows[i];
                         unlinked.LeftRowId = columnRowIndex;
                         keyRows.Rows[i] = unlinked;
+
                         joinedRowId = unlinked.RowId;
+                        _rows[joinedRowId] = unlinked;
+
+                        // Update the reverse lookup
+                        _leftColumnRowsToJoinRows[columnRowIndex] = joinedRowId;
                     }
                 }
                     // No empties - add a new one
-                else
+                else if (keyRows.Rows.Count == 0)
                 {
                     var joinRows = new JoinRows {RowId = _rows.Count};
 
@@ -126,7 +139,10 @@ namespace ReactiveTables.Framework.Joins
 
                     _rows.Add(joinRows);
                     keyRows.Rows.Add(joinRows);
+
+                    // Update the reverse lookup
                     joinedRowId = joinRows.RowId;
+                    _leftColumnRowsToJoinRows[columnRowIndex] = joinedRowId;
                 }
             }
             else
@@ -136,38 +152,19 @@ namespace ReactiveTables.Framework.Joins
                 var joinRows = new JoinRows {LeftRowId = columnRowIndex, RowId = _rows.Count};
                 _rows.Add(joinRows);
                 keyRows.Rows.Add(joinRows);
+
+                // Update the reverse lookup
                 joinedRowId = joinRows.RowId;
+                _leftColumnRowsToJoinRows[columnRowIndex] = joinedRowId;
             }
 
             _rowsByKey[key] = keyRows;
-
-            // Update the reverse lookup
-            _leftColumnRowsToJoinRows[columnRowIndex] = joinedRowId;
-            /*
-
-            // Create our virtual rows which are the max of the row counts of the two tables
-            if (columnRowIndex >= _joinRowsToKeys.Count) _joinRowsToKeys.Add(new JoinRows {LeftRowId = columnRowIndex});
-            else
-            {
-                JoinRows joinRows = _joinRowsToKeys[columnRowIndex];
-                joinRows.LeftRowId = columnRowIndex;
-                _joinRowsToKeys[columnRowIndex] = joinRows;
-            }
-
-            var joinEntry = _keys[key];
-            if (!joinEntry.LeftRowIndexes.Contains(columnRowIndex))
-            {
-                joinEntry.LeftRowIndexes.Add(columnRowIndex);
-                _leftColumnRowsToJoinRows.Add(columnRowIndex, joinEntry.RowIndex);
-                _keys[key] = joinEntry;
-            }*/
         }
 
         private void UpdateRightSide(int columnRowIndex)
         {
             // TODO: needs refactoring
             var key = _rightTable.GetValue<TKey>(_rightColumn.ColumnId, columnRowIndex);
-            AddNewJoinEntry(key, columnRowIndex);
 
             JoinedRow keyRows;
             int joinedRowId = -1;
@@ -211,15 +208,6 @@ namespace ReactiveTables.Framework.Joins
 
             // Update the reverse lookup
             _rightColumnRowsToJoinRows[columnRowIndex] = joinedRowId;
-        }
-
-        private void AddNewJoinEntry(TKey key, int columnRowIndex)
-        {
-            if (!_keys.ContainsKey(key))
-            {
-                var entry = new JoinEntry<TKey> {Key = key, RowIndex = _lastRowIndex++};
-                _keys.Add(key, entry);
-            }
         }
 
         public void OnError(Exception error)

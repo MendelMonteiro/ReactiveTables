@@ -9,10 +9,9 @@ namespace ReactiveTables.Framework
     {
         IReactiveColumn AddColumn(IReactiveColumn column);
         T GetValue<T>(string columnId, int rowIndex);
-//        void RegisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex);
-//        void UnregisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex);
         int RowCount { get; }
         Dictionary<string, IReactiveColumn> Columns { get; }
+        PropertyChangedNotifier ChangeNotifier { get; }
         IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
     }
 
@@ -30,11 +29,18 @@ namespace ReactiveTables.Framework
         private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
         private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
 
+        public PropertyChangedNotifier ChangeNotifier { get; private set; }
+
+        public ReactiveTable()
+        {
+            ChangeNotifier = new PropertyChangedNotifier(this);
+        }
+
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
-            column.Subscribe(new ColumnChangePublisher(this, column));
+            column.Subscribe(new ColumnChangePublisher(column, _rowObservers, _columnObservers));
             // TODO: fire events for existing rows
             return column;
         }
@@ -95,33 +101,6 @@ namespace ReactiveTables.Framework
             }
         }
 
-        /*public void RegisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex)
-        {
-            var consumers = _consumersByRowIndex.AddNewIfNotExists(rowIndex);
-            consumers.Add(consumer);
-        }
-
-        public void UnregisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex)
-        {
-            _consumersByRowIndex[rowIndex].Remove(consumer);
-        }
-
-        private void NotifyConsumers(string columnId, int rowIndex)
-        {
-            if (!_consumersByRowIndex.ContainsKey(rowIndex)) return;
-
-            var consumers = _consumersByRowIndex[rowIndex];
-            foreach (var consumer in consumers)
-            {
-                consumer.OnPropertyChanged(GetPropertyName(columnId));
-            }
-        }*/
-
-        private static string GetPropertyName(string columnId)
-        {
-            return columnId.Substring(columnId.LastIndexOf('.') + 1);
-        }
-
         public int RowCount { get { return _lastRowIndex + 1; } }
 
         public Dictionary<string, IReactiveColumn> Columns
@@ -132,10 +111,6 @@ namespace ReactiveTables.Framework
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
             return new JoinedTable(this, otherTable, joiner);
-        }
-
-        public ReactiveTable()
-        {
         }
 
         public ReactiveTable(IReactiveTable reactiveTable)
@@ -171,45 +146,6 @@ namespace ReactiveTables.Framework
         public void Unsubscribe(IObserver<ColumnUpdate> observer)
         {
             _columnObservers.Remove(observer);
-        }
-
-        private class ColumnChangePublisher : IColumnObserver
-        {
-            private readonly ReactiveTable _reactiveTable;
-            private readonly IReactiveColumn _column;
-
-            public ColumnChangePublisher(ReactiveTable reactiveTable, IReactiveColumn column)
-            {
-                _reactiveTable = reactiveTable;
-                _column = column;
-            }
-
-            public void OnNext(int rowIndex)
-            {
-                // Notify consumers first as everything should be in place before we notify the GUI.
-                foreach (var observer in _reactiveTable._columnObservers)
-                {
-                    observer.OnNext(new ColumnUpdate(_column, rowIndex));
-                }
-
-//                _reactiveTable.NotifyConsumers(_column.ColumnId, rowIndex);
-            }
-
-            public void OnError(Exception error, int rowIndex)
-            {
-                foreach (var observer in _reactiveTable._rowObservers)
-                {
-                    observer.OnError(error);
-                }
-            }
-
-            public void OnCompleted(int rowIndex)
-            {
-                foreach (var observer in _reactiveTable._rowObservers)
-                {
-                    observer.OnCompleted();
-                }
-            }
         }
     }
 }

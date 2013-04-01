@@ -414,6 +414,43 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual("hello - 0", joinedTable.GetValue<string>(columnId, 1));
         }
 
+        [Test]
+        public void TestRightSideFirst()
+        {
+            ReactiveTable right;
+            IReactiveTable joinedTable;
+            var left = CreateJoinedTables(out right, out joinedTable);
+
+            int rightRowId1 = right.AddRow();
+            Assert.AreEqual(0, joinedTable.RowCount);
+
+            right.SetValue(TestColumns2.IdColumn, rightRowId1, 111);
+            Assert.AreEqual(0, joinedTable.RowCount);
+
+            right.SetValue(TestColumns2.Test1IdColumn, rightRowId1, 222);
+            Assert.AreEqual(1, joinedTable.RowCount);
+            Assert.AreEqual(111, joinedTable.GetValue<int>(TestColumns2.IdColumn, 0));
+            Assert.AreEqual(222, joinedTable.GetValue<int>(TestColumns2.Test1IdColumn, 0));
+
+            int rightRowId2 = right.AddRow();
+            Assert.AreEqual(1, joinedTable.RowCount);
+
+            right.SetValue(TestColumns2.IdColumn, rightRowId2, 112);
+            Assert.AreEqual(1, joinedTable.RowCount);
+
+            right.SetValue(TestColumns2.Test1IdColumn, rightRowId2, 223);
+            Assert.AreEqual(2, joinedTable.RowCount);
+            Assert.AreEqual(112, joinedTable.GetValue<int>(TestColumns2.IdColumn, 1));
+            Assert.AreEqual(223, joinedTable.GetValue<int>(TestColumns2.Test1IdColumn, 1));
+
+            int leftRowId1 = left.AddRow();
+            left.SetValue(TestColumns1.IdColumn, leftRowId1, 223);
+            left.SetValue(TestColumns1.StringColumn, leftRowId1, "hello");
+            Assert.AreEqual(2, joinedTable.RowCount);
+            Assert.AreEqual(223, joinedTable.GetValue<int>(TestColumns1.IdColumn, 1));
+            Assert.AreEqual("hello", joinedTable.GetValue<string>(TestColumns1.StringColumn, 1));
+        }
+
         private static ReactiveTable CreateJoinedTables(out ReactiveTable table2, out IReactiveTable joinedTable)
         {
             var table1 = CreateTable1();

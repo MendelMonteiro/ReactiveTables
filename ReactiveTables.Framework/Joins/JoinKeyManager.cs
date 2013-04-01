@@ -16,7 +16,7 @@ namespace ReactiveTables.Framework.Joins
         /// Table row id -> Joined row id
         /// </summary>
         private readonly Dictionary<int, int> _rowIdReverse;
-        private readonly List<JoinEntry<TKey>> _joinEntries;
+
         private readonly JoinSide _joinSide;
 
         public enum JoinSide
@@ -48,16 +48,6 @@ namespace ReactiveTables.Framework.Joins
 
         private void OnAdd(RowUpdate update)
         {
-/*            int columnRow = update.RowIndex;
-            // Add a new join entry if 
-            if (columnRow >= _joinEntries.Count)
-            {
-                var joinEntry = new JoinEntry<TKey>();
-                if (_joinSide == JoinSide.Left) joinEntry.LeftRowIndexes = columnRow;
-                if (_joinSide == JoinSide.Right) joinEntry.RightRowIndexes = columnRow;
-                _joinEntries.Add(joinEntry);
-            }
-            _rowIdReverse.Add(columnRow, _joinEntries.Count - 1);*/
         }
 
         private void OnDelete(RowUpdate update)
