@@ -1,3 +1,4 @@
+using System;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
@@ -6,5 +7,6 @@ namespace ReactiveTables.Framework
     {
         int RowCount { get; }
         int GetRowIndex(IReactiveColumn column, int joinRowIndex);
+        void AddRowObserver(IObserver<RowUpdate> observer);
     }
 }

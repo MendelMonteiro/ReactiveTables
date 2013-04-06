@@ -1,3 +1,4 @@
+using System;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Joins
@@ -12,6 +13,11 @@ namespace ReactiveTables.Framework.Joins
         public int GetRowIndex(IReactiveColumn column, int joinRowIndex)
         {
             return joinRowIndex;
+        }
+
+        public void AddRowObserver(IObserver<RowUpdate> observer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

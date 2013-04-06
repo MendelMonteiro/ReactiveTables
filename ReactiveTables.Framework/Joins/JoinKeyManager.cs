@@ -9,8 +9,8 @@ namespace ReactiveTables.Framework.Joins
     /// <typeparam name="TKey"></typeparam>
     internal class JoinKeyManager<TKey> : IObserver<RowUpdate>
     {
-        private readonly List<JoinRows> _rows;
-        private readonly Dictionary<TKey, JoinedRow> _rowsByKey;
+//        private readonly List<JoinRows> _rows;
+//        private readonly Dictionary<TKey, JoinedRow> _rowsByKey;
 
         /// <summary>
         /// Table row id -> Joined row id
@@ -25,13 +25,13 @@ namespace ReactiveTables.Framework.Joins
             Right
         }
 
-        public JoinKeyManager(List<JoinRows> rows, Dictionary<TKey, JoinedRow> rowsByKey, Dictionary<int, int> keysReverse, JoinSide joinSide)
+/*        public JoinKeyManager(List<JoinRows> rows, Dictionary<TKey, JoinedRow> rowsByKey, Dictionary<int, int> keysReverse, JoinSide joinSide)
         {
             _rows = rows;
             _rowsByKey = rowsByKey;
             _rowIdReverse = keysReverse;
             _joinSide = joinSide;
-        }
+        }*/
 
         public void OnNext(RowUpdate update)
         {

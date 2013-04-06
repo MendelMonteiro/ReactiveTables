@@ -59,7 +59,7 @@ namespace ReactiveTables
 
         private IReactiveTable SetupAccountHumansTable(IReactiveTable accounts, IReactiveTable humans)
         {
-            IReactiveTable joinedTable = humans.Join(accounts, new InnerJoin<int>(
+            IReactiveTable joinedTable = humans.Join(accounts, new Join<int>(
                 humans, HumanColumns.IdColumn,
                 accounts, AccountColumns.HumanId));
 

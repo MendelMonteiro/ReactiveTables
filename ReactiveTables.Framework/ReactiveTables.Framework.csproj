@@ -55,7 +55,8 @@
     <Compile Include="IThreadMarshaller.cs" />
     <Compile Include="JoinedTable.cs" />
     <Compile Include="Joins\DefaultJoiner.cs" />
-    <Compile Include="Joins\InnerJoin.cs" />
+    <Compile Include="Joins\DelegateEqualityComparer.cs" />
+    <Compile Include="Joins\Join.cs" />
     <Compile Include="Joins\JoinEntry.cs" />
     <Compile Include="Joins\JoinKeyManager.cs" />
     <Compile Include="PropertyChangedNotifier.cs" />

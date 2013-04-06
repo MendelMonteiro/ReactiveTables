@@ -10,7 +10,6 @@ namespace ReactiveTables.Framework
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
         private readonly IReactiveTableJoiner _joiner;
-        private RowUpdateAggregator _rowUpdateAggregator;
         private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
         private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
 
@@ -29,14 +28,13 @@ namespace ReactiveTables.Framework
 
         public IDisposable Subscribe(IObserver<RowUpdate> observer)
         {
-            _rowUpdateAggregator = new RowUpdateAggregator(_leftTable, _rightTable, observer);
+            _joiner.AddRowObserver(observer);
             _rowObservers.Add(observer);
             return new SubscriptionToken<JoinedTable, IObserver<RowUpdate>>(this, observer);
         }
 
         public void Unsubscribe(IObserver<RowUpdate> observer)
         {
-            _rowUpdateAggregator.Unsubscribe();
             _rowObservers.Remove(observer);
         }
 
