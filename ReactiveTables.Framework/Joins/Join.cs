@@ -29,7 +29,7 @@ namespace ReactiveTables.Framework.Joins
 
         private struct Row
         {
-            public int RowId;
+            public int? RowId;
             public int? LeftRowId;
             public int? RightRowId;
             public TKey Key;
@@ -113,11 +113,11 @@ namespace ReactiveTables.Framework.Joins
             List<int> updatedRows = null;
             if (update.Column == _leftColumn)
             {
-                updatedRows = UpdateLeftSide(columnRowIndex, JoinSide.Left);
+                updatedRows = OnColumnUpdate(columnRowIndex, JoinSide.Left);
             }
             else if (update.Column == _rightColumn)
             {
-                updatedRows = UpdateLeftSide(columnRowIndex, JoinSide.Right);
+                updatedRows = OnColumnUpdate(columnRowIndex, JoinSide.Right);
 //                UpdateRightSide(columnRowIndex);
             }
             if (updatedRows != null && updatedRows.Count > 0)
@@ -143,7 +143,7 @@ namespace ReactiveTables.Framework.Joins
             Right
         }
 
-        private List<int> UpdateLeftSide(int columnRowIndex, JoinSide side)
+        private List<int> OnColumnUpdate(int columnRowIndex, JoinSide side)
         {
             List<int> updateRows = new List<int>();
             IReactiveTable table = side == JoinSide.Left ? _leftTable : _rightTable;
@@ -151,7 +151,7 @@ namespace ReactiveTables.Framework.Joins
             var key = table.GetValue<TKey>(column.ColumnId, columnRowIndex);
 
             ColumnRowMapping keyRowsMapping;
-            int joinedRowId;
+            int? joinedRowId;
             // Has the key been used before?
             Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows = side == JoinSide.Left ? _rightColumnRowsToJoinRows : _leftColumnRowsToJoinRows;
             Dictionary<int, HashSet<int>> columnRowsToJoinRows = side == JoinSide.Left ? _leftColumnRowsToJoinRows : _rightColumnRowsToJoinRows;
@@ -191,28 +191,41 @@ namespace ReactiveTables.Framework.Joins
                             LinkRow(ref unlinked, columnRowIndex, side);
                             keyRowsMapping.Rows[i] = unlinked;
 
-                            joinedRowId = unlinked.RowId;
-                            _rows[joinedRowId] = unlinked;
+                            // If it's an inner join we need to create the new row here (when we link)
+                            if (!unlinked.RowId.HasValue)
+                            {
+                                joinedRowId = _rows.Count();
+                                AddNewRow(unlinked, updateRows, joinedRowId.Value);
+                                // Need to update the reverse mapping for the other side too as it wasn't done before
+                                var otherRowId = side == JoinSide.Left ? unlinked.RightRowId : unlinked.LeftRowId;
+                                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
+                            }
+                            else
+                            {
+                                joinedRowId = unlinked.RowId;                                
+                            }
+
+                            _rows[joinedRowId.Value] = unlinked;
 
                             // Update the reverse lookup
-                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId);
+                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
                         }
                     }
                     // No unlinked - add new mappings and rows for each right row
-                    else /*if (keyRowsMapping.Rows.Count == 0)*/
+                    else
                     {
                         var otherRows = GetDistinctOtherRows(keyRowsMapping, side);
                         foreach (var otherRowId in otherRows.ToArray())
                         {
                             joinedRowId = _rows.Count;
-                            var joinRow = CreateNewLinkedJoinRow(columnRowIndex, joinedRowId, key, otherRowId, side);
-
-                            AddNewRow(joinRow, updateRows, joinedRowId);
+                            var joinRow = CreateNewLinkedJoinRow(columnRowIndex, joinedRowId.Value, key, otherRowId, side);
                             keyRowsMapping.Rows.Add(joinRow);
 
+                            AddNewRow(joinRow, updateRows, joinedRowId.Value);
+
                             // Update the reverse lookup
-                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId);
-                            otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId);
+                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+                            otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
                         }
                     }
                 }
@@ -221,18 +234,30 @@ namespace ReactiveTables.Framework.Joins
             {
                 // First time this key has been used so create a new (unlinked on right side)
                 keyRowsMapping = new ColumnRowMapping {Rows = new List<Row>()};
-                joinedRowId = _rows.Count;
+                joinedRowId = ShouldAddUnlinkedRow(side) ? _rows.Count : (int?)null;
                 var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
-                AddNewRow(joinRow, updateRows, joinedRowId);
                 keyRowsMapping.Rows.Add(joinRow);
 
-                // Update the reverse lookup
-                columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId);
+                if (ShouldAddUnlinkedRow(side))
+                {
+                    AddNewRow(joinRow, updateRows, joinedRowId.Value);
+
+                    // Update the reverse lookup
+                    columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+                }
             }
 
             _rowsByKey[key] = keyRowsMapping;
 
             return updateRows;
+        }
+
+        private bool ShouldAddUnlinkedRow(JoinSide side)
+        {
+            if (_joinType == JoinType.Inner) return false;
+            if (_joinType == JoinType.LeftOuter) return side == JoinSide.Left;
+            if (_joinType == JoinType.RightOuter) return side == JoinSide.Right;
+            return true;
         }
 
         private void AddNewRow(Row joinRow, List<int> updateRows, int joinedRowId)
@@ -241,7 +266,7 @@ namespace ReactiveTables.Framework.Joins
             updateRows.Add(joinedRowId);
         }
 
-        private static Row CreateNewJoinRow(int columnRowIndex, TKey key, int joinedRowId, JoinSide side)
+        private static Row CreateNewJoinRow(int columnRowIndex, TKey key, int? joinedRowId, JoinSide side)
         {
             if (side == JoinSide.Left)
             {
@@ -322,10 +347,12 @@ namespace ReactiveTables.Framework.Joins
 
         public void OnError(Exception error)
         {
+            throw new NotImplementedException();
         }
 
         public void OnCompleted()
         {
+            throw new NotImplementedException();
         }
     }
 }
