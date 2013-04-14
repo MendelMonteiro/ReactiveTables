@@ -34,12 +34,10 @@ namespace ReactiveTables.Framework
                                 var newRowIndex = _targetTable.AddRow();
                                 Debug.Assert(rowUpdate.RowIndex == newRowIndex);
                             }
-
-                            // Copy the values
-                            /*foreach (var column in _sourceTable.Columns)
-                            {
-                                _targetTable.SetValue(column.Key, rowUpdate.RowIndex, column.Value, rowUpdate.RowIndex);
-                            }*/
+                        }
+                        else if (rowUpdate.Action == RowUpdate.RowUpdateAction.Delete)
+                        {
+                            
                         }
                     });
         }

@@ -5,6 +5,6 @@
 4. Aggregate fields		- 
 5. Feed data from different thread - done
 6. Update data from GUI - 
-7. Handle deletes       - 
+7. Handle deletes       - change row count, keep list of deleted row ids to reuse.
 8. Search by primary key - 
-9. Searching            -
+9. Searching            - 

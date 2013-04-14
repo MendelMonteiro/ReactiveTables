@@ -19,9 +19,10 @@ namespace ReactiveTables.Framework
 
         public void OnNext(int rowIndex)
         {
+            var columnUpdate = new ColumnUpdate(_column, rowIndex);
             foreach (var observer in _columnObservers)
             {
-                observer.OnNext(new ColumnUpdate(_column, rowIndex));
+                observer.OnNext(columnUpdate);
             }
         }
 

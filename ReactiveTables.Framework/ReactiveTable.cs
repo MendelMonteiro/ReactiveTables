@@ -25,9 +25,9 @@ namespace ReactiveTables.Framework
     public class ReactiveTable : IWritableReactiveTable
     {
         private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
-        private int _lastRowIndex = -1;
         private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
         private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
+        private readonly FieldRowManager _rowManager = new FieldRowManager();
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
 
@@ -72,36 +72,36 @@ namespace ReactiveTables.Framework
 
         public int AddRow()
         {
+            int rowIndex = _rowManager.AddRow();
             foreach (var column in Columns)
             {
-                column.Value.AddField();
+                column.Value.AddField(rowIndex);
             }
 
-            _lastRowIndex++;
-
+            var rowUpdate = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Add);
             foreach (var observer in _rowObservers)
             {
-                observer.OnNext(new RowUpdate(_lastRowIndex, RowUpdate.RowUpdateAction.Add));
+                observer.OnNext(rowUpdate);
             }
-            return _lastRowIndex;
+            return rowIndex;
         }
 
         public void DeleteRow(int rowIndex)
         {
+            _rowManager.DeleteRow(rowIndex);
             foreach (var column in Columns)
             {
                 column.Value.RemoveField(rowIndex);
             }
 
-            _lastRowIndex--;
-
+            var rowUpdate = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Delete);
             foreach (var observer in _rowObservers)
             {
-                observer.OnNext(new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Delete));
+                observer.OnNext(rowUpdate);
             }
         }
 
-        public int RowCount { get { return _lastRowIndex + 1; } }
+        public int RowCount { get { return _rowManager.RowCount; } }
 
         public Dictionary<string, IReactiveColumn> Columns
         {

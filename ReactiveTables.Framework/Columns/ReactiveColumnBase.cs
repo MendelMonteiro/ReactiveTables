@@ -39,7 +39,7 @@ namespace ReactiveTables.Framework.Columns
             _observers.ForEach(observer => observer.OnCompleted(index));
         }
 
-        public abstract void AddField();
+        public abstract void AddField(int rowIndex);
 
         public virtual IReactiveColumn Clone()
         {

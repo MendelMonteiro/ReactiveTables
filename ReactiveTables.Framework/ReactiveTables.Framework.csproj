@@ -29,6 +29,24 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +63,7 @@
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
     <Compile Include="Columns\Calculated\ReactiveVirtualField.cs" />
     <Compile Include="Columns\ColumnSubscriptionAggregator.cs" />
+    <Compile Include="Columns\FieldRowManager.cs" />
     <Compile Include="Columns\ReactiveColumn.cs" />
     <Compile Include="Columns\ReactiveColumnBase.cs" />
     <Compile Include="ColumnUpdate.cs" />
@@ -58,7 +77,8 @@
     <Compile Include="Joins\DelegateEqualityComparer.cs" />
     <Compile Include="Joins\Join.cs" />
     <Compile Include="Joins\JoinEntry.cs" />
-    <Compile Include="Joins\JoinKeyManager.cs" />
+    <Compile Include="Joins\JoinRowDeleteHandler.cs" />
+    <Compile Include="Joins\JoinSide.cs" />
     <Compile Include="PropertyChangedNotifier.cs" />
     <Compile Include="ReactiveField.cs" />
     <Compile Include="ReactiveTable.cs" />

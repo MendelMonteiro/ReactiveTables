@@ -77,7 +77,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
             _joiner = joiner;
         }
 
-        public override void AddField()
+        public override void AddField(int rowIndex)
         {
         }
 

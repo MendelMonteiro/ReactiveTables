@@ -8,7 +8,7 @@ namespace ReactiveTables.Framework.Columns
         /// Should be an int?
         /// </summary>
         string ColumnId { get; }
-        void AddField();
+        void AddField(int rowIndex);
         IReactiveColumn Clone();
         void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
         void RemoveField(int rowIndex);
@@ -33,9 +33,17 @@ namespace ReactiveTables.Framework.Columns
             Fields = new List<ReactiveField<T>>();
         }
 
-        public override void AddField()
+        public override void AddField(int rowIndex)
         {
-            Fields.Add(new ReactiveField<T>());
+            var reactiveField = new ReactiveField<T>();
+            if (rowIndex < Fields.Count)
+            {
+                Fields[rowIndex] = reactiveField;
+            }
+            else
+            {
+                Fields.Add(reactiveField);
+            }
         }
 
         public override IReactiveColumn Clone()
@@ -52,14 +60,14 @@ namespace ReactiveTables.Framework.Columns
 
         public override void RemoveField(int rowIndex)
         {
-            Fields.RemoveAt(rowIndex);
+            Fields[rowIndex] = null;
         }
 
         private List<ReactiveField<T>> Fields { get; set; }
 
         public override IReactiveField<T> GetValue(int rowIndex)
         {
-            if (rowIndex < 0) return ReactiveField<T>.Empty;
+            if (rowIndex < 0 || Fields[rowIndex] == null) return ReactiveField<T>.Empty;
             return Fields[rowIndex];
         }
 
