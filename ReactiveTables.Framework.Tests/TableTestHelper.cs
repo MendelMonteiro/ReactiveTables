@@ -23,7 +23,18 @@ namespace ReactiveTables.Framework.Tests
         public static void SetAndTestValue<T>(ReactiveTable setTable, ReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
         {
             setTable.SetValue(columnId, setRowId, value);
-            Assert.AreEqual(value, getTable.GetValue<T>(columnId, getRowId));
+            TestValue(getTable, getRowId, value, columnId);
+        }
+
+        public static void TestValue<T>(ReactiveTable table, int rowId, T value, string columnId)
+        {
+            Assert.AreEqual(value, table.GetValue<T>(columnId, rowId));
+        }
+
+        public static void SetAndTestValueNotPresent<T>(ReactiveTable setTable, ReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
+        {
+            setTable.SetValue(columnId, setRowId, value);
+            Assert.AreEqual(default(T), getTable.GetValue<T>(columnId, getRowId));
         }
     }
 }

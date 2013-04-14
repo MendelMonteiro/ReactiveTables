@@ -16,6 +16,7 @@ namespace ReactiveTables
     /// </summary>
     public partial class App : Application
     {
+        private readonly TimeSpan _updateDelay = TimeSpan.FromMilliseconds(250);
         public static IReactiveTable Humans { get; private set; }
         public static IReactiveTable Accounts { get; private set; }
         public static IReactiveTable AccountHumans { get; private set; }
@@ -80,7 +81,7 @@ namespace ReactiveTables
 
             // Create the wire table
             accountsWire.CloneColumns(accounts);
-            new TableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher));
+            new BatchedTableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
 
             AddAccount(accountsWire, 1, 1, 10m);
             AddAccount(accountsWire, 2, 1, 100m);
@@ -95,13 +96,13 @@ namespace ReactiveTables
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
-        private static void SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, ReactiveTable humansWire, Dispatcher dispatcher)
+        private void SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, ReactiveTable humansWire, Dispatcher dispatcher)
         {
             baseColumns.ForEach(c => humans.AddColumn(c));
 
             // Wire up the two tables before the dynamic columns
             humansWire.CloneColumns(Humans);
-            new TableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher));
+            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
 
             humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                  HumanColumns.IdNameColumn,

@@ -1,34 +1,49 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Threading;
+using NUnit.Framework;
 using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables.Framework.Tests
 {
     [TestFixture]
-    public class TableSynchroniserTests
+    public class BatchedTableSynchroniserTests
     {
+        const int delay = 250;
+
         [Test]
         public void TestAdd()
         {
             ReactiveTable source = TableTestHelper.CreateReactiveTable();
             ReactiveTable target = TableTestHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
 
             var sourceRow1 = source.AddRow();
-            Assert.AreEqual(1, target.RowCount);
+            Assert.AreEqual(0, target.RowCount);
 
-            TableTestHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 101, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, "Blah", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 4324m, TestTableColumns.DecimalColumn);
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow1, updateHandler.LastRowUpdated, 101, TestTableColumns.IdColumn);
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow1, updateHandler.LastRowUpdated, "Blah", TestTableColumns.StringColumn);
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow1, updateHandler.LastRowUpdated, 4324m, TestTableColumns.DecimalColumn);
 
             var sourceRow2 = source.AddRow();
+            Assert.AreEqual(0, target.RowCount);
+
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, 102, TestTableColumns.IdColumn);
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
+            TableTestHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
+
+            Thread.Sleep(delay);
             Assert.AreEqual(2, target.RowCount);
 
-            TableTestHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 102, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[0], 101, TestTableColumns.IdColumn);
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[0], "Blah", TestTableColumns.StringColumn);
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[0], 4324m, TestTableColumns.DecimalColumn);
+
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[1], 102, TestTableColumns.IdColumn);
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[1], "Blah2", TestTableColumns.StringColumn);
+            TableTestHelper.TestValue(target, updateHandler.RowsUpdated[1], 42m, TestTableColumns.DecimalColumn);
         }
 
         [Test]
@@ -36,7 +51,7 @@ namespace ReactiveTables.Framework.Tests
         {
             ReactiveTable source = TableTestHelper.CreateReactiveTable();
             ReactiveTable target = TableTestHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
@@ -69,7 +84,7 @@ namespace ReactiveTables.Framework.Tests
         {
             ReactiveTable source = TableTestHelper.CreateReactiveTable();
             ReactiveTable target = TableTestHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));

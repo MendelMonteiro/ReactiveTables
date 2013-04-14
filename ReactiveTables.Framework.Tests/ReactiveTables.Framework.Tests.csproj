@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BatchedTableSynchroniserTests.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="Joins\JoinTests.cs" />
     <Compile Include="RowUpdateHandler.cs" />

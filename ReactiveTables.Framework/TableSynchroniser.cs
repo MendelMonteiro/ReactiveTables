@@ -22,30 +22,27 @@ namespace ReactiveTables.Framework
             _columnSubscription = _sourceTable.Subscribe((IObserver<ColumnUpdate>) this);
         }
 
-        public void OnNext(RowUpdate rowUpdate)
+        public void OnNext(RowUpdate update)
         {
             _threadMarshaller.Dispatch(
                 () =>
                     {
-                        if (rowUpdate.Action == RowUpdate.RowUpdateAction.Add)
+                        if (update.Action == RowUpdate.RowUpdateAction.Add)
                         {
-//                            if (rowUpdate.RowIndex >= _targetTable.RowCount)
-//                            {
-                                var newRowIndex = _targetTable.AddRow();
-                                Debug.Assert(rowUpdate.RowIndex == newRowIndex);
-//                            }
+                            var newRowIndex = _targetTable.AddRow();
+                            Debug.Assert(update.RowIndex == newRowIndex);
                         }
-                        else if (rowUpdate.Action == RowUpdate.RowUpdateAction.Delete)
+                        else if (update.Action == RowUpdate.RowUpdateAction.Delete)
                         {
-                            _targetTable.DeleteRow(rowUpdate.RowIndex);
+                            _targetTable.DeleteRow(update.RowIndex);
                         }
                     });
         }
 
-        public void OnNext(ColumnUpdate value)
+        public void OnNext(ColumnUpdate update)
         {
             _threadMarshaller.Dispatch(
-                () => _targetTable.SetValue(value.Column.ColumnId, value.RowIndex, value.Column, value.RowIndex));
+                () => _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex));
         }
 
         void IObserver<RowUpdate>.OnError(Exception error)

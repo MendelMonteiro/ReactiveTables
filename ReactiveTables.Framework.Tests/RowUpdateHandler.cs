@@ -11,6 +11,7 @@ namespace ReactiveTables.Framework.Tests
         public RowUpdateHandler()
         {
             RowsUpdated = new List<int>();
+            LastRowUpdated = -1;
         }
 
         public void OnRowUpdate(RowUpdate update)

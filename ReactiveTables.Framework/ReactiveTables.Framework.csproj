@@ -59,6 +59,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
     <Compile Include="Columns\Calculated\ReactiveVirtualField.cs" />

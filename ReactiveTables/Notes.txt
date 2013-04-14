@@ -8,6 +8,7 @@
 7. Handle deletes       - done
 8. Search by primary key - 
 9. Searching on any col - 
+10. Batched synch		- done
 
 Notes
 * Should the property change notifier live in the view model base instead? What's more efficient?
