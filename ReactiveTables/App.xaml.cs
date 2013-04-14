@@ -7,6 +7,7 @@ using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Joins;
+using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables
 {

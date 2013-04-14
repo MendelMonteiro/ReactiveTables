@@ -67,11 +67,12 @@
     <Compile Include="Columns\ReactiveColumn.cs" />
     <Compile Include="Columns\ReactiveColumnBase.cs" />
     <Compile Include="ColumnUpdate.cs" />
+    <Compile Include="Marshalling\DefaultThreadMarshaller.cs" />
     <Compile Include="DelegateObserver.cs" />
     <Compile Include="IColumnObserver.cs" />
     <Compile Include="IObservableColumn.cs" />
     <Compile Include="IReactiveTableJoiner.cs" />
-    <Compile Include="IThreadMarshaller.cs" />
+    <Compile Include="Marshalling\IThreadMarshaller.cs" />
     <Compile Include="JoinedTable.cs" />
     <Compile Include="Joins\DefaultJoiner.cs" />
     <Compile Include="Joins\DelegateEqualityComparer.cs" />
@@ -88,9 +89,10 @@
     <Compile Include="TableSynchroniser.cs" />
     <Compile Include="UI\ReactiveViewModelBase.cs" />
     <Compile Include="Utils\DictionaryExtensions.cs" />
-    <Compile Include="WpfThreadMarshaller.cs" />
+    <Compile Include="Marshalling\WpfThreadMarshaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

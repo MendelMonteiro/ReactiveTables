@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Threading;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Marshalling
 {
     /// <summary>
     /// TODO: Move this to a GUI specific class library

@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Joins;
-using ReactiveTables.Framework.UI;
 using System.Linq;
 
 namespace ReactiveTables.Framework.Tests.Joins
@@ -925,48 +923,5 @@ namespace ReactiveTables.Framework.Tests.Joins
         }
 
 
-    }
-
-    class RowUpdateHandler
-    {
-        public int CurrentRowCount { get; private set; }
-        public int LastRowUpdated { get; private set; }
-        public List<int> RowsUpdated { get; private set; }
-
-        public RowUpdateHandler()
-        {
-            RowsUpdated = new List<int>();
-        }
-
-        public void OnRowUpdate(RowUpdate update)
-        {
-            RowsUpdated.Add(update.RowIndex);
-            if (update.Action == RowUpdate.RowUpdateAction.Add)
-            {
-                CurrentRowCount++;
-            }
-            else
-            {
-                CurrentRowCount--;
-            }
-            LastRowUpdated = update.RowIndex;
-        }
-    }
-
-    public class TestPropertyChangedConsumer : IReactivePropertyNotifiedConsumer
-    {
-        public string LastPropertyChanged { get; set; }
-        public List<string> PropertiesChanged { get; set; }
-
-        public TestPropertyChangedConsumer()
-        {
-            PropertiesChanged = new List<string>();
-        }
-
-        public void OnPropertyChanged(string propertyName)
-        {
-            PropertiesChanged.Add(propertyName);
-            LastPropertyChanged = propertyName;
-        }
     }
 }

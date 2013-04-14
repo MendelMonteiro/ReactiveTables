@@ -62,8 +62,13 @@
   <ItemGroup>
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="Joins\JoinTests.cs" />
+    <Compile Include="RowUpdateHandler.cs" />
+    <Compile Include="TestPropertyChangedConsumer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TableTestHelper.cs" />
     <Compile Include="ReactiveTableTests.cs" />
+    <Compile Include="TableSynchroniserTests.cs" />
+    <Compile Include="TestTableColumns.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

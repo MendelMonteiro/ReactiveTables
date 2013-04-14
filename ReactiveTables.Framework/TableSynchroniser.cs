@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables.Framework
 {
@@ -26,18 +27,17 @@ namespace ReactiveTables.Framework
             _threadMarshaller.Dispatch(
                 () =>
                     {
-                        // TODO: Handle deletes!
                         if (rowUpdate.Action == RowUpdate.RowUpdateAction.Add)
                         {
-                            if (rowUpdate.RowIndex >= _targetTable.RowCount)
-                            {
+//                            if (rowUpdate.RowIndex >= _targetTable.RowCount)
+//                            {
                                 var newRowIndex = _targetTable.AddRow();
                                 Debug.Assert(rowUpdate.RowIndex == newRowIndex);
-                            }
+//                            }
                         }
                         else if (rowUpdate.Action == RowUpdate.RowUpdateAction.Delete)
                         {
-                            
+                            _targetTable.DeleteRow(rowUpdate.RowIndex);
                         }
                     });
         }

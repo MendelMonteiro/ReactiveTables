@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
-using System.Linq;
 
 namespace ReactiveTables.Framework
 {
@@ -20,6 +19,7 @@ namespace ReactiveTables.Framework
         void SetValue<T>(string columnId, int rowIndex, T value);
         void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
         int AddRow();
+        void DeleteRow(int rowIndex);
     }
 
     public class ReactiveTable : IWritableReactiveTable
