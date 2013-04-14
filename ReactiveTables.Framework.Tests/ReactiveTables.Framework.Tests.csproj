@@ -63,6 +63,7 @@
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="Joins\JoinTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReactiveTableTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

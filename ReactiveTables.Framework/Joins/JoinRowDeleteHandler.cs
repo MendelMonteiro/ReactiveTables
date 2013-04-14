@@ -42,45 +42,33 @@ namespace ReactiveTables.Framework.Joins
 
         private void OnDelete(RowUpdate update)
         {
+            // If there is no mapping the joined row no longer exists and there's nothing to update.
+            if (!_columnRowsToJoinRows.ContainsKey(update.RowIndex)) return;
+
             var joinRowIds = _columnRowsToJoinRows[update.RowIndex];
             if (joinRowIds.Count < 0) return;
             
             List<RowUpdate> rowUpdates = new List<RowUpdate>();
 
+            // Get the key and row id to use from the first element
             var firstJoinRowId = joinRowIds.First();
             TKey key = _rows[firstJoinRowId].Value.Key;
             var colRowMappings = _rowsByKey[key].ColRowMappings;
 
+            // Make a copy as we'll modify the original inside the loop
             List<int> joinRowIdsCopy = joinRowIds.ToList();
+
+            /* 
+             * 1. Blank our side
+             * 2. If the other side has more than one entry for its row id then blank it
+             * 3. For all rows where both sides are blank delete the row
+             */
             foreach (var joinRowId in joinRowIdsCopy)
             {
                 var row = _rows[joinRowId];
                 if (!row.HasValue) throw new NotImplementedException();
 
-                /* 
-                 * Delete our side (column to row and reverse) and then for the other side:
-                 * 1. If the other side is unlinked then delete the row
-                 * 2. If there are entries with the same col row id then delete the row
-                 * 3. Otherwise just unlink
-                 */
-
-                // -- or -- 
-                
-                /* 
-                 * 1. Blank our side
-                 * 2. If the other side has more than one entry for its row id then blank it
-                 * 3. For all rows where both sides are blank delete the row
-                 */
-
-                // Always delete when we're in an inner join
-                if (_joinType == JoinType.Inner)
-                {
-                    DeleteRow(update, joinRowId, colRowMappings, _joinSide, rowUpdates, row.Value);
-                }
-                else /* Outer join */
-                {
-                    DeleteOuterJoin2(row, joinRowId, colRowMappings, update);
-                }
+                DeleteRowMapping(row, joinRowId, colRowMappings, update);
             }
 
             // 3. For all rows where both sides are blank delete the row
@@ -92,18 +80,18 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        private void DeleteOuterJoin2(Join<TKey>.Row? row, int joinRowId, List<Join<TKey>.Row> colRowMappings, RowUpdate update)
+        private void DeleteRowMapping(Join<TKey>.Row? row, int joinRowId, List<Join<TKey>.Row> colRowMappings, RowUpdate update)
         {
             // Blank our side
             BlankSide(joinRowId, colRowMappings, _joinSide, update.RowIndex);
 
             // 2. If the other side has more than one entry for its row id then blank it
             var otherSideIndex = GetOtherSideIndex(row.Value, _joinSide);
-            var isLastRowForColumnRowIndex = IsLastRowForColumnRowIndex(colRowMappings, _joinSide.GetOtherSide(), otherSideIndex);
+            var isLastRowForColumnRowIndex = IsLastRowForColumnRowIndex(colRowMappings, _joinSide.GetOtherSide(), otherSideIndex, _joinType);
 
             if (!isLastRowForColumnRowIndex)
             {
-                BlankOtherSide(joinRowId, colRowMappings, _joinSide.GetOtherSide(), GetOtherSideIndex(row.Value, _joinSide), update.RowIndex);
+                BlankOtherSide(joinRowId, colRowMappings, _joinSide.GetOtherSide(), GetOtherSideIndex(row.Value, _joinSide));
             }
         }
 
@@ -158,13 +146,13 @@ namespace ReactiveTables.Framework.Joins
         }
 
         
-        private void BlankOtherSide(int joinRowId, List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex, int otherRowIndex)
+        private void BlankOtherSide(int joinRowId, List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex)
         {
             for (int i = 0; i < colRowMappings.Count; i++)
             {
                 Join<TKey>.Row mapping = colRowMappings[i];
                 // When doing the other side we need to check the other side rowId and this side's rowId
-                if (IsRow(mapping, joinSide, rowIndex, otherRowIndex))
+                if (IsRowForOtherSide(mapping, joinSide, rowIndex))
                 {
                     RemoveReverseMapping(mapping, joinSide, joinSide == _joinSide ? _columnRowsToJoinRows : _otherColumnRowsToJoinRows);
                     if (joinSide == JoinSide.Left) mapping.LeftRowId = null;
@@ -178,7 +166,8 @@ namespace ReactiveTables.Framework.Joins
             _rows[joinRowId] = rowValue;
         }
 
-        private static void RemoveReverseMapping(Join<TKey>.Row mapping, JoinSide joinSide, Dictionary<int, HashSet<int>> columnRowsToJoinRows)
+        private static void RemoveReverseMapping(Join<TKey>.Row mapping, JoinSide joinSide, 
+            Dictionary<int, HashSet<int>> columnRowsToJoinRows)
         {
             if (joinSide == JoinSide.Left)
             {
@@ -192,54 +181,30 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-/*
-        private void DeleteOuterJoin1(RowUpdate update, Join<TKey>.Row? row, int joinRowId, List<Join<TKey>.Row> colRowMappings,
-            List<RowUpdate> rowUpdates, TKey key)
-        {
-//                    if (isLastRowForColumnRowIndex)
-//                    {
-            // Remove row
-            if (OtherSideIsUnlinked(row.Value, _joinSide))
-            {
-                DeleteRow(update, joinRowId, colRowMappings, _joinSide, rowUpdates, row.Value);
-                _rowsByKey.Remove(key);
-            }
-                // Unlink row
-            else
-            {
-                var otherSideIndex = GetOtherSideIndex(row.Value, _joinSide);
-                var isLastRowForColumnRowIndex = IsLastRowForColumnRowIndex(colRowMappings, _joinSide, otherSideIndex);
-                if (isLastRowForColumnRowIndex)
-                {
-                    _rows[joinRowId] = UnlinkRow(row.Value, _joinSide);
-                    ClearColRowMapping(colRowMappings, _joinSide, update.RowIndex);
-                }
-                else
-                {
-                    DeleteRow(update, joinRowId, colRowMappings, _joinSide, rowUpdates, row.Value);
-                }
-            }
-//                    }
-//                    else
-//                    {
-            // Remove row
-//                        DeleteRow(update, joinRowId, colRowMappings, _joinSide, rowUpdates, row.Value);
-//                    }
-        }
-*/
 
         private int GetOtherSideIndex(Join<TKey>.Row row, JoinSide joinSide)
         {
             return joinSide == JoinSide.Left ? row.RightRowId.GetValueOrDefault(-1) : row.LeftRowId.GetValueOrDefault(-1);
         }
 
-        private static bool IsLastRowForColumnRowIndex(IEnumerable<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex)
+        private static bool IsLastRowForColumnRowIndex(IEnumerable<Join<TKey>.Row> colRowMappings,
+            JoinSide joinSide, int rowIndex, JoinType joinType)
         {
             if (rowIndex < 0) return true;
+
+            // When it's an inner join we never keep the last row
+            if (joinType == JoinType.Inner) return false;
+
             if (joinSide == JoinSide.Left)
             {
+                // Don't keep the last row when if it's a sided outer join and we're on the other side
+                if (joinType == JoinType.RightOuter) return false;
+
                 return colRowMappings.Count(m => m.LeftRowId == rowIndex) <= 1;
             }
+
+            // Don't keep the last row when if it's a sided outer join and we're on the other side
+            if (joinType == JoinType.LeftOuter) return false;
             return colRowMappings.Count(m => m.RightRowId == rowIndex) <= 1;
         }
 
@@ -254,66 +219,17 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-/*
-        private bool OtherSideIsUnlinked(Join<TKey>.Row row, JoinSide joinSide)
-        {
-            return joinSide == JoinSide.Left ? !row.RightRowId.HasValue : !row.LeftRowId.HasValue;
-        }
-*/
-
-        private void DeleteRow(RowUpdate update, int joinRowId, List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, 
-            List<RowUpdate> rowUpdates, Join<TKey>.Row row)
-        {
-            // Remove the reverse mapping on the other side too.
-            if ((joinSide == JoinSide.Left && row.RightRowId.HasValue) || row.LeftRowId.HasValue)
-            {
-                var otherRowId = joinSide == JoinSide.Left ? row.RightRowId.Value : row.LeftRowId.Value;
-                _otherColumnRowsToJoinRows[otherRowId].RemoveWhere(r => r == row.RowId);
-            }
-
-            _rows[joinRowId] = null;
-            _deletedRowIds.Enqueue(joinRowId);
-            ClearColRowMapping(colRowMappings, joinSide, update.RowIndex);
-
-            rowUpdates.Add(new RowUpdate(joinRowId, RowUpdate.RowUpdateAction.Delete));
-        }
-
-        private static void ClearColRowMapping(List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex)
-        {
-            for (int i = 0; i < colRowMappings.Count; i++)
-            {
-                Join<TKey>.Row mapping = colRowMappings[i];
-                if (IsRow(mapping, joinSide, rowIndex))
-                {
-                    if (joinSide == JoinSide.Left) mapping.LeftRowId = null;
-                    else mapping.RightRowId = null;
-                    colRowMappings[i] = mapping;
-                }
-            }
-        }
-
         private static bool IsRow(Join<TKey>.Row row, JoinSide joinSide, int rowIndex)
         {
             return joinSide == JoinSide.Left ? row.LeftRowId == rowIndex : row.RightRowId == rowIndex;
         }
 
-        private static bool IsRow(Join<TKey>.Row row, JoinSide joinSide, int rowIndex, int otherRowIndex)
+        private static bool IsRowForOtherSide(Join<TKey>.Row row, JoinSide joinSide, int rowIndex)
         {
             return joinSide == JoinSide.Left
                        ? row.LeftRowId == rowIndex && row.RightRowId == null
                        : row.RightRowId == rowIndex && row.LeftRowId == null;
         }
-
-        private static Join<TKey>.Row UnlinkRow(Join<TKey>.Row row, JoinSide joinSide)
-        {
-            if (joinSide == JoinSide.Left) 
-                row.LeftRowId = null;
-            else 
-                row.RightRowId = null;
-
-            return row;
-        }
-
 
         public void OnError(Exception error)
         {

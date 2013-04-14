@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using ReactiveTables.Framework.Columns;
 using System.Linq;
 using ReactiveTables.Utils;
@@ -191,13 +192,15 @@ namespace ReactiveTables.Framework.Joins
                             // Link the left to the joined row.
                             var unlinked = keyRowsMapping.ColRowMappings[i];
                             LinkRow(ref unlinked, columnRowIndex, side);
-                            keyRowsMapping.ColRowMappings[i] = unlinked;
 
                             // If it's an inner join we need to create the new row here (when we link)
                             if (!unlinked.RowId.HasValue)
                             {
                                 joinedRowId = GetNewRowId();
+
+                                unlinked.RowId = joinedRowId; // Can't forget to update the existing row object with the new id
                                 AddNewRow(unlinked, updateRows, joinedRowId.Value);
+
                                 // Need to update the reverse mapping for the other side too as it wasn't done before
                                 var otherRowId = side == JoinSide.Left ? unlinked.RightRowId : unlinked.LeftRowId;
                                 otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
@@ -207,6 +210,7 @@ namespace ReactiveTables.Framework.Joins
                                 joinedRowId = unlinked.RowId;                                
                             }
 
+                            keyRowsMapping.ColRowMappings[i] = unlinked;
                             _rows[joinedRowId.Value] = unlinked;
 
                             // Update the reverse lookup
@@ -236,11 +240,13 @@ namespace ReactiveTables.Framework.Joins
             {
                 // First time this key has been used so create a new (unlinked on right side)
                 keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
-                joinedRowId = ShouldAddUnlinkedRow(side) ? GetNewRowId() : (int?)null;
+                bool shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
+
+                joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?)null;
                 var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
                 keyRowsMapping.ColRowMappings.Add(joinRow);
 
-                if (ShouldAddUnlinkedRow(side))
+                if (shouldAddUnlinkedRow)
                 {
                     AddNewRow(joinRow, updateRows, joinedRowId.Value);
 

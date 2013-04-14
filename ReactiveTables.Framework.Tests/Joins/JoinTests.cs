@@ -374,6 +374,135 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(rightRowId, rightRowIdNew);
         }
 
+        [Test]
+        public void TestDeleteLeftOuterJoin()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.LeftOuter);
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+
+            // Add a coule of rows and then delete the left side, make sure the right row dissapears
+            var leftRowId = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId, updateHandler, joinedTable, 401, 1);
+
+            var rightRowId = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId, updateHandler, joinedTable, 401, 801, 1);
+
+            leftTable.DeleteRow(leftRowId);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId));
+
+            // Now delete the other side so that there are still no rows left
+            rightTable.DeleteRow(rightRowId);
+            TestRowCount(updateHandler, joinedTable, 0);
+
+            var rightRowId1 = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId1, updateHandler, joinedTable, 401, 801, 0, false);
+
+            var leftRowId1 = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId1, updateHandler, joinedTable, 401, 1);
+
+            // Now delete the other side so that there is a row left
+            rightTable.DeleteRow(rightRowId1);
+            TestRowCount(updateHandler, joinedTable, 1);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId1));
+
+            // And then once the left row is gone there are no rows left
+            leftTable.DeleteRow(leftRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+        }
+
+        [Test]
+        public void TestDeleteRightOuterJoin()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.RightOuter);
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+
+            // Add a coule of rows and then delete the left side, make sure the right row stays
+            var leftRowId = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId, updateHandler, joinedTable, 401, 0, false);
+
+            var rightRowId = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId, updateHandler, joinedTable, 401, 801, 1);
+
+            leftTable.DeleteRow(leftRowId);
+            TestRowCount(updateHandler, joinedTable, 1);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+
+            // And then once the left row is gone there are no rows left
+            rightTable.DeleteRow(rightRowId);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId));
+
+            // Add a coule of rows and then delete the right side, make sure the rows dissapear
+            var rightRowId1 = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId1, updateHandler, joinedTable, 401, 801, 1);
+
+            var leftRowId1 = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId1, updateHandler, joinedTable, 401, 1);
+
+            rightTable.DeleteRow(rightRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId1));
+
+            // And now nothing changes after deleting the other side
+            leftTable.DeleteRow(leftRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+        }
+
+        [Test]
+        public void TestDeleteInnerJoin()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+
+            // Add a coule of rows and then delete the left side, make sure the row goes
+            var leftRowId = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId, updateHandler, joinedTable, 401, 0, false);
+
+            var rightRowId = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId, updateHandler, joinedTable, 401, 801, 1);
+
+            leftTable.DeleteRow(leftRowId);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+
+            // And now nothing changes after deleting the other side
+            rightTable.DeleteRow(rightRowId);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId));
+
+            // Add a coule of rows and then delete the right side, make sure the row dissapears
+            var rightRowId1 = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId1, updateHandler, joinedTable, 401, 801, 0, false);
+
+            var leftRowId1 = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId1, updateHandler, joinedTable, 401, 1);
+
+            rightTable.DeleteRow(rightRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, rightRowId1));
+
+            // And now nothing changes after deleting the other side
+            leftTable.DeleteRow(leftRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+        }
+
         private static void TestRowCount(RowUpdateHandler updateHandler, IReactiveTable joinedTable, int expectedRows)
         {
             Assert.AreEqual(expectedRows, updateHandler.CurrentRowCount);
