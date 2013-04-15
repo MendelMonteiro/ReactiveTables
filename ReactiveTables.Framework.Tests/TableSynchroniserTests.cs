@@ -15,6 +15,7 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 using NUnit.Framework;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Synchronisation;
 
 namespace ReactiveTables.Framework.Tests
 {

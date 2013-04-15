@@ -13,11 +13,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Diagnostics;
 using ReactiveTables.Framework.Marshalling;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Synchronisation
 {
     public class TableSynchroniser : IObserver<RowUpdate>, IObserver<ColumnUpdate>, IDisposable
     {

@@ -29,24 +29,24 @@ namespace ReactiveTables.Framework.Tests
             return table;
         }
 
-        public static void SetAndTestValue<T>(ReactiveTable table, int rowId, T value, string columnId)
+        public static void SetAndTestValue<T>(IWritableReactiveTable table, int rowId, T value, string columnId)
         {
             table.SetValue(columnId, rowId, value);
             Assert.AreEqual(value, table.GetValue<T>(columnId, rowId));
         }
 
-        public static void SetAndTestValue<T>(ReactiveTable setTable, ReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
+        public static void SetAndTestValue<T>(IWritableReactiveTable setTable, IReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
         {
             setTable.SetValue(columnId, setRowId, value);
             TestValue(getTable, getRowId, value, columnId);
         }
 
-        public static void TestValue<T>(ReactiveTable table, int rowId, T value, string columnId)
+        public static void TestValue<T>(IReactiveTable table, int rowId, T value, string columnId)
         {
             Assert.AreEqual(value, table.GetValue<T>(columnId, rowId));
         }
 
-        public static void SetAndTestValueNotPresent<T>(ReactiveTable setTable, ReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
+        public static void SetAndTestValueNotPresent<T>(IWritableReactiveTable setTable, IReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
         {
             setTable.SetValue(columnId, setRowId, value);
             Assert.AreEqual(default(T), getTable.GetValue<T>(columnId, getRowId));

@@ -13,12 +13,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using ReactiveTables.Framework.Marshalling;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Synchronisation
 {
     public class BatchedTableSynchroniser : IObserver<RowUpdate>, IObserver<ColumnUpdate>, IDisposable
     {
@@ -52,23 +53,26 @@ namespace ReactiveTables.Framework
                 _threadMarshaller.Dispatch(
                     () =>
                         {
-                            while (_rowUpdates.Count > 0)
+                            lock (_rowUpdates)
                             {
-                                var update = _rowUpdates.Dequeue();
-                                if (update.Action == RowUpdate.RowUpdateAction.Add)
+                                while (_rowUpdates.Count > 0)
                                 {
-                                    _targetTable.AddRow();
+                                    var update = _rowUpdates.Dequeue();
+                                    if (update.Action == RowUpdate.RowUpdateAction.Add)
+                                    {
+                                        _targetTable.AddRow();
+                                    }
+                                    else if (update.Action == RowUpdate.RowUpdateAction.Delete)
+                                    {
+                                        _targetTable.DeleteRow(update.RowIndex);
+                                    }
                                 }
-                                else if (update.Action == RowUpdate.RowUpdateAction.Delete)
-                                {
-                                    _targetTable.DeleteRow(update.RowIndex);
-                                }
-                            }
 
-                            while(_columnUpdates.Count > 0)
-                            {
-                                var update = _columnUpdates.Dequeue();
-                                _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
+                                while (_columnUpdates.Count > 0)
+                                {
+                                    var update = _columnUpdates.Dequeue();
+                                    _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
+                                }
                             }
                         });
             }

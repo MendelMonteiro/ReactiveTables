@@ -21,7 +21,7 @@ namespace ReactiveTables.Framework
 {
     public interface IReactiveTable : IObservable<RowUpdate>, ISubscribable<IObserver<RowUpdate>>, IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
     {
-        IReactiveColumn AddColumn(IReactiveColumn column);
+        void AddColumn(IReactiveColumn column);
         T GetValue<T>(string columnId, int rowIndex);
         int RowCount { get; }
         Dictionary<string, IReactiveColumn> Columns { get; }
@@ -42,6 +42,7 @@ namespace ReactiveTables.Framework
         private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
         private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
         private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
+
         private readonly FieldRowManager _rowManager = new FieldRowManager();
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
@@ -51,13 +52,17 @@ namespace ReactiveTables.Framework
             ChangeNotifier = new PropertyChangedNotifier(this);
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public ReactiveTable(IReactiveTable reactiveTable)
+        {
+            CloneColumns(reactiveTable);
+        }
+
+        public void AddColumn(IReactiveColumn column)
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
             column.Subscribe(new ColumnChangePublisher(column, _rowObservers, _columnObservers));
             // TODO: fire events for existing rows
-            return column;
         }
 
         private IReactiveColumn<T> GetColumn<T>(string columnId)
@@ -126,11 +131,6 @@ namespace ReactiveTables.Framework
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
             return new JoinedTable(this, otherTable, joiner);
-        }
-
-        public ReactiveTable(IReactiveTable reactiveTable)
-        {
-            CloneColumns(reactiveTable);
         }
 
         public void CloneColumns(IReactiveTable reactiveTable)

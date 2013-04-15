@@ -24,6 +24,7 @@ using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Joins;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Framework.Utils;
 using log4net;
 

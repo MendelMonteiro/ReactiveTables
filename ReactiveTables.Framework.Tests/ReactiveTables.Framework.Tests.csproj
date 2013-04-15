@@ -60,9 +60,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BatchedPassThroughTableTests.cs" />
     <Compile Include="BatchedTableSynchroniserTests.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="Joins\JoinTests.cs" />
+    <Compile Include="PassThroughTableTests.cs" />
     <Compile Include="RowUpdateHandler.cs" />
     <Compile Include="TestPropertyChangedConsumer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
