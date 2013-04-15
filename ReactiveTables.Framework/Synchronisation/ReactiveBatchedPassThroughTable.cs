@@ -21,15 +21,8 @@ using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
-    public class ReactiveBatchedPassThroughTable: IWritableReactiveTable
+    public class ReactiveBatchedPassThroughTable: IWritableReactiveTable, IDisposable
     {
-        struct BatchedColumnUpdate<T>
-        {
-            public string ColumnId;
-            public T Value;
-            public int RowIndex;
-        }
-
         private readonly Queue<RowUpdate> _rowUpdatesAdd = new Queue<RowUpdate>();
         private readonly Queue<RowUpdate> _rowUpdatesDelete = new Queue<RowUpdate>();
         private readonly FieldRowManager _rowManager = new FieldRowManager();
@@ -37,6 +30,7 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly IThreadMarshaller _marshaller;
         private readonly Timer _timer;
         private readonly object _shared = new object();
+        readonly Dictionary<Type, IUpdater> _updaters = new Dictionary<Type, IUpdater>();
 
         public int RowCount
         {
@@ -62,25 +56,30 @@ namespace ReactiveTables.Framework.Synchronisation
 
         private void SynchroniseChanges(object state)
         {
-            lock (_shared)
-            {
-                while (_rowUpdatesAdd.Count > 0)
-                {
-                    var add = _rowUpdatesAdd.Dequeue();
-                    _targetTable.AddRow();
-                }
+            // Don't make dispatch granular so that we don't incur as many context switches.
+            _marshaller.Dispatch(
+                () =>
+                    {
+                        lock (_shared)
+                        {
+                            while (_rowUpdatesAdd.Count > 0)
+                            {
+                                _rowUpdatesAdd.Dequeue();
+                                _targetTable.AddRow();
+                            }
 
-                foreach (var updater in _updaters)
-                {
-                    updater.Value.SetValues(_targetTable);
-                }
+                            foreach (var updater in _updaters)
+                            {
+                                updater.Value.SetValues(_targetTable);
+                            }
 
-                while (_rowUpdatesDelete.Count > 0)
-                {
-                    var delete = _rowUpdatesDelete.Dequeue();
-                    _targetTable.DeleteRow(delete.RowIndex);
-                }
-            }
+                            while (_rowUpdatesDelete.Count > 0)
+                            {
+                                var delete = _rowUpdatesDelete.Dequeue();
+                                _targetTable.DeleteRow(delete.RowIndex);
+                            }
+                        }
+                    });
         }
 
         public IDisposable Subscribe(IObserver<RowUpdate> observer)
@@ -113,40 +112,11 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
-        private IReactiveColumn<T> GetColumn<T>(string columnId)
-        {
-            throw new NotImplementedException();
-        }
-
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
             throw new NotImplementedException();
         }
 
-        interface IUpdater
-        {
-            void SetValues(ReactiveTable targetTable);
-        }
-
-        class Updater<T> : IUpdater
-        {
-            readonly Queue<BatchedColumnUpdate<T>> _updates = new Queue<BatchedColumnUpdate<T>>();
-             public void Add(BatchedColumnUpdate<T> update)
-             {
-                 _updates.Enqueue(update);
-             }
-
-            public void SetValues(ReactiveTable targetTable)
-            {
-                while (_updates.Count > 0)
-                {
-                    var update = _updates.Dequeue();
-                    targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
-                }
-            }
-        }
-
-        readonly Dictionary<Type, IUpdater> _updaters = new Dictionary<Type, IUpdater>();
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
         {
@@ -165,9 +135,7 @@ namespace ReactiveTables.Framework.Synchronisation
                     updater = (Updater<T>) _updaters[type];
                 }
                 updater.Add(update);
-//                _columnUpdates.Enqueue(update);
             }
-//            _marshaller.Dispatch(() => _targetTable.SetValue(columnId, rowIndex, value));
         }
 
         public void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
@@ -183,7 +151,6 @@ namespace ReactiveTables.Framework.Synchronisation
             {
                 _rowUpdatesAdd.Enqueue(update);
             }
-//            _marshaller.Dispatch(() => _targetTable.AddRow());
             return rowIndex;
         }
 
@@ -195,7 +162,41 @@ namespace ReactiveTables.Framework.Synchronisation
             {
                 _rowUpdatesDelete.Enqueue(update);
             }
-//            _marshaller.Dispatch(() => _targetTable.DeleteRow(rowIndex));
+        }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
+        }
+    }
+
+    struct BatchedColumnUpdate<T>
+    {
+        public string ColumnId;
+        public T Value;
+        public int RowIndex;
+    }
+
+    interface IUpdater
+    {
+        void SetValues(ReactiveTable targetTable);
+    }
+
+    class Updater<T> : IUpdater
+    {
+        readonly Queue<BatchedColumnUpdate<T>> _updates = new Queue<BatchedColumnUpdate<T>>();
+        public void Add(BatchedColumnUpdate<T> update)
+        {
+            _updates.Enqueue(update);
+        }
+
+        public void SetValues(ReactiveTable targetTable)
+        {
+            while (_updates.Count > 0)
+            {
+                var update = _updates.Dequeue();
+                targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
+            }
         }
     }
 }

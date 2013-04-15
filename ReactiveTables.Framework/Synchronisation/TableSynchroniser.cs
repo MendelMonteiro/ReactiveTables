@@ -58,6 +58,7 @@ namespace ReactiveTables.Framework.Synchronisation
         public void OnNext(ColumnUpdate update)
         {
             _threadMarshaller.Dispatch(
+                // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
                 () => _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex));
         }
 

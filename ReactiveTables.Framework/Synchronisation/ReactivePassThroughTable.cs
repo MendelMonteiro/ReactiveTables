@@ -47,14 +47,6 @@ namespace ReactiveTables.Framework.Synchronisation
             _marshaller = marshaller;
         }
 
-        public void CloneColumns(IReactiveTable reactiveTable)
-        {
-            foreach (var column in reactiveTable.Columns)
-            {
-                AddColumn(column.Value.Clone());
-            }
-        }
-
         public IDisposable Subscribe(IObserver<RowUpdate> observer)
         {
             throw new NotImplementedException();
@@ -81,11 +73,6 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public T GetValue<T>(string columnId, int rowIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        private IReactiveColumn<T> GetColumn<T>(string columnId)
         {
             throw new NotImplementedException();
         }
