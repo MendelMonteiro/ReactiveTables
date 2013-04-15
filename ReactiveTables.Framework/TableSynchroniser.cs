@@ -27,7 +27,7 @@ namespace ReactiveTables.Framework
         private readonly IDisposable _rowSubscription;
         private readonly IDisposable _columnSubscription;
 
-        public TableSynchroniser(ReactiveTable sourceTable, IWritableReactiveTable targetTable, IThreadMarshaller threadMarshaller)
+        public TableSynchroniser(IReactiveTable sourceTable, IWritableReactiveTable targetTable, IThreadMarshaller threadMarshaller)
         {
             _sourceTable = sourceTable;
             _targetTable = targetTable;

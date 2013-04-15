@@ -15,6 +15,7 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -23,6 +24,8 @@ using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Joins;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Utils;
+using log4net;
 
 namespace ReactiveTables
 {
@@ -31,6 +34,8 @@ namespace ReactiveTables
     /// </summary>
     public partial class App : Application
     {
+        private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly TimeSpan _updateDelay = TimeSpan.FromMilliseconds(250);
         public static IReactiveTable Humans { get; private set; }
         public static IReactiveTable Accounts { get; private set; }
@@ -42,6 +47,9 @@ namespace ReactiveTables
         public App()
         {
             Console.WriteLine("In constructor");
+
+            log4net.Config.XmlConfigurator.Configure();
+            Exit += (sender, args) => _log.Debug(ProcessInfoDumper.GetProcessInfo());
 
             Humans = new ReactiveTable();
             List<IReactiveColumn> baseHumanColumns = new List<IReactiveColumn>
