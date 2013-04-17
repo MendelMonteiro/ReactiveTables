@@ -14,6 +14,7 @@ You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ReactiveTables.Framework.Columns
 {
@@ -88,6 +89,7 @@ namespace ReactiveTables.Framework.Columns
 
         public override void SetValue(int rowIndex, T value)
         {
+//            Debug.Assert(rowIndex < Fields.Count);
             ReactiveField<T> field = Fields[rowIndex];
             field.SetInternalFieldValue(value);
             NotifyObserversOnNext(rowIndex);

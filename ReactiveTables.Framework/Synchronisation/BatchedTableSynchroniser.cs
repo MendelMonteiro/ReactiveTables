@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
@@ -31,6 +32,7 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly Timer _timer;
         private readonly Queue<RowUpdate> _rowUpdates = new Queue<RowUpdate>();
         private readonly Queue<ColumnUpdate> _columnUpdates = new Queue<ColumnUpdate>();
+        private readonly object _shared = new object();
 
         public BatchedTableSynchroniser(ReactiveTable sourceTable, IWritableReactiveTable targetTable,
                                         IThreadMarshaller threadMarshaller, TimeSpan delay)
@@ -46,41 +48,43 @@ namespace ReactiveTables.Framework.Synchronisation
 
         private void SynchroniseChanges(object state)
         {
-            lock (_rowUpdates)
+            // Make copies to control exactly when we lock
+            List<RowUpdate> rowUpdates;
+            List<ColumnUpdate> colUpdates;
+            lock (_shared)
             {
-                if (_rowUpdates.Count == 0 && _rowUpdates.Count == 0) return;
+                if (_rowUpdates.Count == 0 && _columnUpdates.Count == 0) return;
 
-                _threadMarshaller.Dispatch(
-                    () =>
-                        {
-                            lock (_rowUpdates)
-                            {
-                                while (_rowUpdates.Count > 0)
-                                {
-                                    var update = _rowUpdates.Dequeue();
-                                    if (update.Action == RowUpdate.RowUpdateAction.Add)
-                                    {
-                                        _targetTable.AddRow();
-                                    }
-                                    else if (update.Action == RowUpdate.RowUpdateAction.Delete)
-                                    {
-                                        _targetTable.DeleteRow(update.RowIndex);
-                                    }
-                                }
-
-                                while (_columnUpdates.Count > 0)
-                                {
-                                    var update = _columnUpdates.Dequeue();
-                                    _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
-                                }
-                            }
-                        });
+                rowUpdates = _rowUpdates.DequeueAllToList();
+                colUpdates = _columnUpdates.DequeueAllToList();
             }
+
+            _threadMarshaller.Dispatch(
+                () =>
+                    {
+                        foreach (var update in rowUpdates)
+                        {
+                            if (update.Action == RowUpdate.RowUpdateAction.Add)
+                            {
+                                _targetTable.AddRow();
+                            }
+                            else if (update.Action == RowUpdate.RowUpdateAction.Delete)
+                            {
+                                _targetTable.DeleteRow(update.RowIndex);
+                            }
+                        }
+
+                        // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
+                        foreach (var update in colUpdates)
+                        {
+                            _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
+                        }
+                    });
         }
 
         public void OnNext(RowUpdate rowUpdate)
         {
-            lock (_rowUpdates)
+            lock (_shared)
             {
                 _rowUpdates.Enqueue(rowUpdate);
             }
@@ -88,7 +92,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void OnNext(ColumnUpdate columnUpdate)
         {
-            lock (_rowUpdates)
+            lock (_shared)
             {
                 _columnUpdates.Enqueue(columnUpdate);
             }

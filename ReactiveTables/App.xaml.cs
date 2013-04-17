@@ -59,8 +59,7 @@ namespace ReactiveTables
                                                         new ReactiveColumn<string>(HumanColumns.NameColumn)
                                                     };
 
-            ReactiveTable humansWire = new ReactiveTable();
-            SetupHumanTable((IWritableReactiveTable) Humans, baseHumanColumns, humansWire, Dispatcher);
+            IWritableReactiveTable humansWire = SetupHumanTable((IWritableReactiveTable) Humans, baseHumanColumns, Dispatcher);
 
             List<IReactiveColumn> baseAccountColumns = new List<IReactiveColumn>
                                                            {
@@ -69,8 +68,7 @@ namespace ReactiveTables
                                                                new ReactiveColumn<decimal>(AccountColumns.AccountBalance)
                                                            };
             Accounts = new ReactiveTable();
-            ReactiveTable accountsWire = new ReactiveTable();
-            SetupAccountTable((IWritableReactiveTable) Accounts, baseAccountColumns, accountsWire, Dispatcher);
+            IWritableReactiveTable accountsWire = SetupAccountTable((IWritableReactiveTable) Accounts, baseAccountColumns, Dispatcher);
 
             AccountHumans = SetupAccountHumansTable(Accounts, Humans);
 
@@ -98,18 +96,18 @@ namespace ReactiveTables
             return joinedTable;
         }
 
-        private void SetupAccountTable(IWritableReactiveTable accounts, List<IReactiveColumn> baseAccountColumns,
-            ReactiveTable accountsWire, Dispatcher dispatcher)
+        private ReactiveBatchedPassThroughTable SetupAccountTable(IWritableReactiveTable accounts, List<IReactiveColumn> baseAccountColumns, Dispatcher dispatcher)
         {
             baseAccountColumns.ForEach(c => accounts.AddColumn(c));
 
             // Create the wire table
-            accountsWire.CloneColumns(accounts);
-            new BatchedTableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
+            var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
 
             AddAccount(accountsWire, 1, 1, 10m);
             AddAccount(accountsWire, 2, 1, 100m);
             AddAccount(accountsWire, 3, 2, 10000m);
+
+            return accountsWire;
         }
 
         private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
@@ -120,13 +118,12 @@ namespace ReactiveTables
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
-        private void SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, ReactiveTable humansWire, Dispatcher dispatcher)
+        private IWritableReactiveTable SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, Dispatcher dispatcher)
         {
             baseColumns.ForEach(c => humans.AddColumn(c));
 
             // Wire up the two tables before the dynamic columns
-            humansWire.CloneColumns(Humans);
-            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
+            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
 
             humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                  HumanColumns.IdNameColumn,
@@ -137,6 +134,8 @@ namespace ReactiveTables
 
             AddHuman(humansWire, 1, "Mendel");
             AddHuman(humansWire, 2, "Marie");
+
+            return humansWire;
         }
 
         private static void AddHuman(IWritableReactiveTable humans, int id, string name)
@@ -159,10 +158,13 @@ namespace ReactiveTables
             while (true)
             {
                 Thread.Sleep(1000);
-                AddHuman(humans, id, "Human #" + id);
+                for (int i = 0; i < 5; i++)
+                {
+                    AddHuman(humans, id, "Human #" + id);
 
-                UpdateRandomHuman(humans, id, random);
-                id++;
+                    UpdateRandomHuman(humans, id, random);
+                    id++;
+                }
             }
         }
 
@@ -170,8 +172,8 @@ namespace ReactiveTables
         {
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
-            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, "*" + currentValue);
+//            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
+            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, 10)));
 //            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
         }
 
@@ -184,10 +186,14 @@ namespace ReactiveTables
             while (true)
             {
                 Thread.Sleep(1000);
-                AddAccount(accounts, id, id, 66666m);
 
-                UpdateRandomAccount(accounts, id, random);
-                id++;
+                for (int i = 0; i < 5; i++)
+                {
+                    AddAccount(accounts, id, id, 66666m);
+
+                    UpdateRandomAccount(accounts, id, random);
+                    id++;
+                }
             }            
         }
 
@@ -195,7 +201,7 @@ namespace ReactiveTables
         {
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
-            var currentBalance = accounts.GetValue<decimal>(AccountColumns.AccountBalance, rowIndex);
+            var currentBalance = random.Next(0, 100000);// accounts.GetValue<decimal>(AccountColumns.AccountBalance, rowIndex);
             decimal offset = id%2 == 0 ? 3242 : -7658;
             accounts.SetValue(AccountColumns.AccountBalance, rowIndex, currentBalance + offset);
         }
