@@ -11,7 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
 using System.Collections.Generic;
@@ -37,13 +37,16 @@ namespace ReactiveTables
     {
         private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly TimeSpan _updateDelay = TimeSpan.FromMilliseconds(250);
-        public static IReactiveTable Humans { get; private set; }
+        private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(100);
+        private const int DataDelay = 0;
+        private const int GuiDisplayDelay = 0;
+        private static IReactiveTable Humans { get; set; }
         public static IReactiveTable Accounts { get; private set; }
         public static IReactiveTable AccountHumans { get; private set; }
 
-        private const int humanOffset = 1000;
-        private const int accountOffset = 10000;
+        private const int HumanOffset = 1000;
+        private const int AccountOffset = 10000;
+        private const int DataPauseDelay = 500;
 
         public App()
         {
@@ -79,6 +82,8 @@ namespace ReactiveTables
             Thread accountDataThread = new Thread(StreamAccountData);
             accountDataThread.IsBackground = true;
             accountDataThread.Start(accountsWire);
+
+            Thread.Sleep(GuiDisplayDelay);
         }
 
         private IReactiveTable SetupAccountHumansTable(IReactiveTable accounts, IReactiveTable humans)
@@ -96,12 +101,14 @@ namespace ReactiveTables
             return joinedTable;
         }
 
-        private ReactiveBatchedPassThroughTable SetupAccountTable(IWritableReactiveTable accounts, List<IReactiveColumn> baseAccountColumns, Dispatcher dispatcher)
+        private IWritableReactiveTable SetupAccountTable(IWritableReactiveTable accounts, List<IReactiveColumn> baseAccountColumns, Dispatcher dispatcher)
         {
-            baseAccountColumns.ForEach(c => accounts.AddColumn(c));
+            baseAccountColumns.ForEach(accounts.AddColumn);
 
             // Create the wire table
-            var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
+//            var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
+            var accountsWire = new ReactiveTable(accounts);
+            new BatchedTableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
 
             AddAccount(accountsWire, 1, 1, 10m);
             AddAccount(accountsWire, 2, 1, 100m);
@@ -113,17 +120,19 @@ namespace ReactiveTables
         private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
         {
             int rowId = accountsWire.AddRow();
-            accountsWire.SetValue(AccountColumns.IdColumn, rowId, accountOffset + accountId);
-            accountsWire.SetValue(AccountColumns.HumanId, rowId, humanOffset + humanId);
+            accountsWire.SetValue(AccountColumns.IdColumn, rowId, AccountOffset + accountId);
+            accountsWire.SetValue(AccountColumns.HumanId, rowId, HumanOffset + humanId);
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
         private IWritableReactiveTable SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, Dispatcher dispatcher)
         {
-            baseColumns.ForEach(c => humans.AddColumn(c));
+            baseColumns.ForEach(humans.AddColumn);
 
             // Wire up the two tables before the dynamic columns
-            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
+//            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
+            var humansWire = new ReactiveTable(humans);
+            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
 
             humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                  HumanColumns.IdNameColumn,
@@ -141,7 +150,7 @@ namespace ReactiveTables
         private static void AddHuman(IWritableReactiveTable humans, int id, string name)
         {
             int rowIndex = humans.AddRow();
-            humans.SetValue(HumanColumns.IdColumn, rowIndex, humanOffset + id);
+            humans.SetValue(HumanColumns.IdColumn, rowIndex, HumanOffset + id);
             humans.SetValue(HumanColumns.NameColumn, rowIndex, name);
         }
 
@@ -153,12 +162,12 @@ namespace ReactiveTables
         {
             var random = new Random();
             IWritableReactiveTable humans = (IWritableReactiveTable)o;
-            Thread.Sleep(6000);
+            Thread.Sleep(DataDelay);
             var id = 3;
             while (true)
             {
-                Thread.Sleep(1000);
-                for (int i = 0; i < 5; i++)
+                Thread.Sleep(DataPauseDelay);
+                for (int i = 0; i < 10; i++)
                 {
                     AddHuman(humans, id, "Human #" + id);
 
@@ -168,26 +177,17 @@ namespace ReactiveTables
             }
         }
 
-        private static void UpdateRandomHuman(IWritableReactiveTable humans, int maxId, Random random)
-        {
-            int id = random.Next(1, maxId);
-            int rowIndex = id - 1;
-//            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, 10)));
-//            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
-        }
-
         private static void StreamAccountData(object o)
         {
             var random = new Random();
             IWritableReactiveTable accounts = (IWritableReactiveTable)o;
-            Thread.Sleep(3000);
+            Thread.Sleep(DataDelay);
             var id = 3;
             while (true)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(DataPauseDelay);
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     AddAccount(accounts, id, id, 66666m);
 
@@ -195,6 +195,15 @@ namespace ReactiveTables
                     id++;
                 }
             }            
+        }
+
+        private static void UpdateRandomHuman(IWritableReactiveTable humans, int maxId, Random random)
+        {
+            int id = random.Next(1, maxId);
+            int rowIndex = id - 1;
+//            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
+            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, 10)));
+//            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
         }
 
         private static void UpdateRandomAccount(IWritableReactiveTable accounts, int maxId, Random random)

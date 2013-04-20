@@ -44,7 +44,9 @@
         <ScrollViewer Grid.Row="1" Grid.Column="5">
             <StackPanel>
                 <Label Content="Account details joined" HorizontalAlignment="Center" />
-                <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}">
+                <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}" VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
+                          VirtualizingPanel.CacheLength="2">
                 </DataGrid>
                 <!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->
             </StackPanel>

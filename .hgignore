@@ -6,6 +6,10 @@ ReactiveTables.Framework.Tests/bin/.*
 ReactiveTables.Framework.Tests/obj/.*
 ReactiveTables.Framework/bin/.*
 ReactiveTables.Framework/obj/.*
+ReactiveTables.Framework.PerformanceTests/bin/.*
+ReactiveTables.Framework.PerformanceTests/obj/.*
+.*user
+.*suo
 syntax: glob
 ReactiveTables.sln.DotSettings.user
 ReactiveTables.v11.suo
