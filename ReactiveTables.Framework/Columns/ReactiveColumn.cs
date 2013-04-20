@@ -33,7 +33,7 @@ namespace ReactiveTables.Framework.Columns
     public interface IReactiveColumn<T> : IReactiveColumn
     {
         void SetValue(int rowIndex, T value);
-        IReactiveField<T> GetValue(int index);
+        T GetValue(int index);
     }
 
     public interface IReactiveJoinableColumn
@@ -46,19 +46,18 @@ namespace ReactiveTables.Framework.Columns
         public ReactiveColumn(string columnId)
         {
             ColumnId = columnId;
-            Fields = new List<ReactiveField<T>>();
+            Fields = new List<T>();
         }
 
         public override void AddField(int rowIndex)
         {
-            var reactiveField = new ReactiveField<T>();
             if (rowIndex < Fields.Count)
             {
-                Fields[rowIndex] = reactiveField;
+                Fields[rowIndex] = default(T);
             }
             else
             {
-                Fields.Add(reactiveField);
+                Fields.Add(default(T));
             }
         }
 
@@ -71,27 +70,26 @@ namespace ReactiveTables.Framework.Columns
         {
             // Assumes that the source column is of the same type.
             var sourceCol = (IReactiveColumn<T>)sourceColumn;
-            SetValue(rowIndex, sourceCol.GetValue(sourceRowIndex).Value);
+            SetValue(rowIndex, sourceCol.GetValue(sourceRowIndex));
         }
 
         public override void RemoveField(int rowIndex)
         {
-            Fields[rowIndex] = null;
+            Fields[rowIndex] = default(T);
         }
 
-        private List<ReactiveField<T>> Fields { get; set; }
+        private List<T> Fields { get; set; }
 
-        public override IReactiveField<T> GetValue(int rowIndex)
+        public override T GetValue(int rowIndex)
         {
-            if (rowIndex < 0 || Fields[rowIndex] == null) return ReactiveField<T>.Empty;
+            if (rowIndex < 0 || Fields[rowIndex] == null) return default(T);
             return Fields[rowIndex];
         }
 
         public override void SetValue(int rowIndex, T value)
         {
 //            Debug.Assert(rowIndex < Fields.Count);
-            ReactiveField<T> field = Fields[rowIndex];
-            field.SetInternalFieldValue(value);
+            Fields[rowIndex] = value;
             NotifyObserversOnNext(rowIndex);
         }
     }

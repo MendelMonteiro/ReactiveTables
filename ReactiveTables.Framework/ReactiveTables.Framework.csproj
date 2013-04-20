@@ -63,7 +63,6 @@
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
-    <Compile Include="Columns\Calculated\ReactiveVirtualField.cs" />
     <Compile Include="Columns\ColumnSubscriptionAggregator.cs" />
     <Compile Include="Columns\FieldRowManager.cs" />
     <Compile Include="Columns\ReactiveColumn.cs" />
@@ -83,7 +82,6 @@
     <Compile Include="Joins\JoinRowDeleteHandler.cs" />
     <Compile Include="Joins\JoinSide.cs" />
     <Compile Include="PropertyChangedNotifier.cs" />
-    <Compile Include="ReactiveField.cs" />
     <Compile Include="ReactiveTable.cs" />
     <Compile Include="RowUpdate.cs" />
     <Compile Include="RowUpdateAggregator.cs" />

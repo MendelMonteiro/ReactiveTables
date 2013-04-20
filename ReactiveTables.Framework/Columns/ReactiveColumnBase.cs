@@ -67,7 +67,7 @@ namespace ReactiveTables.Framework.Columns
 
         public abstract void SetValue(int rowIndex, T value);
 
-        public abstract IReactiveField<T> GetValue(int rowIndex);
+        public abstract T GetValue(int rowIndex);
 
         private class ReactiveColumnToken : IDisposable
         {

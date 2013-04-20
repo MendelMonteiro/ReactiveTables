@@ -26,7 +26,7 @@ namespace ReactiveTables.Framework.PerformanceTests
     [TestFixture]
     public class PerformanceTests
     {
-        const int RowCount = 1000000;
+        const int RowCount = 100000;
 
         [Test]
         public void TestWriteToTable()
@@ -113,7 +113,7 @@ namespace ReactiveTables.Framework.PerformanceTests
             {
                 Thread.Sleep(100);
             }
-            Thread.Sleep(500);
+            Thread.Sleep(600);
 
             Assert.AreEqual(uiTable.RowCount, wireTable.RowCount);
         }

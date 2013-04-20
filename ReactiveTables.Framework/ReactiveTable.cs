@@ -70,14 +70,9 @@ namespace ReactiveTables.Framework
             return (IReactiveColumn<T>) Columns[columnId];
         }
 
-        private IReactiveField<T> GetField<T>(string columnId, int index)
-        {
-            return GetColumn<T>(columnId).GetValue(index);
-        }
-
         public T GetValue<T>(string columnId, int rowIndex)
         {
-            return GetColumn<T>(columnId).GetValue(rowIndex).Value;
+            return GetColumn<T>(columnId).GetValue(rowIndex);
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)

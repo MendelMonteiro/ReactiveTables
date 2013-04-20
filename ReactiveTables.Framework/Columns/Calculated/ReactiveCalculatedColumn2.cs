@@ -73,18 +73,18 @@ namespace ReactiveTables.Framework.Columns.Calculated
             }
         }*/
 
-        public override IReactiveField<T> GetValue(int rowIndex)
+        public override T GetValue(int rowIndex)
         {
             // TODO: cache values??
             var rowIndex1 = _joiner.GetRowIndex(_inputColumn1, rowIndex);
             var rowIndex2 = _joiner.GetRowIndex(_inputColumn2, rowIndex);
-            return GetValue(_inputColumn1.GetValue(rowIndex1).Value, _inputColumn2.GetValue(rowIndex2).Value);
+            return GetValue(_inputColumn1.GetValue(rowIndex1), _inputColumn2.GetValue(rowIndex2));
         }
 
-        private IReactiveField<T> GetValue(T1 value1, T2 value2)
+        private T GetValue(T1 value1, T2 value2)
         {
             var value = _converter(value1, value2);
-            return new ReactiveVirtualField<T> {Value = value};
+            return value;
         }
 
         public void SetJoiner(IReactiveTableJoiner joiner)

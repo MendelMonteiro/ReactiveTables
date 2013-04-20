@@ -94,7 +94,7 @@ namespace ReactiveTables.Framework
                 return _rightTable.GetValue<T>(columnId, _joiner.GetRowIndex(column, rowIndex));
             }
             // Otherwise return calc'ed columns
-            return GetColumn<T>(columnId).GetValue(rowIndex).Value;
+            return GetColumn<T>(columnId).GetValue(rowIndex);
         }
 
         private IReactiveColumn<T> GetColumn<T>(string columnId)
