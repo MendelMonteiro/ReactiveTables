@@ -19,7 +19,8 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
-    public interface IReactiveTable : IObservable<RowUpdate>, ISubscribable<IObserver<RowUpdate>>, IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
+    public interface IReactiveTable : IObservable<RowUpdate>, ISubscribable<IObserver<RowUpdate>>, 
+                                      IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
     {
         void AddColumn(IReactiveColumn column);
         T GetValue<T>(string columnId, int rowIndex);
