@@ -19,6 +19,7 @@ namespace ReactiveTables.Framework.Utils
 {
     /// <summary>
     /// Can we use a HashSet<Tuple<K, V>> where the hashcode is distributed well enought?
+    /// TODO: Use something a little bit more memory efficient like a RedBlack tree that 
     /// </summary>
     /// <typeparam name="TLeft"></typeparam>
     /// <typeparam name="TRight"></typeparam>

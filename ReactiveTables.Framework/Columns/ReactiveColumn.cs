@@ -83,8 +83,12 @@ namespace ReactiveTables.Framework.Columns
 
         public override void RemoveField(int rowIndex)
         {
+            if (_index != null)
+            {
+                T value = Fields[rowIndex];
+                _index.RemoveRowValue(value);
+            }
             Fields[rowIndex] = default(T);
-            if (_index != null) _index.RemoveRowValue(rowIndex);
         }
 
         private List<T> Fields { get; set; }
