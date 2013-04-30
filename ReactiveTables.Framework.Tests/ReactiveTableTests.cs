@@ -1,18 +1,18 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using NUnit.Framework;
 
 namespace ReactiveTables.Framework.Tests
@@ -86,6 +86,23 @@ namespace ReactiveTables.Framework.Tests
 
             table.DeleteRow(rowId1);
             Assert.AreEqual(0, table.RowCount);
+        }
+
+        [Test]
+        public void TestSearch()
+        {
+            var table = TableTestHelper.CreateIndexedReactiveTable();
+
+            var addedRowIndex = table.AddRow();
+            table.SetValue(TestTableColumns.IdColumn, addedRowIndex, 1);
+            table.SetValue(TestTableColumns.StringColumn, addedRowIndex, "blah");
+            table.SetValue(TestTableColumns.DecimalColumn, addedRowIndex, 324.34m);
+
+            int rowIndex = table.Find(TestTableColumns.StringColumn, "blah");
+            Assert.AreEqual(addedRowIndex, rowIndex);
+
+            rowIndex = table.Find(TestTableColumns.StringColumn, "blah2");
+            Assert.AreEqual(-1, rowIndex);
         }
     }
 }

@@ -1,20 +1,20 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace ReactiveTables.Framework.Columns
 {
@@ -24,6 +24,7 @@ namespace ReactiveTables.Framework.Columns
         /// Should be an int?
         /// </summary>
         string ColumnId { get; }
+
         void AddField(int rowIndex);
         IReactiveColumn Clone();
         void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
@@ -34,6 +35,7 @@ namespace ReactiveTables.Framework.Columns
     {
         void SetValue(int rowIndex, T value);
         T GetValue(int index);
+        int Find(T value);
     }
 
     public interface IReactiveJoinableColumn
@@ -43,8 +45,14 @@ namespace ReactiveTables.Framework.Columns
 
     public class ReactiveColumn<T> : ReactiveColumnBase<T>
     {
-        public ReactiveColumn(string columnId)
+        /// <summary>
+        /// TODO: Try to implement the index as an observer of the column thus decoupling them
+        /// </summary>
+        private readonly IColumnIndex<T> _index;
+
+        public ReactiveColumn(string columnId, IColumnIndex<T> index = null)
         {
+            _index = index;
             ColumnId = columnId;
             Fields = new List<T>();
         }
@@ -69,28 +77,35 @@ namespace ReactiveTables.Framework.Columns
         public override void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
         {
             // Assumes that the source column is of the same type.
-            var sourceCol = (IReactiveColumn<T>)sourceColumn;
+            var sourceCol = (IReactiveColumn<T>) sourceColumn;
             SetValue(rowIndex, sourceCol.GetValue(sourceRowIndex));
         }
 
         public override void RemoveField(int rowIndex)
         {
             Fields[rowIndex] = default(T);
+            if (_index != null) _index.RemoveRowValue(rowIndex);
         }
 
         private List<T> Fields { get; set; }
 
         public override T GetValue(int rowIndex)
         {
-            if (rowIndex < 0 || Fields[rowIndex] == null) return default(T);
-            return Fields[rowIndex];
+            return rowIndex < 0 ? default(T) : Fields[rowIndex];
         }
 
         public override void SetValue(int rowIndex, T value)
         {
-//            Debug.Assert(rowIndex < Fields.Count);
             Fields[rowIndex] = value;
+            if (_index != null) _index.SetRowValue(rowIndex, value);
             NotifyObserversOnNext(rowIndex);
+        }
+
+        public override int Find(T value)
+        {
+            if (_index == null) throw new NotSupportedException("No index defined for this column " + ColumnId);
+
+            return _index.GetRow(value);
         }
     }
 }

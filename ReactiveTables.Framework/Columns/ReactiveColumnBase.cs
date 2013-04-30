@@ -85,5 +85,7 @@ namespace ReactiveTables.Framework.Columns
                 column.Unsubscribe(_observer);
             }
         }
+
+        public abstract int Find(T value);
     }
 }

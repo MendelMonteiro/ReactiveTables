@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\ReactiveList.cs" />
+    <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Synchronisation\ReactivePassThroughTable.cs" />
     <Compile Include="Synchronisation\TableSynchroniser.cs" />
     <Compile Include="UI\ReactiveViewModelBase.cs" />
+    <Compile Include="Utils\BidirectionalDictionary.cs" />
     <Compile Include="Utils\DictionaryExtensions.cs" />
     <Compile Include="Marshalling\WpfThreadMarshaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

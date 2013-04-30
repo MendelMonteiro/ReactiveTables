@@ -81,6 +81,11 @@ namespace ReactiveTables.Framework.Columns.Calculated
             return GetValue(_inputColumn1.GetValue(rowIndex1), _inputColumn2.GetValue(rowIndex2));
         }
 
+        public override int Find(T value)
+        {
+            throw new NotImplementedException();
+        }
+
         private T GetValue(T1 value1, T2 value2)
         {
             var value = _converter(value1, value2);

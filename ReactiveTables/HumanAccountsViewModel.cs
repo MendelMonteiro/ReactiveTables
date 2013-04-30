@@ -62,6 +62,8 @@ namespace ReactiveTables
             get { return _humanAccounts.GetValue<string>(HumanAccountColumns.AccountDetails, CurrentRowIndex); }
         }
 
+        public IReactiveTable Table { get { return _humanAccounts; } }
+
         public DelegateCommand Change { get; private set; }
     }
 }

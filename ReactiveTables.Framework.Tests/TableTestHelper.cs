@@ -29,6 +29,15 @@ namespace ReactiveTables.Framework.Tests
             return table;
         }
 
+        public static ReactiveTable CreateIndexedReactiveTable()
+        {
+            ReactiveTable table = new ReactiveTable();
+            table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn, new ColumnIndex<int>()));
+            table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn, new ColumnIndex<string>()));
+            table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn, new ColumnIndex<decimal>()));
+            return table;
+        }
+
         public static void SetAndTestValue<T>(IWritableReactiveTable table, int rowId, T value, string columnId)
         {
             table.SetValue(columnId, rowId, value);

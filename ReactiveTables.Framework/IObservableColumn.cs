@@ -17,6 +17,9 @@ using System;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// TODO: Modify this so that it we return ColumnUpdates that have both the before and after values, also return removes
+    /// </summary>
     public interface IObservableColumn
     {
         IDisposable Subscribe(IColumnObserver observer);             

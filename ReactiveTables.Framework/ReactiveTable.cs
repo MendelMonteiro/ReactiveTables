@@ -158,5 +158,11 @@ namespace ReactiveTables.Framework
         {
             _columnObservers.Remove(observer);
         }
+
+        public int Find<T>(string columnId, T value)
+        {
+            var column = GetColumn<T>(columnId);
+            return column.Find(value);
+        }
     }
 }
