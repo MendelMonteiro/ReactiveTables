@@ -13,6 +13,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveTables.Framework;
@@ -30,8 +32,7 @@ namespace ReactiveTables
             _humans = humans;
             Humans = new ObservableCollection<HumanViewModel>();
 
-            var subscription = _humans.Subscribe(
-                DelegateObserver<RowUpdate>.CreateDelegateObserver(update => Humans.Add(new HumanViewModel(_humans, update.RowIndex))));
+            var subscription = _humans.Subscribe<RowUpdate>(update => Humans.Add(new HumanViewModel(_humans, update.RowIndex)));
             
             CurrentHuman = Humans.LastOrDefault();
 //            var id = 3;

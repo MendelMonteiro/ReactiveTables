@@ -13,6 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading;
 using NUnit.Framework;
 
 namespace ReactiveTables.Framework.Tests
@@ -111,6 +117,29 @@ namespace ReactiveTables.Framework.Tests
 
             rowIndex = table.Find(TestTableColumns.StringColumn, "hello");
             Assert.AreEqual(addedRowIndex, rowIndex);
+        }
+
+        [Test]
+        public void TestFilter()
+        {
+            var table = TableTestHelper.CreateIndexedReactiveTable();
+
+            var row1 = AddRow(table, 1, "blah", 324.34m);
+            var row2 = AddRow(table, 2, "foo", 500.34m);
+            var row3 = AddRow(table, 3, "bar", 1000.34m);
+            
+//            IReactiveTable filteredTable = table.Filter(TestTableColumns.StringColumn, s => s == "blah");
+
+//            Assert.AreEqual("blah", table.GetValue<string>(TestTableColumns.StringColumn, row1));
+        }
+
+        private static int AddRow(ReactiveTable table, int id, string stringVal, decimal decimalVal)
+        {
+            var row1 = table.AddRow();
+            table.SetValue(TestTableColumns.IdColumn, row1, id);
+            table.SetValue(TestTableColumns.StringColumn, row1, stringVal);
+            table.SetValue(TestTableColumns.DecimalColumn, row1, decimalVal);
+            return row1;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Synchronisation;
 
@@ -14,7 +15,7 @@ namespace ReactiveTables.Framework.Tests
             ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -38,7 +39,7 @@ namespace ReactiveTables.Framework.Tests
             ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -70,7 +71,7 @@ namespace ReactiveTables.Framework.Tests
             ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);

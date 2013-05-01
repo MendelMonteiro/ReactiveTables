@@ -13,6 +13,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using System;
 using NUnit.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
@@ -46,7 +48,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -55,14 +57,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                           {
                                               if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                                   idCol1Updates++;
                                               if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                                   idCol2Updates++;
-                                          }, null, null));
+                                          });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, idCol1Updates);
@@ -91,7 +93,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int [] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -112,7 +114,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -133,7 +135,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -164,7 +166,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -191,7 +193,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.LeftOuter);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, updateHandler.CurrentRowCount);
@@ -226,7 +228,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.RightOuter);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, updateHandler.CurrentRowCount);
@@ -261,7 +263,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -284,7 +286,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, updateHandler.CurrentRowCount);
@@ -322,17 +324,17 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           else if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             // Add a coule of rows and then delete the primary side
             var leftRowId = leftTable.AddRow();
@@ -395,7 +397,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.LeftOuter);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the right row dissapears
             var leftRowId = leftTable.AddRow();
@@ -438,7 +440,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.RightOuter);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the right row stays
             var leftRowId = leftTable.AddRow();
@@ -481,7 +483,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            joinedTable.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the row goes
             var leftRowId = leftTable.AddRow();
@@ -537,7 +539,7 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -546,14 +548,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, rowsUpdated[0]);
@@ -597,7 +599,7 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -606,14 +608,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, rowsUpdated[0]);
@@ -662,7 +664,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -671,14 +673,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, rowsUpdated[0]);
@@ -718,7 +720,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -727,14 +729,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, rowsUpdated[0]);
@@ -778,7 +780,7 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];
-            joinedTable.Subscribe(new DelegateObserver<RowUpdate>(update => rowsUpdated[0]++, null, null));
+            joinedTable.Subscribe<RowUpdate>(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
             Assert.AreEqual(0, rowsUpdated[0]);
@@ -787,14 +789,14 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated[0]);
 
             int idCol1Updates = 0, idCol2Updates = 0;
-            joinedTable.Subscribe(new DelegateObserver<ColumnUpdate>(
+            joinedTable.Subscribe<ColumnUpdate>(
                                       update =>
                                       {
                                           if (update.Column.ColumnId == TestLeftColumns.IdColumn)
                                               idCol1Updates++;
                                           if (update.Column.ColumnId == TestRightColumns.LeftIdColumn)
                                               idCol2Updates++;
-                                      }, null, null));
+                                      });
 
             leftTable.SetValue(TestLeftColumns.IdColumn, leftRowId, 401);
             Assert.AreEqual(1, rowsUpdated[0]);

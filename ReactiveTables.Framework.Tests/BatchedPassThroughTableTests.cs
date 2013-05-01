@@ -33,7 +33,7 @@ namespace ReactiveTables.Framework.Tests
             ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(0, target.RowCount);
@@ -68,7 +68,7 @@ namespace ReactiveTables.Framework.Tests
             ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -93,6 +93,7 @@ namespace ReactiveTables.Framework.Tests
             TableTestHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 421111m, TestTableColumns.DecimalColumn);
         }
 
+        // TODO: implement
 //        [Test]
         public void TestDelete()
         {
@@ -100,7 +101,7 @@ namespace ReactiveTables.Framework.Tests
             ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);

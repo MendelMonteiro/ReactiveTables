@@ -31,8 +31,7 @@ namespace ReactiveTables
             _humanAccounts = humanAccounts;
 
             HumanAccounts = new ObservableCollection<HumanAccountViewModel>();
-            _humanAccounts.Subscribe(DelegateObserver<RowUpdate>.CreateDelegateObserver(
-                update => HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex))));
+            _humanAccounts.Subscribe<RowUpdate>(update => HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex)));
 
             Change = new DelegateCommand(() =>
                                              {

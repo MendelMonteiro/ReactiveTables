@@ -82,7 +82,6 @@
     <Compile Include="Columns\ReactiveColumnBase.cs" />
     <Compile Include="ColumnUpdate.cs" />
     <Compile Include="Marshalling\DefaultThreadMarshaller.cs" />
-    <Compile Include="DelegateObserver.cs" />
     <Compile Include="IColumnObserver.cs" />
     <Compile Include="IObservableColumn.cs" />
     <Compile Include="IReactiveTableJoiner.cs" />

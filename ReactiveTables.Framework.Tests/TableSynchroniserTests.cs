@@ -13,6 +13,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using System;
 using NUnit.Framework;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Synchronisation;
@@ -30,7 +32,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -55,7 +57,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -88,7 +90,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe(new DelegateObserver<RowUpdate>(updateHandler.OnRowUpdate, null, null));
+            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);

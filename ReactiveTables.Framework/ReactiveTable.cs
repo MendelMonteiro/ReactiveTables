@@ -164,5 +164,6 @@ namespace ReactiveTables.Framework
             var column = GetColumn<T>(columnId);
             return column.Find(value);
         }
+
     }
 }
