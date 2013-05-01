@@ -103,6 +103,14 @@ namespace ReactiveTables.Framework.Tests
 
             rowIndex = table.Find(TestTableColumns.StringColumn, "blah2");
             Assert.AreEqual(-1, rowIndex);
+
+            table.SetValue(TestTableColumns.StringColumn, addedRowIndex, "hello");
+
+            rowIndex = table.Find(TestTableColumns.StringColumn, "blah");
+            Assert.AreEqual(-1, rowIndex);
+
+            rowIndex = table.Find(TestTableColumns.StringColumn, "hello");
+            Assert.AreEqual(addedRowIndex, rowIndex);
         }
     }
 }

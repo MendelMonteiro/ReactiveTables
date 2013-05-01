@@ -100,8 +100,12 @@ namespace ReactiveTables.Framework.Columns
 
         public override void SetValue(int rowIndex, T value)
         {
+            if (_index != null)
+            {
+                T oldValue = Fields[rowIndex];
+                _index.SetRowValue(rowIndex, value, oldValue);
+            }
             Fields[rowIndex] = value;
-            if (_index != null) _index.SetRowValue(rowIndex, value);
             NotifyObserversOnNext(rowIndex);
         }
 

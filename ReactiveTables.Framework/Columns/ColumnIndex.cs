@@ -20,7 +20,7 @@ namespace ReactiveTables.Framework.Columns
     public interface IColumnIndex<in T>
     {
         int GetRow(T value);
-        void SetRowValue(int rowIndex, T value);
+        void SetRowValue(int rowIndex, T value, T oldValue);
         void RemoveRowValue(T value);
     }
 
@@ -39,8 +39,10 @@ namespace ReactiveTables.Framework.Columns
             return -1;
         }
 
-        public void SetRowValue(int rowIndex, T value)
+        public void SetRowValue(int rowIndex, T value, T oldValue)
         {
+            if (_valueRows.Count > 0 && !value.Equals(oldValue)) _valueRows.Remove(oldValue);
+
             _valueRows[value] = rowIndex;
         }
 
