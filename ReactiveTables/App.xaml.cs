@@ -37,21 +37,20 @@ namespace ReactiveTables
     {
         private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(100);
+        private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(500);
+        private const int BatchSize = 10;
         private const int DataDelay = 0;
         private const int GuiDisplayDelay = 0;
-        private static IReactiveTable Humans { get; set; }
+        public static IReactiveTable Humans { get; set; }
         public static IReactiveTable Accounts { get; private set; }
         public static IReactiveTable AccountHumans { get; private set; }
 
         private const int HumanOffset = 1000;
         private const int AccountOffset = 10000;
-        private const int DataPauseDelay = 500;
+        private const int DataPauseDelay = 1000;
 
         public App()
         {
-            Console.WriteLine("In constructor");
-
             log4net.Config.XmlConfigurator.Configure();
             Exit += (sender, args) => _log.Debug(ProcessInfoDumper.GetProcessInfo());
 
@@ -75,13 +74,16 @@ namespace ReactiveTables
 
             AccountHumans = SetupAccountHumansTable(Accounts, Humans);
 
-            Thread humanDataThread = new Thread(StreamHumanData);
+            AddTestHumans(humansWire);
+            AddTestAccounts(accountsWire);
+
+            /*Thread humanDataThread = new Thread(StreamHumanData);
             humanDataThread.IsBackground = true;
             humanDataThread.Start(humansWire);
 
             Thread accountDataThread = new Thread(StreamAccountData);
             accountDataThread.IsBackground = true;
-            accountDataThread.Start(accountsWire);
+            accountDataThread.Start(accountsWire);*/
 
             Thread.Sleep(GuiDisplayDelay);
         }
@@ -106,15 +108,18 @@ namespace ReactiveTables
             baseAccountColumns.ForEach(accounts.AddColumn);
 
             // Create the wire table
-//            var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _updateDelay);
-            var accountsWire = new ReactiveTable(accounts);
-            new BatchedTableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
-
-            AddAccount(accountsWire, 1, 1, 10m);
-            AddAccount(accountsWire, 2, 1, 100m);
-            AddAccount(accountsWire, 3, 2, 10000m);
+            var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+//            var accountsWire = new ReactiveTable(accounts);
+//            new BatchedTableSynchroniser(accountsWire, accounts, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
 
             return accountsWire;
+        }
+
+        private static void AddTestAccounts(IWritableReactiveTable accounts)
+        {
+            AddAccount(accounts, 1, 1, 10m);
+            AddAccount(accounts, 2, 1, 100m);
+            AddAccount(accounts, 3, 2, 10000m);
         }
 
         private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
@@ -130,9 +135,9 @@ namespace ReactiveTables
             baseColumns.ForEach(humans.AddColumn);
 
             // Wire up the two tables before the dynamic columns
-//            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _updateDelay);
-            var humansWire = new ReactiveTable(humans);
-            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+//            var humansWire = new ReactiveTable(humans);
+//            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
 
             humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                  HumanColumns.IdNameColumn,
@@ -140,11 +145,13 @@ namespace ReactiveTables
                                  (IReactiveColumn<string>) baseColumns[1],
                                  (idVal, nameVal) => idVal + nameVal));
 
-
-            AddHuman(humansWire, 1, "Mendel");
-            AddHuman(humansWire, 2, "Marie");
-
             return humansWire;
+        }
+
+        private static void AddTestHumans(IWritableReactiveTable humans)
+        {
+            AddHuman(humans, 1, "Mendel");
+            AddHuman(humans, 2, "Marie");
         }
 
         private static void AddHuman(IWritableReactiveTable humans, int id, string name)
@@ -167,7 +174,7 @@ namespace ReactiveTables
             while (true)
             {
                 Thread.Sleep(DataPauseDelay);
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < BatchSize; i++)
                 {
                     AddHuman(humans, id, "Human #" + id);
 
@@ -187,7 +194,7 @@ namespace ReactiveTables
             {
                 Thread.Sleep(DataPauseDelay);
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < BatchSize; i++)
                 {
                     AddAccount(accounts, id, id, 66666m);
 
@@ -202,7 +209,7 @@ namespace ReactiveTables
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
 //            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, 10)));
+            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, BatchSize)));
 //            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
         }
 

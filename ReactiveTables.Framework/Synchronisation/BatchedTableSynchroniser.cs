@@ -19,19 +19,18 @@ using System.Collections.Generic;
 using System.Threading;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Utils;
+using System.Linq;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
-    public class BatchedTableSynchroniser : IObserver<RowUpdate>, IObserver<ColumnUpdate>, IDisposable
+    public class BatchedTableSynchroniser : IObserver<TableUpdate>, IDisposable
     {
         private readonly IReactiveTable _sourceTable;
         private readonly IWritableReactiveTable _targetTable;
         private readonly IThreadMarshaller _threadMarshaller;
-        private readonly IDisposable _rowSubscription;
-        private readonly IDisposable _columnSubscription;
+        private readonly IDisposable _subscription;
         private readonly Timer _timer;
-        private readonly Queue<RowUpdate> _rowUpdates = new Queue<RowUpdate>();
-        private readonly Queue<ColumnUpdate> _columnUpdates = new Queue<ColumnUpdate>();
+        private readonly Queue<TableUpdate> _updates = new Queue<TableUpdate>();
         private readonly object _shared = new object();
 
         public BatchedTableSynchroniser(ReactiveTable sourceTable, IWritableReactiveTable targetTable,
@@ -42,86 +41,64 @@ namespace ReactiveTables.Framework.Synchronisation
             _threadMarshaller = threadMarshaller;
             _timer = new Timer(SynchroniseChanges, null, delay, delay);
 
-            _rowSubscription = _sourceTable.Subscribe((IObserver<RowUpdate>) this);
-            _columnSubscription = _sourceTable.Subscribe((IObserver<ColumnUpdate>) this);
+            _subscription = _sourceTable.Subscribe(this);
         }
 
         private void SynchroniseChanges(object state)
         {
             // Make copies to control exactly when we lock
-            List<RowUpdate> rowUpdates;
-            List<ColumnUpdate> colUpdates;
+            List<TableUpdate> updates;
             lock (_shared)
             {
-                if (_rowUpdates.Count == 0 && _columnUpdates.Count == 0) return;
+                if (_updates.Count == 0) return;
 
-                rowUpdates = _rowUpdates.DequeueAllToList();
-                colUpdates = _columnUpdates.DequeueAllToList();
+                updates = _updates.DequeueAllToList();
             }
 
             _threadMarshaller.Dispatch(
                 () =>
                     {
-                        foreach (var update in rowUpdates)
+                        foreach (var update in updates.Where(TableUpdate.IsRowUpdate))
                         {
-                            if (update.Action == RowUpdate.RowUpdateAction.Add)
+                            if (update.Action == TableUpdate.TableUpdateAction.Add)
                             {
                                 _targetTable.AddRow();
                             }
-                            else if (update.Action == RowUpdate.RowUpdateAction.Delete)
+                            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
                             {
                                 _targetTable.DeleteRow(update.RowIndex);
                             }
                         }
 
                         // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
-                        foreach (var update in colUpdates)
+                        foreach (var update in updates.Where(TableUpdate.IsColumnUpdate))
                         {
                             _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
                         }
                     });
         }
 
-        public void OnNext(RowUpdate rowUpdate)
+        public void OnNext(TableUpdate rowUpdate)
         {
             lock (_shared)
             {
-                _rowUpdates.Enqueue(rowUpdate);
+                _updates.Enqueue(rowUpdate);
             }
         }
-
-        public void OnNext(ColumnUpdate columnUpdate)
-        {
-            lock (_shared)
-            {
-                _columnUpdates.Enqueue(columnUpdate);
-            }
-        }
-
-        void IObserver<RowUpdate>.OnError(Exception error)
+        
+        public void OnError(Exception error)
         {
             throw new NotImplementedException();
         }
 
-        void IObserver<RowUpdate>.OnCompleted()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IObserver<ColumnUpdate>.OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IObserver<ColumnUpdate>.OnCompleted()
+        public void OnCompleted()
         {
             throw new NotImplementedException();
         }
 
         public void Dispose()
         {
-            _columnSubscription.Dispose();
-            _rowSubscription.Dispose();
+            _subscription.Dispose();
             _timer.Dispose();
         }
     }

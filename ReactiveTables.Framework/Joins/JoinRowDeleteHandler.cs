@@ -16,6 +16,7 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Joins
 {
@@ -23,7 +24,7 @@ namespace ReactiveTables.Framework.Joins
     /// Used for keeping the key dictionaries up to date when rows are removed
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    internal class JoinRowDeleteHandler<TKey> : IObserver<RowUpdate>
+    internal class JoinRowDeleteHandler<TKey> : IObserver<TableUpdate>
     {
         private readonly List<Join<TKey>.Row?> _rows;
         private readonly Dictionary<TKey, Join<TKey>.ColumnRowMapping> _rowsByKey;
@@ -31,12 +32,12 @@ namespace ReactiveTables.Framework.Joins
         private readonly Dictionary<int, HashSet<int>> _otherColumnRowsToJoinRows;
         private readonly JoinSide _joinSide;
         private readonly JoinType _joinType;
-        private readonly Queue<int> _deletedRowIds;
-        private readonly List<IObserver<RowUpdate>> _observers = new List<IObserver<RowUpdate>>();
+        private readonly FieldRowManager _rowManager;
+        private readonly List<IObserver<TableUpdate>> _observers = new List<IObserver<TableUpdate>>();
 
         public JoinRowDeleteHandler(List<Join<TKey>.Row?> rows, Dictionary<TKey, Join<TKey>.ColumnRowMapping> rowsByKey,
             Dictionary<int, HashSet<int>> columnRowsToJoinRows, Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows, 
-            JoinSide joinSide, JoinType joinType, Queue<int> deletedRowIds)
+            JoinSide joinSide, JoinType joinType, FieldRowManager rowManager)
         {
             _rows = rows;
             _rowsByKey = rowsByKey;
@@ -44,18 +45,18 @@ namespace ReactiveTables.Framework.Joins
             _otherColumnRowsToJoinRows = otherColumnRowsToJoinRows;
             _joinSide = joinSide;
             _joinType = joinType;
-            _deletedRowIds = deletedRowIds;
+            _rowManager = rowManager;
         }
 
-        public void OnNext(RowUpdate update)
+        public void OnNext(TableUpdate update)
         {
-            if (update.Action == RowUpdate.RowUpdateAction.Delete)
+            if (update.Action == TableUpdate.TableUpdateAction.Delete)
             {
                 OnDelete(update);
             }
         }
 
-        private void OnDelete(RowUpdate update)
+        private void OnDelete(TableUpdate update)
         {
             // If there is no mapping the joined row no longer exists and there's nothing to update.
             if (!_columnRowsToJoinRows.ContainsKey(update.RowIndex)) return;
@@ -63,7 +64,7 @@ namespace ReactiveTables.Framework.Joins
             var joinRowIds = _columnRowsToJoinRows[update.RowIndex];
             if (joinRowIds.Count < 0) return;
             
-            List<RowUpdate> rowUpdates = new List<RowUpdate>();
+            List<TableUpdate> rowUpdates = new List<TableUpdate>();
 
             // Get the key and row id to use from the first element
             var firstJoinRowId = joinRowIds.First();
@@ -95,7 +96,7 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        private void DeleteRowMapping(Join<TKey>.Row? row, int joinRowId, List<Join<TKey>.Row> colRowMappings, RowUpdate update)
+        private void DeleteRowMapping(Join<TKey>.Row? row, int joinRowId, List<Join<TKey>.Row> colRowMappings, TableUpdate update)
         {
             // Blank our side
             BlankSide(joinRowId, colRowMappings, _joinSide, update.RowIndex);
@@ -110,7 +111,7 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        private void DeleteClearedRows(List<Join<TKey>.Row> colRowMappings, List<RowUpdate> rowUpdates, TKey key,
+        private void DeleteClearedRows(List<Join<TKey>.Row> colRowMappings, List<TableUpdate> rowUpdates, TKey key,
             IEnumerable<int> joinRowIds)
         {
             for (int i = colRowMappings.Count - 1; i >= 0; i--)
@@ -128,8 +129,8 @@ namespace ReactiveTables.Framework.Joins
                 if (!joinRow.Value.LeftRowId.HasValue && !joinRow.Value.RightRowId.HasValue)
                 {
                     _rows[joinRowId] = null;
-                    rowUpdates.Add(new RowUpdate(joinRowId, RowUpdate.RowUpdateAction.Delete));
-                    _deletedRowIds.Enqueue(joinRowId);
+                    rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
+                    _rowManager.DeleteRow(joinRowId);
                 }
             }
 
@@ -223,7 +224,7 @@ namespace ReactiveTables.Framework.Joins
             return colRowMappings.Count(m => m.RightRowId == rowIndex) <= 1;
         }
 
-        private void UpdateObservers(List<RowUpdate> rowUpdates)
+        private void UpdateObservers(List<TableUpdate> rowUpdates)
         {
             foreach (var observer in _observers)
             {
@@ -254,7 +255,7 @@ namespace ReactiveTables.Framework.Joins
         {
         }
 
-        public void AddRowObserver(IObserver<RowUpdate> observer)
+        public void AddRowObserver(IObserver<TableUpdate> observer)
         {
             _observers.Add(observer);
         }

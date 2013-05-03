@@ -20,12 +20,12 @@ using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
-    public class TableSynchroniser : IObserver<RowUpdate>, IObserver<ColumnUpdate>, IDisposable
+    public class TableSynchroniser : IObserver<TableUpdate>, IDisposable
     {
         private readonly IReactiveTable _sourceTable;
         private readonly IWritableReactiveTable _targetTable;
         private readonly IThreadMarshaller _threadMarshaller;
-        private readonly IDisposable _rowSubscription;
+        private readonly IDisposable _subscription;
         private readonly IDisposable _columnSubscription;
 
         public TableSynchroniser(IReactiveTable sourceTable, IWritableReactiveTable targetTable, IThreadMarshaller threadMarshaller)
@@ -34,50 +34,37 @@ namespace ReactiveTables.Framework.Synchronisation
             _targetTable = targetTable;
             _threadMarshaller = threadMarshaller;
 
-            _rowSubscription = _sourceTable.Subscribe((IObserver<RowUpdate>)this);
-            _columnSubscription = _sourceTable.Subscribe((IObserver<ColumnUpdate>) this);
+            _subscription = _sourceTable.Subscribe((IObserver<TableUpdate>)this);
         }
 
-        public void OnNext(RowUpdate update)
+        public void OnNext(TableUpdate update)
         {
             _threadMarshaller.Dispatch(
                 () =>
                     {
-                        if (update.Action == RowUpdate.RowUpdateAction.Add)
+                        if (update.Action == TableUpdate.TableUpdateAction.Add)
                         {
                             var newRowIndex = _targetTable.AddRow();
                             Debug.Assert(update.RowIndex == newRowIndex);
                         }
-                        else if (update.Action == RowUpdate.RowUpdateAction.Delete)
+                        else if (update.Action == TableUpdate.TableUpdateAction.Delete)
                         {
                             _targetTable.DeleteRow(update.RowIndex);
+                        }
+                        else if (update.Action == TableUpdate.TableUpdateAction.Update)
+                        {
+                            // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
+                            _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);
                         }
                     });
         }
 
-        public void OnNext(ColumnUpdate update)
-        {
-            _threadMarshaller.Dispatch(
-                // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
-                () => _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex));
-        }
-
-        void IObserver<RowUpdate>.OnError(Exception error)
+        public void OnError(Exception error)
         {
             throw new NotImplementedException();
         }
 
-        void IObserver<RowUpdate>.OnCompleted()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IObserver<ColumnUpdate>.OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IObserver<ColumnUpdate>.OnCompleted()
+        public void OnCompleted()
         {
             throw new NotImplementedException();
         }
@@ -85,7 +72,7 @@ namespace ReactiveTables.Framework.Synchronisation
         public void Dispose()
         {
             _columnSubscription.Dispose();
-            _rowSubscription.Dispose();
+            _subscription.Dispose();
         }
     }
 }

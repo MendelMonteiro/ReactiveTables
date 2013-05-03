@@ -15,12 +15,13 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
-    public interface IReactiveTable : IObservable<RowUpdate>, ISubscribable<IObserver<RowUpdate>>, 
-                                      IObservable<ColumnUpdate>, ISubscribable<IObserver<ColumnUpdate>>
+    public interface IReactiveTable : IObservable<TableUpdate>, ISubscribable<IObserver<TableUpdate>>
     {
         void AddColumn(IReactiveColumn column);
         T GetValue<T>(string columnId, int rowIndex);
@@ -28,6 +29,7 @@ namespace ReactiveTables.Framework
         Dictionary<string, IReactiveColumn> Columns { get; }
         PropertyChangedNotifier ChangeNotifier { get; }
         IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
+        void ReplayRows(IObserver<TableUpdate> observer);
     }
 
     public interface IWritableReactiveTable : IReactiveTable
@@ -41,9 +43,8 @@ namespace ReactiveTables.Framework
     public class ReactiveTable : IWritableReactiveTable
     {
         private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
-        private readonly HashSet<IObserver<RowUpdate>> _rowObservers = new HashSet<IObserver<RowUpdate>>();
-        private readonly HashSet<IObserver<ColumnUpdate>> _columnObservers = new HashSet<IObserver<ColumnUpdate>>();
-
+        private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
+        
         private readonly FieldRowManager _rowManager = new FieldRowManager();
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
@@ -62,7 +63,7 @@ namespace ReactiveTables.Framework
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
-            column.Subscribe(new ColumnChangePublisher(column, _rowObservers, _columnObservers));
+            column.Subscribe(new ColumnChangePublisher(column, _observers));
             // TODO: fire events for existing rows
         }
 
@@ -94,8 +95,8 @@ namespace ReactiveTables.Framework
                 column.Value.AddField(rowIndex);
             }
 
-            var rowUpdate = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Add);
-            foreach (var observer in _rowObservers)
+            var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
+            foreach (var observer in _observers)
             {
                 observer.OnNext(rowUpdate);
             }
@@ -110,10 +111,21 @@ namespace ReactiveTables.Framework
                 column.Value.RemoveField(rowIndex);
             }
 
-            var rowUpdate = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Delete);
-            foreach (var observer in _rowObservers)
+            var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
+            foreach (var observer in _observers)
             {
                 observer.OnNext(rowUpdate);
+            }
+        }
+
+        public void ReplayRows(IObserver<TableUpdate> observer)
+        {
+            var rowAdds = new List<TableUpdate>(_rowManager.RowCount);
+            rowAdds.AddRange(_rowManager.GetRows().Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+
+            foreach (var rowAdd in rowAdds)
+            {
+                observer.OnNext(rowAdd);
             }
         }
 
@@ -137,26 +149,15 @@ namespace ReactiveTables.Framework
             }
         }
 
-        public IDisposable Subscribe(IObserver<RowUpdate> observer)
+        public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            _rowObservers.Add(observer);
-            return new SubscriptionToken<ReactiveTable, IObserver<RowUpdate>>(this, observer);
+            _observers.Add(observer);
+            return new SubscriptionToken<ReactiveTable, IObserver<TableUpdate>>(this, observer);
         }
 
-        public void Unsubscribe(IObserver<RowUpdate> observer)
+        public void Unsubscribe(IObserver<TableUpdate> observer)
         {
-            _rowObservers.Remove(observer);
-        }
-
-        public IDisposable Subscribe(IObserver<ColumnUpdate> observer)
-        {
-            _columnObservers.Add(observer);
-            return new SubscriptionToken<ReactiveTable, IObserver<ColumnUpdate>>(this, observer);
-        }
-
-        public void Unsubscribe(IObserver<ColumnUpdate> observer)
-        {
-            _columnObservers.Remove(observer);
+            _observers.Remove(observer);
         }
 
         public int Find<T>(string columnId, T value)

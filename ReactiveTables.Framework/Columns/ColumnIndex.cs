@@ -41,7 +41,7 @@ namespace ReactiveTables.Framework.Columns
 
         public void SetRowValue(int rowIndex, T value, T oldValue)
         {
-            if (_valueRows.Count > 0 && !value.Equals(oldValue)) _valueRows.Remove(oldValue);
+            if (_valueRows.Count > 0 && !value.Equals(oldValue) && !Equals(default(T), oldValue)) _valueRows.Remove(oldValue);
 
             _valueRows[value] = rowIndex;
         }

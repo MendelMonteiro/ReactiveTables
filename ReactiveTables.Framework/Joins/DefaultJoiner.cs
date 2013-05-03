@@ -14,6 +14,7 @@ You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Joins
@@ -25,14 +26,27 @@ namespace ReactiveTables.Framework.Joins
         private DefaultJoiner(){}
 
         public int RowCount { get; private set; }
+
         public int GetRowIndex(IReactiveColumn column, int joinRowIndex)
         {
             return joinRowIndex;
         }
 
-        public void AddRowObserver(IObserver<RowUpdate> observer)
+        public void AddRowObserver(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<int> GetRows()
+        {
+            for (int i = 0; i < RowCount; i++)
+            {
+                yield return i;
+            }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

@@ -109,7 +109,7 @@ namespace ReactiveTables.Framework.PerformanceTests
                 wireTable.SetValue(TestTableColumns.DecimalColumn, rowIndex, (decimal)i);
             }
 
-            while (wireTable.RowUpdatesAdd.Count > 0)
+            while (wireTable.GetRowUpdateCount() > 0)
             {
                 Thread.Sleep(100);
             }

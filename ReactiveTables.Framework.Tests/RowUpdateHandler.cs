@@ -29,10 +29,10 @@ namespace ReactiveTables.Framework.Tests
             LastRowUpdated = -1;
         }
 
-        public void OnRowUpdate(RowUpdate update)
+        public void OnRowUpdate(TableUpdate update)
         {
             RowsUpdated.Add(update.RowIndex);
-            if (update.Action == RowUpdate.RowUpdateAction.Add)
+            if (update.Action == TableUpdate.TableUpdateAction.Add)
             {
                 CurrentRowCount++;
             }

@@ -17,12 +17,12 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
-    public struct ColumnUpdate
+    public struct ColumnUpdate1
     {
         private readonly IReactiveColumn _column;
         private readonly int _rowIndex;
 
-        public ColumnUpdate(IReactiveColumn column, int rowIndex)
+        public ColumnUpdate1(IReactiveColumn column, int rowIndex)
         {
             _column = column;
             _rowIndex = rowIndex;

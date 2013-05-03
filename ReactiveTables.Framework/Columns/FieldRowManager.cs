@@ -44,5 +44,26 @@ namespace ReactiveTables.Framework.Columns
             RowCount--;
             _deletedRows.Enqueue(rowIndex);
         }
+
+        public IEnumerable<int> GetRows()
+        {
+            var deletedEnum = _deletedRows.GetEnumerator();
+            int firstDeleted = -1;
+            for (int i = 0; i < RowCount; i++)
+            {
+                // Find the next deleted index
+                while (firstDeleted <= i)
+                {
+                    firstDeleted = deletedEnum.MoveNext() ? deletedEnum.Current : int.MaxValue;
+                }
+
+                // Skip deleteds
+                if (i == firstDeleted)
+                    continue;
+
+                // Return the rest
+                yield return i;
+            }
+        }
     }
 }

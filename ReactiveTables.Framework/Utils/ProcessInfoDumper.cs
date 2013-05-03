@@ -31,7 +31,7 @@ namespace ReactiveTables.Framework.Utils
         public static string GetProcessInfo()
         {
             StringBuilder info = new StringBuilder();
-            foreach (var category in PerformanceCounterCategory.GetCategories().Where(c => c.CategoryName.StartsWith(".NET")))
+            foreach (var category in PerformanceCounterCategory.GetCategories().Where(c => c.CategoryName.StartsWith(".NET") && c.CategoryType == PerformanceCounterCategoryType.SingleInstance))
             {
                 try
                 {

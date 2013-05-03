@@ -23,12 +23,12 @@ namespace ReactiveTables.Framework
     /// <summary>
     /// Maybe we should store an instance of this on the table directly?
     /// </summary>
-    public class PropertyChangedNotifier : IObserver<ColumnUpdate>, IDisposable
+    public class PropertyChangedNotifier : IObserver<TableUpdate>, IDisposable
     {
         private readonly Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>> _consumersByRowIndex = new Dictionary<int, HashSet<IReactivePropertyNotifiedConsumer>>();
         private readonly IDisposable _subscription;
 
-        public PropertyChangedNotifier(IObservable<ColumnUpdate> table)
+        public PropertyChangedNotifier(IObservable<TableUpdate> table)
         {
             _subscription = table.Subscribe(this);
         }
@@ -52,8 +52,10 @@ namespace ReactiveTables.Framework
             _subscription.Dispose();
         }
 
-        public void OnNext(ColumnUpdate value)
+        public void OnNext(TableUpdate value)
         {
+            if (value.IsRowUpdate()) return;
+
             HashSet<IReactivePropertyNotifiedConsumer> consumers;
             if (_consumersByRowIndex.TryGetValue(value.RowIndex, out consumers))
             {

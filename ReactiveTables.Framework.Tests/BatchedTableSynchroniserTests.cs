@@ -34,7 +34,7 @@ namespace ReactiveTables.Framework.Tests
             BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(0, target.RowCount);
@@ -70,7 +70,7 @@ namespace ReactiveTables.Framework.Tests
             BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -103,7 +103,7 @@ namespace ReactiveTables.Framework.Tests
             BatchedTableSynchroniser synchroniser = new BatchedTableSynchroniser(source, target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);

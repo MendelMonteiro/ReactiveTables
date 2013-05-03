@@ -17,6 +17,7 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 
@@ -60,7 +61,10 @@ namespace ReactiveTables
             _accounts = accounts;
 
             Accounts = new ObservableCollection<AccountViewModel>();
-            var subscription = _accounts.Subscribe<RowUpdate>(rowIndex => Accounts.Add(new AccountViewModel(_accounts, rowIndex.RowIndex)));
+            var subscription = _accounts.ReplayAndSubscribe(update =>
+                                                                {
+                                                                    if (update.IsRowUpdate()) Accounts.Add(new AccountViewModel(_accounts, update.RowIndex));
+                                                                });
         }
 
         public ObservableCollection<AccountViewModel> Accounts { get; private set; }

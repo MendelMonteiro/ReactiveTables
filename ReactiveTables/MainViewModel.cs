@@ -21,8 +21,8 @@ namespace ReactiveTables
     {
         public MainViewModel()
         {
-//            Humans = new HumansViewModel(App.Humans);
-//            Accounts = new AccountsViewModel(App.Accounts);
+            Humans = new HumansViewModel(App.Humans);
+            Accounts = new AccountsViewModel(App.Accounts);
             HumanAccounts = new HumanAccountsViewModel(App.AccountHumans, (IWritableReactiveTable) App.Accounts);
         }
 

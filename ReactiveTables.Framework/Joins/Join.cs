@@ -1,23 +1,22 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using ReactiveTables.Framework.Columns;
 using System.Linq;
+using ReactiveTables.Framework.Columns;
 using ReactiveTables.Utils;
 
 namespace ReactiveTables.Framework.Joins
@@ -30,7 +29,7 @@ namespace ReactiveTables.Framework.Joins
         RightOuter
     }
 
-    public class Join<TKey> : IReactiveTableJoiner, IObserver<ColumnUpdate>
+    public class Join<TKey> : IReactiveTableJoiner, IObserver<TableUpdate>
     {
         public class ColumnRowMapping
         {
@@ -54,7 +53,7 @@ namespace ReactiveTables.Framework.Joins
                 return string.Format("RowId: {0}, LeftRowId: {1}, RightRowId: {2}, Key: {3}", RowId, LeftRowId, RightRowId, Key);
             }
         }
-        
+
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
         private readonly IReactiveColumn _leftColumn;
@@ -62,20 +61,29 @@ namespace ReactiveTables.Framework.Joins
 
         private readonly Dictionary<int, HashSet<int>> _leftColumnRowsToJoinRows = new Dictionary<int, HashSet<int>>();
         private readonly Dictionary<int, HashSet<int>> _rightColumnRowsToJoinRows = new Dictionary<int, HashSet<int>>();
-        
+
         private readonly Dictionary<TKey, ColumnRowMapping> _rowsByKey = new Dictionary<TKey, ColumnRowMapping>();
         private readonly List<Row?> _rows = new List<Row?>();
 
-        private readonly List<IObserver<RowUpdate>> _rowUpdateObservers = new List<IObserver<RowUpdate>>();
-        
+        private readonly List<IObserver<TableUpdate>> _rowUpdateObservers = new List<IObserver<TableUpdate>>();
+
         private readonly JoinType _joinType;
         private readonly JoinRowDeleteHandler<TKey> _leftRowDeleteHandler;
         private readonly JoinRowDeleteHandler<TKey> _rightRowDeleteHandler;
-        private readonly Queue<int> _deletedRowIds = new Queue<int>();  
+        private readonly FieldRowManager _rowManager = new FieldRowManager();
+        private readonly IDisposable _leftColToken;
+        private readonly IDisposable _rightColToken;
+        private readonly IDisposable _rightRowToken;
+        private readonly IDisposable _leftRowToken;
 
         public int RowCount
         {
-            get { return _rows.Count - _deletedRowIds.Count; }
+            get { return _rowManager.RowCount; }
+        }
+
+        public IEnumerable<int> GetRows()
+        {
+            return _rowManager.GetRows();
         }
 
         public Join(IReactiveTable leftTable, string leftIdColumn, IReactiveTable rightTable, string rightIdColumn, JoinType joinType = JoinType.FullOuter)
@@ -87,13 +95,15 @@ namespace ReactiveTables.Framework.Joins
             _leftColumn = leftTable.Columns[leftIdColumn];
             _rightColumn = rightTable.Columns[rightIdColumn];
 
-            leftTable.Subscribe(this);
-            rightTable.Subscribe(this);
+            _leftColToken = leftTable.ColumnUpdates().Subscribe(this);
+            _rightColToken = rightTable.ColumnUpdates().Subscribe(this);
 
-            _leftRowDeleteHandler = new JoinRowDeleteHandler<TKey>(_rows, _rowsByKey, _leftColumnRowsToJoinRows, _rightColumnRowsToJoinRows, JoinSide.Left, _joinType, _deletedRowIds);
-            _rightRowDeleteHandler = new JoinRowDeleteHandler<TKey>(_rows, _rowsByKey, _rightColumnRowsToJoinRows, _leftColumnRowsToJoinRows, JoinSide.Right, _joinType, _deletedRowIds);
-            leftTable.Subscribe(_leftRowDeleteHandler);
-            rightTable.Subscribe(_rightRowDeleteHandler);
+            _leftRowDeleteHandler = new JoinRowDeleteHandler<TKey>(_rows, _rowsByKey, _leftColumnRowsToJoinRows, _rightColumnRowsToJoinRows, JoinSide.Left,
+                                                                   _joinType, _rowManager);
+            _rightRowDeleteHandler = new JoinRowDeleteHandler<TKey>(_rows, _rowsByKey, _rightColumnRowsToJoinRows, _leftColumnRowsToJoinRows, JoinSide.Right,
+                                                                    _joinType, _rowManager);
+            _leftRowToken = leftTable.RowUpdates().Subscribe(_leftRowDeleteHandler);
+            _rightRowToken = rightTable.RowUpdates().Subscribe(_rightRowDeleteHandler);
         }
 
         public int GetRowIndex(IReactiveColumn column, int joinRowIndex)
@@ -101,7 +111,7 @@ namespace ReactiveTables.Framework.Joins
             if (joinRowIndex >= _rows.Count) return -1;
 
             Row? row = _rows[joinRowIndex];
-            if (_leftTable.Columns.ContainsKey(column.ColumnId) 
+            if (_leftTable.Columns.ContainsKey(column.ColumnId)
                 && _leftTable.Columns[column.ColumnId] == column
                 && row.HasValue)
             {
@@ -109,7 +119,7 @@ namespace ReactiveTables.Framework.Joins
                 return valueOrDefault;
             }
 
-            if (_rightTable.Columns.ContainsKey(column.ColumnId) 
+            if (_rightTable.Columns.ContainsKey(column.ColumnId)
                 && _rightTable.Columns[column.ColumnId] == column
                 && row.HasValue)
             {
@@ -119,7 +129,7 @@ namespace ReactiveTables.Framework.Joins
             return -1;
         }
 
-        public void AddRowObserver(IObserver<RowUpdate> observer)
+        public void AddRowObserver(IObserver<TableUpdate> observer)
         {
             _rowUpdateObservers.Add(observer);
             _leftRowDeleteHandler.AddRowObserver(observer);
@@ -130,7 +140,7 @@ namespace ReactiveTables.Framework.Joins
         /// Keep the key dictionaries up to date when the key columns are updated.
         /// </summary>
         /// <param name="update"></param>
-        public void OnNext(ColumnUpdate update)
+        public void OnNext(TableUpdate update)
         {
             // Key update
             int columnRowIndex = update.RowIndex;
@@ -153,7 +163,7 @@ namespace ReactiveTables.Framework.Joins
         {
             foreach (var updatedRow in updatedRows)
             {
-                var rowUpdate = new RowUpdate(updatedRow, RowUpdate.RowUpdateAction.Add);
+                var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, updatedRow);
                 foreach (var observer in _rowUpdateObservers)
                 {
                     observer.OnNext(rowUpdate);
@@ -176,7 +186,7 @@ namespace ReactiveTables.Framework.Joins
             if (_rowsByKey.TryGetValue(key, out keyRowsMapping))
             {
                 HashSet<int> existingRowIndeces;
-                // Existing left row
+                // Existing row
                 if (columnRowsToJoinRows.TryGetValue(columnRowIndex, out existingRowIndeces))
                 {
                     // Same key as before
@@ -184,7 +194,7 @@ namespace ReactiveTables.Framework.Joins
                     {
                         // Do nothing
                     }
-                    // Key has changed
+                        // Key has changed
                     else
                     {
                         foreach (var rowId in existingRowIndeces)
@@ -195,16 +205,16 @@ namespace ReactiveTables.Framework.Joins
                         }
                     }
                 }
-                // New left row
+                    // New row
                 else
                 {
-                    // Right rows exist with no mapping - try to join to an unlinked one
+                    // Other side rows exist with no mapping - try to join to an unlinked one
                     int unlinkedIndex = keyRowsMapping.ColRowMappings.FindIndex(IsRowUnlinked(side));
                     if (unlinkedIndex >= 0)
                     {
                         for (int i = unlinkedIndex; i < keyRowsMapping.ColRowMappings.Count; i++)
                         {
-                            // Link the left to the joined row.
+                            // Link the row to the joined row.
                             var unlinked = keyRowsMapping.ColRowMappings[i];
                             LinkRow(ref unlinked, columnRowIndex, side);
 
@@ -222,7 +232,7 @@ namespace ReactiveTables.Framework.Joins
                             }
                             else
                             {
-                                joinedRowId = unlinked.RowId;                                
+                                joinedRowId = unlinked.RowId;
                             }
 
                             keyRowsMapping.ColRowMappings[i] = unlinked;
@@ -232,11 +242,12 @@ namespace ReactiveTables.Framework.Joins
                             columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
                         }
                     }
-                    // No unlinked - add new mappings and rows for each right row
+                        // No unlinked - add new mappings and rows for each other side row
                     else
                     {
                         var otherRows = GetDistinctOtherRows(keyRowsMapping, side);
-                        foreach (var otherRowId in otherRows.ToArray())
+                        int?[] otherRowIds = otherRows.ToArray();
+                        foreach (var otherRowId in otherRowIds)
                         {
                             joinedRowId = GetNewRowId();
                             var joinRow = CreateNewLinkedJoinRow(columnRowIndex, joinedRowId.Value, key, otherRowId, side);
@@ -247,17 +258,26 @@ namespace ReactiveTables.Framework.Joins
                             // Update the reverse lookup
                             columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
                             otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
-                        }
+                        }/*
+
+                        // No matching entries on the other side but we still need to keep the reverse mapping up to date.
+                        if (otherRowIds.Length == 0)
+                        {
+                            // Update the reverse lookup
+                            int rowId = keyRowsMapping.ColRowMappings.First().RowId.Value;
+                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(rowId);
+                            keyRowsMapping.ColRowMappings.Add(CreateNewJoinRow(columnRowIndex, key, null, side));
+                        }*/
                     }
                 }
             }
             else
             {
-                // First time this key has been used so create a new (unlinked on right side)
+                // First time this key has been used so create a new (unlinked on the other side)
                 keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
                 bool shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
 
-                joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?)null;
+                joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?) null;
                 var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
                 keyRowsMapping.ColRowMappings.Add(joinRow);
 
@@ -277,11 +297,9 @@ namespace ReactiveTables.Framework.Joins
 
         private int GetNewRowId()
         {
-            if (_deletedRowIds.Count > 0)
-            {
-                return _deletedRowIds.Dequeue();
-            }
-            return _rows.Count();
+            int newRowId = _rowManager.AddRow();
+            Console.WriteLine("Adding row {0} to join {1} {2}", newRowId, _leftColumn.ColumnId, _rightColumn.ColumnId);
+            return newRowId;
         }
 
         private bool ShouldAddUnlinkedRow(JoinSide side)
@@ -309,9 +327,9 @@ namespace ReactiveTables.Framework.Joins
         {
             if (side == JoinSide.Left)
             {
-                return new Row { Key = key, LeftRowId = columnRowIndex, RowId = joinedRowId };
+                return new Row {Key = key, LeftRowId = columnRowIndex, RowId = joinedRowId};
             }
-            return new Row { Key = key, RightRowId = columnRowIndex, RowId = joinedRowId };
+            return new Row {Key = key, RightRowId = columnRowIndex, RowId = joinedRowId};
         }
 
         private static IEnumerable<int?> GetDistinctOtherRows(ColumnRowMapping keyRowsMapping, JoinSide side)
@@ -328,10 +346,10 @@ namespace ReactiveTables.Framework.Joins
         {
             if (side == JoinSide.Left)
             {
-                return new Row { RowId = joinedRowId, Key = key, LeftRowId = columnRowIndex, RightRowId = otherRowId };
+                return new Row {RowId = joinedRowId, Key = key, LeftRowId = columnRowIndex, RightRowId = otherRowId};
             }
 
-            return new Row { RowId = joinedRowId, Key = key, RightRowId = columnRowIndex, LeftRowId = otherRowId };            
+            return new Row {RowId = joinedRowId, Key = key, RightRowId = columnRowIndex, LeftRowId = otherRowId};
         }
 
         private static void LinkRow(ref Row unlinked, int columnRowIndex, JoinSide side)
@@ -356,13 +374,17 @@ namespace ReactiveTables.Framework.Joins
         private static Func<Row, bool> FindKeyByRow(int columnRowIndex, JoinSide side)
         {
             if (side == JoinSide.Left) return r => r.LeftRowId == columnRowIndex;
-            
+
             return r => r.RightRowId == columnRowIndex;
         }
-        
-        private ColumnRowMapping MoveKeyEntry(List<Row?> rows, int existingRowIndex, TKey oldKey, 
-            TKey newKey, Dictionary<int, HashSet<int>> columnRowsToJoinRows, 
-            ColumnRowMapping keyRowsMapping, Dictionary<TKey, ColumnRowMapping> rowsByKey)
+
+        private ColumnRowMapping MoveKeyEntry(List<Row?> rows,
+                                              int existingRowIndex,
+                                              TKey oldKey,
+                                              TKey newKey,
+                                              Dictionary<int, HashSet<int>> columnRowsToJoinRows,
+                                              ColumnRowMapping keyRowsMapping,
+                                              Dictionary<TKey, ColumnRowMapping> rowsByKey)
         {
             throw new NotImplementedException();
             // Clear all matching left key entries
@@ -392,6 +414,14 @@ namespace ReactiveTables.Framework.Joins
         public void OnCompleted()
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            _leftColToken.Dispose();
+            _rightColToken.Dispose();
+            _leftRowToken.Dispose();
+            _rightRowToken.Dispose();
         }
     }
 }

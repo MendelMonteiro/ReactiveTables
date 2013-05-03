@@ -15,7 +15,7 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace ReactiveTables.Framework
 {
-    public struct RowUpdate
+    public struct RowUpdate1
     {
         public enum RowUpdateAction
         {
@@ -27,7 +27,7 @@ namespace ReactiveTables.Framework
 
         private RowUpdateAction _action;
 
-        public RowUpdate(int rowIndex, RowUpdateAction action)
+        public RowUpdate1(int rowIndex, RowUpdateAction action)
         {
             _rowIndex = rowIndex;
             _action = action;

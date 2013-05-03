@@ -14,14 +14,16 @@ You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
-    public interface IReactiveTableJoiner
+    public interface IReactiveTableJoiner : IDisposable
     {
         int RowCount { get; }
         int GetRowIndex(IReactiveColumn column, int joinRowIndex);
-        void AddRowObserver(IObserver<RowUpdate> observer);
+        void AddRowObserver(IObserver<TableUpdate> observer);
+        IEnumerable<int> GetRows();
     }
 }

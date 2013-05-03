@@ -47,22 +47,12 @@ namespace ReactiveTables.Framework.Synchronisation
             _marshaller = marshaller;
         }
 
-        public IDisposable Subscribe(IObserver<RowUpdate> observer)
+        public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
 
-        public void Unsubscribe(IObserver<RowUpdate> observer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDisposable Subscribe(IObserver<ColumnUpdate> observer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Unsubscribe(IObserver<ColumnUpdate> observer)
+        public void Unsubscribe(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
@@ -78,6 +68,11 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplayRows(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }

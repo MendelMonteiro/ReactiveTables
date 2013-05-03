@@ -26,8 +26,8 @@ namespace ReactiveTables.Framework.Synchronisation
 {
     public class ReactiveBatchedPassThroughTable: IWritableReactiveTable, IDisposable
     {
-        private readonly Queue<RowUpdate> _rowUpdatesAdd = new Queue<RowUpdate>();
-        private readonly Queue<RowUpdate> _rowUpdatesDelete = new Queue<RowUpdate>();
+        private readonly Queue<TableUpdate> _rowUpdatesAdd = new Queue<TableUpdate>();
+        private readonly Queue<TableUpdate> _rowUpdatesDelete = new Queue<TableUpdate>();
         private readonly Dictionary<Type, ITableColumnUpdater> _columnUpdaters = new Dictionary<Type, ITableColumnUpdater>();
         private readonly FieldRowManager _rowManager = new FieldRowManager();
         private readonly IWritableReactiveTable _targetTable;
@@ -51,17 +51,6 @@ namespace ReactiveTables.Framework.Synchronisation
             get { throw new NotImplementedException(); }
         }
 
-        public Queue<RowUpdate> RowUpdatesAdd
-        {
-            get
-            {
-                lock (_shared)
-                {
-                    return _rowUpdatesAdd;
-                }
-            }
-        }
-
         public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, TimeSpan delay)
         {
             _targetTable = targetTable;
@@ -73,14 +62,26 @@ namespace ReactiveTables.Framework.Synchronisation
             _timer1.Start();
         }
 
+        /// <summary>
+        /// For perf tests
+        /// </summary>
+        /// <returns></returns>
+        public int GetRowUpdateCount()
+        {
+            lock (_shared)
+            {
+                return _rowUpdatesAdd.Count;
+            }
+        }
+
         private void SynchroniseChanges(object state)
         {
             // Make copies to control exactly when we lock
-            List<RowUpdate> rowUpdatesAdd = null, rowUpdatesDelete = null;
+            List<TableUpdate> rowUpdatesAdd = null, rowUpdatesDelete = null;
             List<ITableColumnUpdater> colUpdaters;
             lock (_shared)
             {
-                if (RowUpdatesAdd.Count > 0) rowUpdatesAdd = RowUpdatesAdd.DequeueAllToList();
+                if (_rowUpdatesAdd.Count > 0) rowUpdatesAdd = _rowUpdatesAdd.DequeueAllToList();
                 if (_rowUpdatesDelete.Count > 0) rowUpdatesDelete = _rowUpdatesDelete.DequeueAllToList();
 
                 colUpdaters = new List<ITableColumnUpdater>(from u in _columnUpdaters.Values where u.UpdateCount > 0 select u.Clone());
@@ -106,7 +107,8 @@ namespace ReactiveTables.Framework.Synchronisation
                             {
                                 for (int i = 0; i < rowUpdatesAdd.Count; i++)
                                 {
-                                    _targetTable.AddRow();
+                                    var row = _targetTable.AddRow();
+                                    Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
                                 }
                             }
 
@@ -117,9 +119,9 @@ namespace ReactiveTables.Framework.Synchronisation
 
                             if (rowUpdatesDelete != null)
                             {
-                                foreach (var delete in rowUpdatesDelete)
+                                for (int i = 0; i < rowUpdatesDelete.Count; i++)
                                 {
-                                    _targetTable.DeleteRow(delete.RowIndex);
+                                    _targetTable.DeleteRow(rowUpdatesDelete[i].RowIndex);
                                 }
                             }
                         }
@@ -130,22 +132,12 @@ namespace ReactiveTables.Framework.Synchronisation
                     });
         }
 
-        public IDisposable Subscribe(IObserver<RowUpdate> observer)
+        public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
 
-        public void Unsubscribe(IObserver<RowUpdate> observer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDisposable Subscribe(IObserver<ColumnUpdate> observer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Unsubscribe(IObserver<ColumnUpdate> observer)
+        public void Unsubscribe(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
@@ -161,6 +153,11 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplayRows(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
@@ -194,10 +191,10 @@ namespace ReactiveTables.Framework.Synchronisation
         public int AddRow()
         {
             int rowIndex = _rowManager.AddRow();
-            RowUpdate update = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Add);
+            TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
             lock (_shared)
             {
-                RowUpdatesAdd.Enqueue(update);
+                _rowUpdatesAdd.Enqueue(update);
             }
             return rowIndex;
         }
@@ -205,7 +202,7 @@ namespace ReactiveTables.Framework.Synchronisation
         public void DeleteRow(int rowIndex)
         {
             _rowManager.DeleteRow(rowIndex);
-            RowUpdate update = new RowUpdate(rowIndex, RowUpdate.RowUpdateAction.Delete);
+            TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
             lock (_shared)
             {
                 _rowUpdatesDelete.Enqueue(update);
@@ -258,6 +255,7 @@ namespace ReactiveTables.Framework.Synchronisation
             while (_updates.Count > 0)
             {
                 var update = _updates.Dequeue();
+                Console.WriteLine("Updating column {0} at row {1} with value {2}", update.ColumnId, update.RowIndex, update.Value);
                 targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
             }
         }

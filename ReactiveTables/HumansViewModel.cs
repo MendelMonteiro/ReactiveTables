@@ -32,7 +32,10 @@ namespace ReactiveTables
             _humans = humans;
             Humans = new ObservableCollection<HumanViewModel>();
 
-            var subscription = _humans.Subscribe<RowUpdate>(update => Humans.Add(new HumanViewModel(_humans, update.RowIndex)));
+            var subscription = _humans.ReplayAndSubscribe(update =>
+                                                              {
+                                                                  if (update.IsRowUpdate()) Humans.Add(new HumanViewModel(_humans, update.RowIndex));
+                                                              });
             
             CurrentHuman = Humans.LastOrDefault();
 //            var id = 3;

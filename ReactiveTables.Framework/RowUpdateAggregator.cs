@@ -1,27 +1,28 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
-using System;
+using Exception = System.Exception;
+using System.Reactive.Linq;
 
 namespace ReactiveTables.Framework
 {
-    class RowUpdateAggregator
+    internal class RowUpdateAggregator
     {
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
-        private readonly IObserver<RowUpdate> _observer;
+        private readonly System.IObserver<TableUpdate> _observer;
         private int _leftUpdateCount = 0;
         private int _rightUpdateCount = 0;
         private bool _leftCompleted = false;
@@ -29,16 +30,16 @@ namespace ReactiveTables.Framework
         private readonly TableRowUpdateObserver _leftTableRowUpdateObserver;
         private readonly TableRowUpdateObserver _rightTableRowUpdateObserver;
 
-        public RowUpdateAggregator(IReactiveTable leftTable, IReactiveTable rightTable, IObserver<RowUpdate> observer)
+        public RowUpdateAggregator(IReactiveTable leftTable, IReactiveTable rightTable, System.IObserver<TableUpdate> observer)
         {
             _leftTable = leftTable;
             _rightTable = rightTable;
             _observer = observer;
 
             _leftTableRowUpdateObserver = new TableRowUpdateObserver(this, _leftTable);
-            _leftTable.Subscribe(_leftTableRowUpdateObserver);
+            _leftTable.Where(TableUpdate.IsRowUpdate).Subscribe(_leftTableRowUpdateObserver);
             _rightTableRowUpdateObserver = new TableRowUpdateObserver(this, _rightTable);
-            _rightTable.Subscribe(_rightTableRowUpdateObserver);
+            _rightTable.Where(TableUpdate.IsRowUpdate).Subscribe(_rightTableRowUpdateObserver);
         }
 
         public void Unsubscribe()
@@ -47,7 +48,7 @@ namespace ReactiveTables.Framework
             _rightTable.Unsubscribe(_rightTableRowUpdateObserver);
         }
 
-        private void OnNext(IReactiveTable table, RowUpdate update)
+        private void OnNext(IReactiveTable table, TableUpdate update)
         {
             if (table == _leftTable)
             {
@@ -76,7 +77,7 @@ namespace ReactiveTables.Framework
             if (_leftCompleted && _rightCompleted) _observer.OnCompleted();
         }
 
-        private class TableRowUpdateObserver : IObserver<RowUpdate>
+        private class TableRowUpdateObserver : System.IObserver<TableUpdate>
         {
             private readonly RowUpdateAggregator _rowUpdateAggregator;
             private readonly IReactiveTable _table;
@@ -87,7 +88,7 @@ namespace ReactiveTables.Framework
                 _table = table;
             }
 
-            public void OnNext(RowUpdate update)
+            public void OnNext(TableUpdate update)
             {
                 _rowUpdateAggregator.OnNext(_table, update);
             }

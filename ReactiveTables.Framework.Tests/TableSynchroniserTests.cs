@@ -32,7 +32,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -57,7 +57,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);
@@ -90,7 +90,7 @@ namespace ReactiveTables.Framework.Tests
             TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.Subscribe<RowUpdate>(updateHandler.OnRowUpdate);
+            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(1, target.RowCount);

@@ -31,13 +31,12 @@ namespace ReactiveTables
             _humanAccounts = humanAccounts;
 
             HumanAccounts = new ObservableCollection<HumanAccountViewModel>();
-            _humanAccounts.Subscribe<RowUpdate>(update => HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex)));
+            _humanAccounts.ReplayAndSubscribe(update =>
+                                                  {
+                                                      if (update.IsRowUpdate()) HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex));
+                                                  });
 
-            Change = new DelegateCommand(() =>
-                                             {
-                                                 accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond);
-//                                                 base.OnPropertyChanged("AccountDetails");
-                                             });
+            Change = new DelegateCommand(() => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
 
             _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
         }
