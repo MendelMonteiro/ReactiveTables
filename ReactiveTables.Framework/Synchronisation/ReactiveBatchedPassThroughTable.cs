@@ -108,7 +108,7 @@ namespace ReactiveTables.Framework.Synchronisation
                                 for (int i = 0; i < rowUpdatesAdd.Count; i++)
                                 {
                                     var row = _targetTable.AddRow();
-                                    Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
+//                                    Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
                                 }
                             }
 
@@ -255,7 +255,7 @@ namespace ReactiveTables.Framework.Synchronisation
             while (_updates.Count > 0)
             {
                 var update = _updates.Dequeue();
-                Console.WriteLine("Updating column {0} at row {1} with value {2}", update.ColumnId, update.RowIndex, update.Value);
+//                Console.WriteLine("Updating column {0} at row {1} with value {2}", update.ColumnId, update.RowIndex, update.Value);
                 targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
             }
         }

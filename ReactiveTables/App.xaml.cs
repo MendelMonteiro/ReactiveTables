@@ -38,16 +38,17 @@ namespace ReactiveTables
         private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(500);
-        private const int BatchSize = 10;
+        private const int BatchSize = 5;
         private const int DataDelay = 0;
         private const int GuiDisplayDelay = 0;
         public static IReactiveTable Humans { get; set; }
         public static IReactiveTable Accounts { get; private set; }
         public static IReactiveTable AccountHumans { get; private set; }
 
-        private const int HumanOffset = 1000;
-        private const int AccountOffset = 10000;
-        private const int DataPauseDelay = 1000;
+        private const int HumanIdOffset = 1000;
+        private const int AccountIdOffset = 10000;
+        private const int HumanDataPauseDelay = 2500;
+        private const int AccountDataPauseDelay = 5000;
 
         public App()
         {
@@ -77,13 +78,13 @@ namespace ReactiveTables
             AddTestHumans(humansWire);
             AddTestAccounts(accountsWire);
 
-            /*Thread humanDataThread = new Thread(StreamHumanData);
+            Thread humanDataThread = new Thread(StreamHumanData);
             humanDataThread.IsBackground = true;
             humanDataThread.Start(humansWire);
 
             Thread accountDataThread = new Thread(StreamAccountData);
             accountDataThread.IsBackground = true;
-            accountDataThread.Start(accountsWire);*/
+            accountDataThread.Start(accountsWire);
 
             Thread.Sleep(GuiDisplayDelay);
         }
@@ -125,8 +126,8 @@ namespace ReactiveTables
         private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
         {
             int rowId = accountsWire.AddRow();
-            accountsWire.SetValue(AccountColumns.IdColumn, rowId, AccountOffset + accountId);
-            accountsWire.SetValue(AccountColumns.HumanId, rowId, HumanOffset + humanId);
+            accountsWire.SetValue(AccountColumns.IdColumn, rowId, AccountIdOffset + accountId);
+            accountsWire.SetValue(AccountColumns.HumanId, rowId, HumanIdOffset + humanId);
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
@@ -157,7 +158,7 @@ namespace ReactiveTables
         private static void AddHuman(IWritableReactiveTable humans, int id, string name)
         {
             int rowIndex = humans.AddRow();
-            humans.SetValue(HumanColumns.IdColumn, rowIndex, HumanOffset + id);
+            humans.SetValue(HumanColumns.IdColumn, rowIndex, HumanIdOffset + id);
             humans.SetValue(HumanColumns.NameColumn, rowIndex, name);
         }
 
@@ -173,12 +174,12 @@ namespace ReactiveTables
             var id = 3;
             while (true)
             {
-                Thread.Sleep(DataPauseDelay);
+                Thread.Sleep(HumanDataPauseDelay);
                 for (int i = 0; i < BatchSize; i++)
                 {
                     AddHuman(humans, id, "Human #" + id);
 
-                    UpdateRandomHuman(humans, id, random);
+//                    UpdateRandomHuman(humans, id, random);
                     id++;
                 }
             }
@@ -192,13 +193,13 @@ namespace ReactiveTables
             var id = 3;
             while (true)
             {
-                Thread.Sleep(DataPauseDelay);
+                Thread.Sleep(AccountDataPauseDelay);
 
                 for (int i = 0; i < BatchSize; i++)
                 {
                     AddAccount(accounts, id, id, 66666m);
 
-                    UpdateRandomAccount(accounts, id, random);
+//                    UpdateRandomAccount(accounts, id, random);
                     id++;
                 }
             }            

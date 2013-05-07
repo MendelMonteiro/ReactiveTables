@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using NUnit.Framework;
@@ -229,12 +230,111 @@ namespace ReactiveTables.Framework.Tests.Joins
             SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 3, 1);
         }
 
+        private class ColumnUpdateHandler
+        {
+            public List<string> LastColumnsUpdated { get; private set; }
+            public List<int> LastRowsUpdated { get; private set; }
+            public int LastRowUpdated { get { return LastRowsUpdated.LastOrDefault(); } }
+            public string LastColumnUpdated { get { return LastColumnsUpdated.LastOrDefault(); } }
+
+            public ColumnUpdateHandler()
+            {
+                LastColumnsUpdated = new List<string>();
+                LastRowsUpdated = new List<int>();
+            }
+
+            public void OnColumnUpdate(TableUpdate update)
+            {
+                LastColumnsUpdated.Add(update.Column.ColumnId);
+                LastRowsUpdated.Add(update.RowIndex);
+            }
+        }
+
         [Test]
         public void TestOuterJoin1ToNAllRightFirst()
         {
             ReactiveTable rightTable;
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
+
+            ColumnUpdateHandler colsUpdated = new ColumnUpdateHandler();
+            joinedTable.ColumnUpdates().Subscribe(colsUpdated.OnColumnUpdate);
+            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
+            
+            var rightRowId = rightTable.AddRow();
+            var rightRowId2 = rightTable.AddRow();
+            var rightRowId3 = rightTable.AddRow();
+            Assert.AreEqual(0, rowsUpdated.CurrentRowCount);
+
+            // First row right side
+            SetAndTestRightRow(rightTable, rightRowId, rowsUpdated, joinedTable, 401, 801, 1, 0);
+            // Bug happens when right elements appear first
+//            Assert.AreEqual(,);
+
+            // Second row right side
+            SetAndTestRightRow(rightTable, rightRowId2, rowsUpdated, joinedTable, 401, 802, 2, 1);
+
+            // Third row right side
+            SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 3, 2);
+
+            Assert.AreEqual(3, rowsUpdated.CurrentRowCount);
+            var leftRowId = leftTable.AddRow();
+            var leftRowId1 = leftTable.AddRow();
+
+            // First row left side
+            SetAndTestLeftRow(leftTable, leftRowId, rowsUpdated, joinedTable, 401, 3, 0);
+            Assert.AreEqual(401, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 0)); // Check both rows created
+            Assert.AreEqual(401, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 1)); // Check both rows created
+
+            // Second row left side
+            SetAndTestLeftRow(leftTable, leftRowId1, rowsUpdated, joinedTable, 402, 3, 2);
+            Assert.AreEqual(402, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 2)); // Check both rows created
+        }
+
+
+
+        [Test]
+        public void TestInnerJoin1ToNAllLeftFirst()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
+
+            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
+
+            var leftRowId = leftTable.AddRow();
+            var leftRowId1 = leftTable.AddRow();
+            Assert.AreEqual(0, rowsUpdated.CurrentRowCount);
+
+            // First row left side
+            SetAndTestLeftRow(leftTable, leftRowId, rowsUpdated, joinedTable, 401, 0, false);
+
+            // Second row left side
+            SetAndTestLeftRow(leftTable, leftRowId1, rowsUpdated, joinedTable, 402, 0, false);
+
+            var rightRowId = rightTable.AddRow();
+            var rightRowId2 = rightTable.AddRow();
+            var rightRowId3 = rightTable.AddRow();
+
+            // First row right side
+            Assert.AreEqual(0, rowsUpdated.CurrentRowCount);
+            SetAndTestRightRow(rightTable, rightRowId, rowsUpdated, joinedTable, 401, 801, 1, 0);
+
+            // Second row right side
+            SetAndTestRightRow(rightTable, rightRowId2, rowsUpdated, joinedTable, 401, 802, 2, 1);
+
+            // Third row right side
+            SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 3, 2);
+        }
+
+        [Test]
+        public void TestInnerJoin1ToNAllRightFirst()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
             RowUpdateHandler rowsUpdated = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
@@ -245,24 +345,25 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, rowsUpdated.CurrentRowCount);
 
             // First row right side
-            SetAndTestRightRow(rightTable, rightRowId, rowsUpdated, joinedTable, 401, 801, 1, 0);
+            SetAndTestRightRow(rightTable, rightRowId, rowsUpdated, joinedTable, 401, 801, 0, false);
 
             // Second row right side
-            SetAndTestRightRow(rightTable, rightRowId2, rowsUpdated, joinedTable, 401, 802, 1, 0);
+            SetAndTestRightRow(rightTable, rightRowId2, rowsUpdated, joinedTable, 401, 802, 0, false);
 
             // Third row right side
-            SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 2, 1);
+            SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 0, false);
 
-            Assert.AreEqual(2, rowsUpdated.CurrentRowCount);
+            Assert.AreEqual(0, rowsUpdated.CurrentRowCount);
             var leftRowId = leftTable.AddRow();
             var leftRowId1 = leftTable.AddRow();
 
             // First row left side
-            SetAndTestLeftRow(leftTable, leftRowId, rowsUpdated, joinedTable, 401, 3, 0);
-            Assert.AreEqual(401, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 2)); // Check both rows created
+            SetAndTestLeftRow(leftTable, leftRowId, rowsUpdated, joinedTable, 401, 2, 0);
+            Assert.AreEqual(401, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 1)); // Check both rows created
+            Assert.AreEqual(401, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 0)); // Check both rows created
 
             // Second row left side
-            SetAndTestLeftRow(leftTable, leftRowId1, rowsUpdated, joinedTable, 402, 3, 1);
+            SetAndTestLeftRow(leftTable, leftRowId1, rowsUpdated, joinedTable, 402, 3, 2);
         }
 
         [Test]

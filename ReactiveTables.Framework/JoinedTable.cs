@@ -76,8 +76,7 @@ namespace ReactiveTables.Framework
             // Add calc'ed columns
             Columns.Add(column.ColumnId, column);
             var joinableCol = column as IReactiveJoinableColumn;
-            if (joinableCol != null)
-                joinableCol.SetJoiner(_joiner);
+            if (joinableCol != null) joinableCol.SetJoiner(_joiner);
 
             // Need to subscribe to changes in calculated columns
             column.Subscribe(new ColumnChangePublisher(column, _observers));

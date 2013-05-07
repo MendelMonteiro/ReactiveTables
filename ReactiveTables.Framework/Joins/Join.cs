@@ -104,6 +104,7 @@ namespace ReactiveTables.Framework.Joins
                                                                     _joinType, _rowManager);
             _leftRowToken = leftTable.RowUpdates().Subscribe(_leftRowDeleteHandler);
             _rightRowToken = rightTable.RowUpdates().Subscribe(_rightRowDeleteHandler);
+
         }
 
         public int GetRowIndex(IReactiveColumn column, int joinRowIndex)
@@ -179,7 +180,6 @@ namespace ReactiveTables.Framework.Joins
             var key = table.GetValue<TKey>(column.ColumnId, columnRowIndex);
 
             ColumnRowMapping keyRowsMapping;
-            int? joinedRowId;
             // Has the key been used before?
             Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows = side == JoinSide.Left ? _rightColumnRowsToJoinRows : _leftColumnRowsToJoinRows;
             Dictionary<int, HashSet<int>> columnRowsToJoinRows = side == JoinSide.Left ? _leftColumnRowsToJoinRows : _rightColumnRowsToJoinRows;
@@ -189,105 +189,18 @@ namespace ReactiveTables.Framework.Joins
                 // Existing row
                 if (columnRowsToJoinRows.TryGetValue(columnRowIndex, out existingRowIndeces))
                 {
-                    // Same key as before
-                    if (keyRowsMapping.ColRowMappings.Any(FindKeyByRow(columnRowIndex, side)))
-                    {
-                        // Do nothing
-                    }
-                        // Key has changed
-                    else
-                    {
-                        foreach (var rowId in existingRowIndeces)
-                        {
-                            var oldKey = _rows[rowId].Value.Key;
-                            keyRowsMapping = MoveKeyEntry(_rows, rowId, oldKey, key,
-                                                          columnRowsToJoinRows, keyRowsMapping, _rowsByKey);
-                        }
-                    }
+                    UpdateExistingRow(columnRowIndex, side, keyRowsMapping, existingRowIndeces, key, columnRowsToJoinRows);
                 }
                     // New row
                 else
                 {
-                    // Other side rows exist with no mapping - try to join to an unlinked one
-                    int unlinkedIndex = keyRowsMapping.ColRowMappings.FindIndex(IsRowUnlinked(side));
-                    if (unlinkedIndex >= 0)
-                    {
-                        for (int i = unlinkedIndex; i < keyRowsMapping.ColRowMappings.Count; i++)
-                        {
-                            // Link the row to the joined row.
-                            var unlinked = keyRowsMapping.ColRowMappings[i];
-                            LinkRow(ref unlinked, columnRowIndex, side);
-
-                            // If it's an inner join we need to create the new row here (when we link)
-                            if (!unlinked.RowId.HasValue)
-                            {
-                                joinedRowId = GetNewRowId();
-
-                                unlinked.RowId = joinedRowId; // Can't forget to update the existing row object with the new id
-                                AddNewRow(unlinked, updateRows, joinedRowId.Value);
-
-                                // Need to update the reverse mapping for the other side too as it wasn't done before
-                                var otherRowId = side == JoinSide.Left ? unlinked.RightRowId : unlinked.LeftRowId;
-                                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
-                            }
-                            else
-                            {
-                                joinedRowId = unlinked.RowId;
-                            }
-
-                            keyRowsMapping.ColRowMappings[i] = unlinked;
-                            _rows[joinedRowId.Value] = unlinked;
-
-                            // Update the reverse lookup
-                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
-                        }
-                    }
-                        // No unlinked - add new mappings and rows for each other side row
-                    else
-                    {
-                        var otherRows = GetDistinctOtherRows(keyRowsMapping, side);
-                        int?[] otherRowIds = otherRows.ToArray();
-                        foreach (var otherRowId in otherRowIds)
-                        {
-                            joinedRowId = GetNewRowId();
-                            var joinRow = CreateNewLinkedJoinRow(columnRowIndex, joinedRowId.Value, key, otherRowId, side);
-                            keyRowsMapping.ColRowMappings.Add(joinRow);
-
-                            AddNewRow(joinRow, updateRows, joinedRowId.Value);
-
-                            // Update the reverse lookup
-                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
-                            otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
-                        }/*
-
-                        // No matching entries on the other side but we still need to keep the reverse mapping up to date.
-                        if (otherRowIds.Length == 0)
-                        {
-                            // Update the reverse lookup
-                            int rowId = keyRowsMapping.ColRowMappings.First().RowId.Value;
-                            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(rowId);
-                            keyRowsMapping.ColRowMappings.Add(CreateNewJoinRow(columnRowIndex, key, null, side));
-                        }*/
-                    }
+                    UpdateNewRow(columnRowIndex, side, keyRowsMapping, updateRows, key, otherColumnRowsToJoinRows, columnRowsToJoinRows);
                 }
             }
+                // New key
             else
             {
-                // First time this key has been used so create a new (unlinked on the other side)
-                keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
-                bool shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
-
-                joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?) null;
-                var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
-                keyRowsMapping.ColRowMappings.Add(joinRow);
-
-                if (shouldAddUnlinkedRow)
-                {
-                    AddNewRow(joinRow, updateRows, joinedRowId.Value);
-
-                    // Update the reverse lookup
-                    columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
-                }
+                keyRowsMapping = UpdateNewKey(columnRowIndex, side, key, updateRows, columnRowsToJoinRows);
             }
 
             _rowsByKey[key] = keyRowsMapping;
@@ -295,10 +208,138 @@ namespace ReactiveTables.Framework.Joins
             return updateRows;
         }
 
+        private void UpdateExistingRow(int columnRowIndex, JoinSide side, ColumnRowMapping keyRowsMapping, HashSet<int> existingRowIndeces, TKey key, Dictionary<int, HashSet<int>> columnRowsToJoinRows)
+        {
+            // Same key as before
+            if (keyRowsMapping.ColRowMappings.Any(FindKeyByRow(columnRowIndex, side)))
+            {
+                // Do nothing
+            }
+                // Key has changed
+            else
+            {
+                foreach (var rowId in existingRowIndeces)
+                {
+                    var oldKey = _rows[rowId].Value.Key;
+                    // TODO: Need to possibly alter other keyRowMappings - not possible with current method signature.
+                    keyRowsMapping = MoveKeyEntry(_rows, rowId, oldKey, key,
+                                                  columnRowsToJoinRows, keyRowsMapping, _rowsByKey);
+                }
+            }
+        }
+
+        private void UpdateNewRow(int columnRowIndex, JoinSide side, ColumnRowMapping keyRowsMapping, List<int> updateRows,
+                                  TKey key, Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows, Dictionary<int, HashSet<int>> columnRowsToJoinRows)
+        {
+            // Other side rows exist with no mapping - try to join to an unlinked one
+            int unlinkedIndex = keyRowsMapping.ColRowMappings.FindIndex(IsRowUnlinked(side));
+            if (unlinkedIndex >= 0)
+            {
+                for (int i = unlinkedIndex; i < keyRowsMapping.ColRowMappings.Count; i++)
+                {
+                    LinkNewItemToUnlinkedRows(columnRowIndex, side, keyRowsMapping, updateRows, otherColumnRowsToJoinRows, columnRowsToJoinRows, i);
+                }
+            }
+                // No unlinked - add new mappings and rows for each row on the other side
+            else
+            {
+                AddNewRowMapping(columnRowIndex, side, keyRowsMapping, updateRows, key, otherColumnRowsToJoinRows, columnRowsToJoinRows);
+            }
+        }
+
+        private void LinkNewItemToUnlinkedRows(int columnRowIndex, JoinSide side, ColumnRowMapping keyRowsMapping, List<int> updateRows,
+                                 Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows, Dictionary<int, HashSet<int>> columnRowsToJoinRows, int i)
+        {
+            int? joinedRowId;
+            // Link the row to the joined row.
+            var rowToLink = keyRowsMapping.ColRowMappings[i];
+            LinkRow(ref rowToLink, columnRowIndex, side);
+
+            // We need to create the new row here (when we link)
+            if (!rowToLink.RowId.HasValue)
+            {
+                joinedRowId = GetNewRowId();
+
+                rowToLink.RowId = joinedRowId; // Can't forget to update the existing row object with the new id
+                AddNewRow(rowToLink, updateRows, joinedRowId.Value);
+
+                // Need to update the reverse mapping for the other side too as it wasn't done before
+                var otherRowId = side == JoinSide.Left ? rowToLink.RightRowId : rowToLink.LeftRowId;
+                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
+            }
+            else
+            {
+                joinedRowId = rowToLink.RowId;
+            }
+
+            keyRowsMapping.ColRowMappings[i] = rowToLink;
+            _rows[joinedRowId.Value] = rowToLink;
+
+            // Update the reverse lookup
+            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+        }
+
+        private void AddNewRowMapping(int columnRowIndex, JoinSide side, ColumnRowMapping keyRowsMapping, List<int> updateRows, TKey key,
+                                      Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows, Dictionary<int, HashSet<int>> columnRowsToJoinRows)
+        {
+            // For each distinct row on the other side we need to create a new row and link ourselves
+            var otherRows = GetDistinctOtherRows(keyRowsMapping, side);
+            int?[] otherRowIds = otherRows.ToArray();
+            foreach (var otherRowId in otherRowIds)
+            {
+                int? joinedRowId = GetNewRowId();
+                var joinRow = CreateNewLinkedJoinRow(columnRowIndex, joinedRowId.Value, key, otherRowId, side);
+                keyRowsMapping.ColRowMappings.Add(joinRow);
+
+                AddNewRow(joinRow, updateRows, joinedRowId.Value);
+
+                // Update the reverse lookup
+                columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
+            }
+
+            // If there are no matching entries on the other side we still need to add a row and mapping
+            if (otherRowIds.Length == 0)
+            {
+                UpdateNewKeyInExistingMapping(columnRowIndex, side, key, updateRows, columnRowsToJoinRows, keyRowsMapping);
+            }
+        }
+
+        private ColumnRowMapping UpdateNewKey(int columnRowIndex, JoinSide side, TKey key, List<int> updateRows, Dictionary<int, HashSet<int>> columnRowsToJoinRows)
+        {
+            // First time this key has been used so create a new (unlinked on the other side)
+            ColumnRowMapping keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
+
+            UpdateNewKeyInExistingMapping(columnRowIndex, side, key, updateRows, columnRowsToJoinRows, keyRowsMapping);
+
+            return keyRowsMapping;
+        }
+
+        private void UpdateNewKeyInExistingMapping(int columnRowIndex,
+                                                               JoinSide side,
+                                                               TKey key,
+                                                               List<int> updateRows,
+                                                               Dictionary<int, HashSet<int>> columnRowsToJoinRows,
+                                                               ColumnRowMapping keyRowsMapping)
+        {
+            bool shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
+            int? joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?) null;
+            var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
+            keyRowsMapping.ColRowMappings.Add(joinRow);
+
+            if (shouldAddUnlinkedRow)
+            {
+                AddNewRow(joinRow, updateRows, joinedRowId.Value);
+
+                // Update the reverse lookup
+                columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+            }
+        }
+
         private int GetNewRowId()
         {
             int newRowId = _rowManager.AddRow();
-            Console.WriteLine("Adding row {0} to join {1} {2}", newRowId, _leftColumn.ColumnId, _rightColumn.ColumnId);
+//            Console.WriteLine("Adding row {0} to join {1} {2}", newRowId, _leftColumn.ColumnId, _rightColumn.ColumnId);
             return newRowId;
         }
 
@@ -378,13 +419,8 @@ namespace ReactiveTables.Framework.Joins
             return r => r.RightRowId == columnRowIndex;
         }
 
-        private ColumnRowMapping MoveKeyEntry(List<Row?> rows,
-                                              int existingRowIndex,
-                                              TKey oldKey,
-                                              TKey newKey,
-                                              Dictionary<int, HashSet<int>> columnRowsToJoinRows,
-                                              ColumnRowMapping keyRowsMapping,
-                                              Dictionary<TKey, ColumnRowMapping> rowsByKey)
+        private ColumnRowMapping MoveKeyEntry(List<Row?> rows, int existingRowIndex, TKey oldKey, TKey newKey, Dictionary<int, HashSet<int>> columnRowsToJoinRows,
+                                              ColumnRowMapping keyRowsMapping, Dictionary<TKey, ColumnRowMapping> rowsByKey)
         {
             throw new NotImplementedException();
             // Clear all matching left key entries
