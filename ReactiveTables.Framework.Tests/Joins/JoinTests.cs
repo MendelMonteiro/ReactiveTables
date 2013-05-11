@@ -27,16 +27,16 @@ namespace ReactiveTables.Framework.Tests.Joins
 {
     public static class TestLeftColumns
     {
-        public static readonly string IdColumn = "Test1.IdColumn";
-        public static readonly string StringColumn = "Test1.String";
-        public static readonly string DecimalColumn = "Test1.Decimal";
+        public const string IdColumn = "Test1.IdColumn";
+        public const string StringColumn = "Test1.String";
+        public const string DecimalColumn = "Test1.Decimal";
     }
 
     public static class TestRightColumns
     {
-        public static readonly string IdColumn = "Test2.IdColumn";
-        public static readonly string LeftIdColumn = "Test2.LeftId";
-        public static readonly string DecimalColumn = "Test2.Decimal";
+        public const string IdColumn = "Test2.IdColumn";
+        public const string LeftIdColumn = "Test2.LeftId";
+        public const string DecimalColumn = "Test2.Decimal";
     }
 
     [TestFixture]
@@ -230,26 +230,6 @@ namespace ReactiveTables.Framework.Tests.Joins
             SetAndTestRightRow(rightTable, rightRowId3, rowsUpdated, joinedTable, 402, 803, 3, 1);
         }
 
-        private class ColumnUpdateHandler
-        {
-            public List<string> LastColumnsUpdated { get; private set; }
-            public List<int> LastRowsUpdated { get; private set; }
-            public int LastRowUpdated { get { return LastRowsUpdated.LastOrDefault(); } }
-            public string LastColumnUpdated { get { return LastColumnsUpdated.LastOrDefault(); } }
-
-            public ColumnUpdateHandler()
-            {
-                LastColumnsUpdated = new List<string>();
-                LastRowsUpdated = new List<int>();
-            }
-
-            public void OnColumnUpdate(TableUpdate update)
-            {
-                LastColumnsUpdated.Add(update.Column.ColumnId);
-                LastRowsUpdated.Add(update.RowIndex);
-            }
-        }
-
         [Test]
         public void TestOuterJoin1ToNAllRightFirst()
         {
@@ -291,7 +271,6 @@ namespace ReactiveTables.Framework.Tests.Joins
             SetAndTestLeftRow(leftTable, leftRowId1, rowsUpdated, joinedTable, 402, 3, 2);
             Assert.AreEqual(402, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 2)); // Check both rows created
         }
-
 
 
         [Test]
@@ -1055,6 +1034,87 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual("hello", joinedTable.GetValue<string>(TestLeftColumns.StringColumn, 1));
         }
 
+        [Test]
+        public void TestNotifyPropertyChangedOuter()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
+
+            TestPropertyChangedConsumer propertyChangedConsumer = new TestPropertyChangedConsumer();
+            var leftRow = leftTable.AddRow();
+            const int joinedRow = 0;
+            joinedTable.ChangeNotifier.RegisterPropertyNotifiedConsumer(propertyChangedConsumer, joinedRow);
+
+            leftTable.SetValue(TestLeftColumns.IdColumn, leftRow, 1);
+            Assert.Contains("IdColumn", propertyChangedConsumer.PropertiesChanged);
+            Assert.Contains("String", propertyChangedConsumer.PropertiesChanged);
+            Assert.Contains("Decimal", propertyChangedConsumer.PropertiesChanged);
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, joinedRow));
+
+            leftTable.SetValue(TestLeftColumns.StringColumn, leftRow, "Blah");
+            Assert.AreEqual("String", propertyChangedConsumer.LastPropertyChanged);
+            Assert.AreEqual("Blah", joinedTable.GetValue<string>(TestLeftColumns.StringColumn, joinedRow));
+
+            var rightRow = rightTable.AddRow();
+            rightTable.SetValue(TestRightColumns.IdColumn, rightRow, 1);
+            // Right row updates should be suppressed until it's properly joined
+            Assert.AreNotEqual("IdColumn", propertyChangedConsumer.LastPropertyChanged);
+            Assert.AreNotEqual(1, joinedTable.GetValue<int>(TestRightColumns.IdColumn, joinedRow));
+
+            rightTable.SetValue(TestRightColumns.LeftIdColumn, rightRow, 1);
+            // All other newly joined columns should have their notifications fired on join
+            var rightChanges = propertyChangedConsumer.PropertiesChanged.Skip(propertyChangedConsumer.PropertiesChanged.Count - 3).Take(3);
+            Assert.AreEqual("IdColumn", rightChanges.ElementAt(0));
+            Assert.AreEqual("LeftId", rightChanges.ElementAt(1));
+            Assert.AreEqual("Decimal", rightChanges.ElementAt(2));
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, joinedRow));
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestRightColumns.IdColumn, joinedRow));
+        }
+
+        [Test]
+        public void TestNotifyPropertyChangedInner()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
+
+            TestPropertyChangedConsumer propertyChangedConsumer = new TestPropertyChangedConsumer();
+            var leftRow = leftTable.AddRow();
+            const int joinedRow = 0;
+            joinedTable.ChangeNotifier.RegisterPropertyNotifiedConsumer(propertyChangedConsumer, joinedRow);
+
+            leftTable.SetValue(TestLeftColumns.IdColumn, leftRow, 1);
+            // Updates and values should not be present until join
+            CollectionAssert.DoesNotContain(propertyChangedConsumer.PropertiesChanged, "IdColumn");
+            Assert.AreNotEqual(1, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, leftRow));
+
+            leftTable.SetValue(TestLeftColumns.StringColumn, leftRow, "Blah");
+            // Updates and values should not be present until join
+            CollectionAssert.DoesNotContain(propertyChangedConsumer.PropertiesChanged, "String");
+            Assert.AreNotEqual("Blah", joinedTable.GetValue<string>(TestLeftColumns.StringColumn, joinedRow));
+
+            var rightRow = rightTable.AddRow();
+            rightTable.SetValue(TestRightColumns.IdColumn, rightRow, 1);
+            // Right row updates should be suppressed until it's properly joined
+            CollectionAssert.DoesNotContain(propertyChangedConsumer.PropertiesChanged, "IdColumn");
+            Assert.AreNotEqual(1, joinedTable.GetValue<int>(TestRightColumns.IdColumn, joinedRow));
+
+            rightTable.SetValue(TestRightColumns.LeftIdColumn, rightRow, 1);
+            // All other newly joined columns should have their notifications fired on join
+            Assert.Contains("IdColumn", propertyChangedConsumer.PropertiesChanged);
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, joinedRow));
+
+            Assert.Contains("String", propertyChangedConsumer.PropertiesChanged);
+            Assert.AreEqual("Blah", joinedTable.GetValue<string>(TestLeftColumns.StringColumn, joinedRow));
+
+            Assert.Contains("LeftId", propertyChangedConsumer.PropertiesChanged);
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, joinedRow));
+
+            Assert.Contains("IdColumn", propertyChangedConsumer.PropertiesChanged);
+            Assert.AreEqual(1, joinedTable.GetValue<int>(TestRightColumns.IdColumn, joinedRow));
+        }
+
         private static ReactiveTable CreateJoinedTables(out ReactiveTable rightTable, out IReactiveTable joinedTable, JoinType joinType = JoinType.FullOuter)
         {
             var leftTable = CreateLeftTable();
@@ -1165,6 +1225,26 @@ namespace ReactiveTables.Framework.Tests.Joins
 
             rightTable.SetValue(TestRightColumns.DecimalColumn, rightRowId, 9876m);
             Assert.AreEqual(9876m, joinedTable.GetValue<decimal>(TestRightColumns.DecimalColumn, lastRowUpdated));
+        }
+
+        private class ColumnUpdateHandler
+        {
+            public List<string> LastColumnsUpdated { get; private set; }
+            public List<int> LastRowsUpdated { get; private set; }
+            public int LastRowUpdated { get { return LastRowsUpdated.LastOrDefault(); } }
+            public string LastColumnUpdated { get { return LastColumnsUpdated.LastOrDefault(); } }
+
+            public ColumnUpdateHandler()
+            {
+                LastColumnsUpdated = new List<string>();
+                LastRowsUpdated = new List<int>();
+            }
+
+            public void OnColumnUpdate(TableUpdate update)
+            {
+                LastColumnsUpdated.Add(update.Column.ColumnId);
+                LastRowsUpdated.Add(update.RowIndex);
+            }
         }
     }
 }

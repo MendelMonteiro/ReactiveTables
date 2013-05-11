@@ -41,8 +41,8 @@
 ~1~            <Button Content="Add" Command="{Binding Accounts.Add}" />@1@
         </StackPanel>
         </ScrollViewer>-->
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Orientation="Horizontal">
-            <ScrollViewer>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Orientation="Horizontal" HorizontalAlignment="Center">
+            <!--<ScrollViewer>
                 <StackPanel>
                     <Label Content="People" HorizontalAlignment="Center" />
                     <DataGrid ItemsSource="{Binding Humans.Humans}" VirtualizingPanel.IsVirtualizing="True"
@@ -59,7 +59,7 @@
                           VirtualizingPanel.CacheLength="2">
                     </DataGrid>
                 </StackPanel>
-            </ScrollViewer>
+            </ScrollViewer>-->
             <ScrollViewer>
                 <StackPanel>
                     <Label Content="Account details joined" HorizontalAlignment="Center" />

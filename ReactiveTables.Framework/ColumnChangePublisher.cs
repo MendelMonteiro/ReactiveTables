@@ -19,6 +19,9 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// Notifies a collection of observers of changes occurring on a <see cref="ReactiveColumn{T}"/>
+    /// </summary>
     internal class ColumnChangePublisher : IColumnObserver
     {
         private readonly IReactiveColumn _column;

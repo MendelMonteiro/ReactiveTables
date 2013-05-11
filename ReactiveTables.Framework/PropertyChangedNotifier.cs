@@ -21,7 +21,7 @@ using ReactiveTables.Utils;
 namespace ReactiveTables.Framework
 {
     /// <summary>
-    /// Maybe we should store an instance of this on the table directly?
+    /// Translates table updates into INotifyPropertyChanged events.
     /// </summary>
     public class PropertyChangedNotifier : IObserver<TableUpdate>, IDisposable
     {

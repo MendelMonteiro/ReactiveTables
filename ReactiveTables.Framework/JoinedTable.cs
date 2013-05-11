@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
-using ReactiveTables.Utils;
 
 namespace ReactiveTables.Framework
 {
@@ -26,9 +25,7 @@ namespace ReactiveTables.Framework
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
         private readonly IReactiveTableJoiner _joiner;
-        private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
-        private readonly IObservable<TableUpdate> _leftColumnUpdates;
-        private readonly IObservable<TableUpdate> _rightColumnUpdates;
+        private readonly HashSet<IObserver<TableUpdate>> _calculatedColumnObservers = new HashSet<IObserver<TableUpdate>>();
 
         private readonly Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>> _tokens =
             new Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>>();
@@ -40,12 +37,6 @@ namespace ReactiveTables.Framework
             _joiner = joiner;
 
             Columns = new Dictionary<string, IReactiveColumn>();
-            _leftTable.Columns.CopyTo(Columns);
-            _rightTable.Columns.CopyTo(Columns);
-
-            _leftColumnUpdates = _leftTable.ColumnUpdates();
-            _rightColumnUpdates = _rightTable.ColumnUpdates();
-
             ChangeNotifier = new PropertyChangedNotifier(this);
 
             // TODO: need to process all existing values in the tables
@@ -53,12 +44,9 @@ namespace ReactiveTables.Framework
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            _joiner.AddRowObserver(observer);
-            _observers.Add(observer);
+            _joiner.AddObserver(observer);
+            _calculatedColumnObservers.Add(observer);
 
-            var leftToken = _leftColumnUpdates.Subscribe(observer);
-            var rightToken = _rightColumnUpdates.Subscribe(observer);
-            _tokens.Add(observer, new Tuple<IDisposable, IDisposable>(leftToken, rightToken));
             return new SubscriptionToken<JoinedTable, IObserver<TableUpdate>>(this, observer);
         }
 
@@ -68,7 +56,15 @@ namespace ReactiveTables.Framework
             tokens.Item1.Dispose();
             tokens.Item2.Dispose();
 
-            _observers.Remove(observer);
+            _calculatedColumnObservers.Remove(observer);
+        }
+
+        private void AddColumns(IReactiveTable reactiveTable)
+        {
+            foreach (var reactiveColumn in reactiveTable.Columns)
+            {
+                AddColumn(reactiveColumn.Value);
+            }
         }
 
         public void AddColumn(IReactiveColumn column)
@@ -79,7 +75,7 @@ namespace ReactiveTables.Framework
             if (joinableCol != null) joinableCol.SetJoiner(_joiner);
 
             // Need to subscribe to changes in calculated columns
-            column.Subscribe(new ColumnChangePublisher(column, _observers));
+            column.Subscribe(new ColumnChangePublisher(column, _calculatedColumnObservers));
         }
 
         public T GetValue<T>(string columnId, int rowIndex)

@@ -23,7 +23,8 @@ namespace ReactiveTables.Framework
     {
         int RowCount { get; }
         int GetRowIndex(IReactiveColumn column, int joinRowIndex);
-        void AddRowObserver(IObserver<TableUpdate> observer);
+        void AddObserver(IObserver<TableUpdate> observer);
         IEnumerable<int> GetRows();
+        void AddColumn(IReactiveColumn column);
     }
 }
