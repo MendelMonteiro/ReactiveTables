@@ -77,6 +77,7 @@
     <Compile Include="Collections\ReactiveListTests.cs" />
     <Compile Include="Columns\Aggregate\CountColumnTests.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
+    <Compile Include="Filters\FilterTest.cs" />
     <Compile Include="Joins\JoinTests.cs" />
     <Compile Include="PassThroughTableTests.cs" />
     <Compile Include="RowUpdateHandler.cs" />

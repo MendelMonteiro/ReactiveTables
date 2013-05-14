@@ -120,26 +120,18 @@ namespace ReactiveTables.Framework.Tests
         }
 
         [Test]
-        public void TestFilter()
+        public void TestSearchMultipleRows()
         {
             var table = TableTestHelper.CreateIndexedReactiveTable();
 
-            var row1 = AddRow(table, 1, "blah", 324.34m);
-            var row2 = AddRow(table, 2, "foo", 500.34m);
-            var row3 = AddRow(table, 3, "bar", 1000.34m);
-            
-//            IReactiveTable filteredTable = table.Filter(TestTableColumns.StringColumn, s => s == "blah");
+            var addedRowIndex1 = table.AddRow();
+            table.SetValue(TestTableColumns.IdColumn, addedRowIndex1, 1);
+            table.SetValue(TestTableColumns.StringColumn, addedRowIndex1, "blah");
+            table.SetValue(TestTableColumns.DecimalColumn, addedRowIndex1, 324.34m);
 
-//            Assert.AreEqual("blah", table.GetValue<string>(TestTableColumns.StringColumn, row1));
-        }
-
-        private static int AddRow(ReactiveTable table, int id, string stringVal, decimal decimalVal)
-        {
-            var row1 = table.AddRow();
-            table.SetValue(TestTableColumns.IdColumn, row1, id);
-            table.SetValue(TestTableColumns.StringColumn, row1, stringVal);
-            table.SetValue(TestTableColumns.DecimalColumn, row1, decimalVal);
-            return row1;
+            var addedRowIndex2 = table.AddRow();
+            table.SetValue(TestTableColumns.IdColumn, addedRowIndex2, 2);
+            Assert.Throws<InvalidOperationException>(() => table.SetValue(TestTableColumns.StringColumn, addedRowIndex2, "blah"));
         }
     }
 }

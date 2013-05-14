@@ -87,5 +87,25 @@ namespace ReactiveTables.Framework.Columns
         }
 
         public abstract int Find(T value);
+
+        #region IEquatable<IReactieColumn> implementation
+        public bool Equals(IReactiveColumn other)
+        {
+            return string.Equals(ColumnId, other.ColumnId);            
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((ReactiveColumnBase<T>) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (ColumnId != null ? ColumnId.GetHashCode() : 0);
+        }
+        #endregion
     }
 }

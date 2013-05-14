@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using Exception = System.Exception;
 using System.Reactive.Linq;
 
@@ -29,6 +30,8 @@ namespace ReactiveTables.Framework
         private bool _rightCompleted = false;
         private readonly TableRowUpdateObserver _leftTableRowUpdateObserver;
         private readonly TableRowUpdateObserver _rightTableRowUpdateObserver;
+        private readonly IDisposable _leftToken;
+        private readonly IDisposable _rightToken;
 
         public RowUpdateAggregator(IReactiveTable leftTable, IReactiveTable rightTable, System.IObserver<TableUpdate> observer)
         {
@@ -37,15 +40,15 @@ namespace ReactiveTables.Framework
             _observer = observer;
 
             _leftTableRowUpdateObserver = new TableRowUpdateObserver(this, _leftTable);
-            _leftTable.Where(TableUpdate.IsRowUpdate).Subscribe(_leftTableRowUpdateObserver);
+            _leftToken = _leftTable.Where(TableUpdate.IsRowUpdate).Subscribe(_leftTableRowUpdateObserver);
             _rightTableRowUpdateObserver = new TableRowUpdateObserver(this, _rightTable);
-            _rightTable.Where(TableUpdate.IsRowUpdate).Subscribe(_rightTableRowUpdateObserver);
+            _rightToken = _rightTable.Where(TableUpdate.IsRowUpdate).Subscribe(_rightTableRowUpdateObserver);
         }
 
         public void Unsubscribe()
         {
-            _leftTable.Unsubscribe(_leftTableRowUpdateObserver);
-            _rightTable.Unsubscribe(_rightTableRowUpdateObserver);
+            _leftToken.Dispose();
+            _rightToken.Dispose();
         }
 
         private void OnNext(IReactiveTable table, TableUpdate update)

@@ -73,6 +73,10 @@
   <ItemGroup>
     <Compile Include="Collections\ReactiveList.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
+    <Compile Include="Filters\DelegatePredicate1.cs" />
+    <Compile Include="Filters\DelegatePredicate2.cs" />
+    <Compile Include="Filters\FilteredTable.cs" />
+    <Compile Include="Filters\IReactivePredicate.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
@@ -114,6 +118,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

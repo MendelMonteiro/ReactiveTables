@@ -13,11 +13,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using System;
 using System.Collections.Generic;
 
 namespace ReactiveTables.Framework.Tests
 {
-    class RowUpdateHandler
+    class RowUpdateHandler:IObserver<TableUpdate>
     {
         public int CurrentRowCount { get; private set; }
         public int LastRowUpdated { get; private set; }
@@ -36,11 +38,26 @@ namespace ReactiveTables.Framework.Tests
             {
                 CurrentRowCount++;
             }
-            else
+            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
             {
                 CurrentRowCount--;
             }
             LastRowUpdated = update.RowIndex;
+        }
+
+        public void OnNext(TableUpdate value)
+        {
+            OnRowUpdate(value);
+        }
+
+        public void OnError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnCompleted()
+        {
+            throw new NotImplementedException();
         }
     }
 }

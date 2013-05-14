@@ -24,7 +24,7 @@ namespace ReactiveTables.Framework
         private readonly TableUpdateAction _action;
         private readonly int _rowIndex;
         private readonly IReactiveColumn _column;
-        private readonly IReactiveColumn[] _columns;
+        private readonly IList<IReactiveColumn> _columns;
 
         public TableUpdate(TableUpdateAction action, int rowIndex, IReactiveColumn column = (IReactiveColumn) null)
         {
@@ -34,7 +34,7 @@ namespace ReactiveTables.Framework
             _columns = new[] {column};
         }
 
-        public TableUpdate(TableUpdateAction action, int rowIndex, IReactiveColumn[] columns)
+        public TableUpdate(TableUpdateAction action, int rowIndex, IList<IReactiveColumn> columns)
         {
             _action = action;
             _rowIndex = rowIndex;
@@ -42,7 +42,7 @@ namespace ReactiveTables.Framework
             _columns = null;
             if (IsColumnUpdate(action))
             {
-                if (columns == null || columns.Length == 0)
+                if (columns == null || columns.Count == 0)
                 {
                     throw new ArgumentException("Columns must have values for column updates", "columns");
                 }

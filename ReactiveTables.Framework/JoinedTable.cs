@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Filters;
 
 namespace ReactiveTables.Framework
 {
@@ -116,6 +117,11 @@ namespace ReactiveTables.Framework
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
             return new JoinedTable(this, otherTable, joiner);
+        }
+
+        public IReactiveTable Filter(IReactivePredicate predicate)
+        {
+            return new FilteredTable(this, predicate);
         }
 
         public void ReplayRows(IObserver<TableUpdate> observer)

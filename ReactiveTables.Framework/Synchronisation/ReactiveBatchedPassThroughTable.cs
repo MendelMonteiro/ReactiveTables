@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Utils;
 
@@ -153,6 +154,11 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IReactiveTable Filter(IReactivePredicate predicate)
         {
             throw new NotImplementedException();
         }

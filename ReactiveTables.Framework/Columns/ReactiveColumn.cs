@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace ReactiveTables.Framework.Columns
 {
-    public interface IReactiveColumn : IObservableColumn
+    public interface IReactiveColumn : IObservableColumn, IEquatable<IReactiveColumn>
     {
         /// <summary>
         /// Should be an int?

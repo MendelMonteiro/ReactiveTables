@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Filters;
 
 namespace ReactiveTables.Framework
 {
@@ -29,6 +30,7 @@ namespace ReactiveTables.Framework
         Dictionary<string, IReactiveColumn> Columns { get; }
         PropertyChangedNotifier ChangeNotifier { get; }
         IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
+        IReactiveTable Filter(IReactivePredicate predicate);
         void ReplayRows(IObserver<TableUpdate> observer);
     }
 
@@ -116,6 +118,11 @@ namespace ReactiveTables.Framework
             {
                 observer.OnNext(rowUpdate);
             }
+        }
+
+        public IReactiveTable Filter(IReactivePredicate predicate)
+        {
+            return new FilteredTable(this, predicate);
         }
 
         public void ReplayRows(IObserver<TableUpdate> observer)

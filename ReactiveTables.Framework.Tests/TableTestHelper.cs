@@ -1,24 +1,24 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using NUnit.Framework;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Tests
 {
-    static internal class TableTestHelper
+    internal static class TableTestHelper
     {
         public static ReactiveTable CreateReactiveTable()
         {
@@ -55,7 +55,12 @@ namespace ReactiveTables.Framework.Tests
             Assert.AreEqual(value, table.GetValue<T>(columnId, rowId));
         }
 
-        public static void SetAndTestValueNotPresent<T>(IWritableReactiveTable setTable, IReactiveTable getTable, int setRowId, int getRowId, T value, string columnId)
+        public static void SetAndTestValueNotPresent<T>(IWritableReactiveTable setTable,
+                                                        IReactiveTable getTable,
+                                                        int setRowId,
+                                                        int getRowId,
+                                                        T value,
+                                                        string columnId)
         {
             setTable.SetValue(columnId, setRowId, value);
             Assert.AreEqual(default(T), getTable.GetValue<T>(columnId, getRowId));
