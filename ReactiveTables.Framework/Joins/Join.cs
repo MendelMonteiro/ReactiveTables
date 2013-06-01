@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Utils;
+using System.Reactive.Linq;
 
 namespace ReactiveTables.Framework.Joins
 {
@@ -29,8 +30,9 @@ namespace ReactiveTables.Framework.Joins
         RightOuter
     }
 
-    public class Join<TKey> : IReactiveTableJoiner, IObserver<TableUpdate>
+    public class Join<TKey> : IReactiveTableJoiner
     {
+        #region Internal structures
         public class ColumnRowMapping
         {
             public List<Row> ColRowMappings;
@@ -65,6 +67,7 @@ namespace ReactiveTables.Framework.Joins
             public int RowIndex { get; set; }
             public RowUpdateType Type { get; set; }
         }
+        #endregion
 
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
@@ -83,10 +86,13 @@ namespace ReactiveTables.Framework.Joins
         private readonly JoinRowDeleteHandler<TKey> _leftRowDeleteHandler;
         private readonly JoinRowDeleteHandler<TKey> _rightRowDeleteHandler;
         private readonly FieldRowManager _rowManager = new FieldRowManager();
+
         private readonly IDisposable _leftColToken;
         private readonly IDisposable _rightColToken;
         private readonly IDisposable _rightRowToken;
         private readonly IDisposable _leftRowToken;
+
+        private readonly bool _replaying = true;
 
         public int RowCount
         {
@@ -98,7 +104,8 @@ namespace ReactiveTables.Framework.Joins
             return _rowManager.GetRows();
         }
 
-        public Join(IReactiveTable leftTable, string leftIdColumn, IReactiveTable rightTable, string rightIdColumn, JoinType joinType = JoinType.FullOuter)
+        public Join(IReactiveTable leftTable, string leftIdColumn, IReactiveTable rightTable, string rightIdColumn, 
+                    JoinType joinType = JoinType.FullOuter)
         {
             _leftTable = leftTable;
             _rightTable = rightTable;
@@ -107,8 +114,10 @@ namespace ReactiveTables.Framework.Joins
             _leftColumn = leftTable.Columns[leftIdColumn];
             _rightColumn = rightTable.Columns[rightIdColumn];
 
-            _leftColToken = leftTable.ColumnUpdates().Subscribe(this);
-            _rightColToken = rightTable.ColumnUpdates().Subscribe(this);
+            _leftColToken = leftTable.ReplayAndSubscribe(OnNextLeft);
+            _rightColToken = rightTable.ReplayAndSubscribe(OnNextRight);
+
+            _replaying = false;
 
             _leftRowDeleteHandler = new JoinRowDeleteHandler<TKey>(
                 _rows, _rowsByKey, _leftColumnRowsToJoinRows, _rightColumnRowsToJoinRows, JoinSide.Left, _joinType, _rowManager);
@@ -128,8 +137,7 @@ namespace ReactiveTables.Framework.Joins
                 && _leftTable.Columns[column.ColumnId] == column
                 && row.HasValue)
             {
-                int valueOrDefault = row.Value.LeftRowId.GetValueOrDefault(-1);
-                return valueOrDefault;
+                return row.Value.LeftRowId.GetValueOrDefault(-1);
             }
 
             if (_rightTable.Columns.ContainsKey(column.ColumnId)
@@ -151,24 +159,60 @@ namespace ReactiveTables.Framework.Joins
 
         public void AddColumn(IReactiveColumn column)
         {
-            List<IReactiveColumn> _columns = new List<IReactiveColumn>();
-            _columns.Add(column);
+//            List<IReactiveColumn> _columns = new List<IReactiveColumn> {column};
         }
 
+        private void OnNextLeft(TableUpdate update)
+        {
+            OnNext(update, JoinSide.Left);
+        }
+
+        private void OnNextRight(TableUpdate update)
+        {
+            OnNext(update, JoinSide.Right);
+        }
+        
         /// <summary>
         /// Keep the key dictionaries up to date when the key columns are updated.
         /// </summary>
         /// <param name="update"></param>
-        public void OnNext(TableUpdate update)
+        private void OnNext(TableUpdate update, JoinSide side)
         {
+            // Filter out add/deletes
+            if (update.Action == TableUpdate.TableUpdateAction.Delete) return;
+
+            // If we have an add and which is a replay of the underlying tables then we need to
+            // simulate column updates for all columns
+            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            {
+                if (!_replaying) return;
+
+                var columns = GetTableColumns(side);
+                update = new TableUpdate(TableUpdate.TableUpdateAction.Update, update.RowIndex, columns);
+            }
+
             // Key update
-            int columnRowIndex = update.RowIndex;
+            foreach (var column in update.Columns)
+            {
+                ProcessColumnUpdate(update, column);
+            }
+        }
+
+        private IList<IReactiveColumn> GetTableColumns(JoinSide side)
+        {
+            var table = GetTableForSide(side);
+            return table.Columns.Values.ToList();
+        }
+
+        private void ProcessColumnUpdate(TableUpdate update, IReactiveColumn column)
+        {
             JoinSide side;
-            if (update.Column == _leftColumn)
+            int columnRowIndex = update.RowIndex;
+            if (column == _leftColumn)
             {
                 side = JoinSide.Left;
             }
-            else if (update.Column == _rightColumn)
+            else if (column == _rightColumn)
             {
                 side = JoinSide.Right;
             }
@@ -185,7 +229,7 @@ namespace ReactiveTables.Framework.Joins
             var updatedRows = OnColumnUpdate(columnRowIndex, side);
             if (updatedRows != null && updatedRows.Count > 0)
             {
-                UpdateRowObserversAdd(updatedRows, update.Column, side);
+                UpdateRowObserversAdd(updatedRows, column, side);
             }
         }
 
@@ -199,12 +243,11 @@ namespace ReactiveTables.Framework.Joins
             if (table.Columns.ContainsKey(update.Column.ColumnId)
                 && columnRowsToJoinRows.TryGetValue(columnRowIndex, out joinRows))
             {
-                foreach (var joinRow in joinRows)
+                foreach (var colUpdate in from joinRow in joinRows 
+                                          let row = _rows[joinRow] 
+                                          where row.HasValue && !IsRowUnlinked(row.Value, side) 
+                                          select new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column))
                 {
-                    var row = _rows[joinRow];
-                    if (!row.HasValue || IsRowUnlinked(row.Value, side)) continue;
-
-                    var colUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column);
                     foreach (var updateObserver in _updateObservers)
                     {
                         updateObserver.OnNext(colUpdate);
@@ -562,16 +605,6 @@ namespace ReactiveTables.Framework.Joins
             var row = rows[existingRowIndex].Value;
             row.Key = newKey;
             rows[existingRowIndex] = row;
-        }
-
-        public void OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnCompleted()
-        {
-            throw new NotImplementedException();
         }
 
         public void Dispose()

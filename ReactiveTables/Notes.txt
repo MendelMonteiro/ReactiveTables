@@ -4,9 +4,9 @@
 3. Joining tables		- done
 4. Aggregate fields		- 
 5. Feed data from different thread - done
-6. Update data from GUI - 
+6. Update data from GUI - done
 7. Handle deletes       - done
-8. Search by primary key - 
+8. Search by primary key - done
 9. Searching on any col - 
 10. Batched synch		- done
 

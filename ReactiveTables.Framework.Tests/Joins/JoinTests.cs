@@ -1115,6 +1115,25 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(1, joinedTable.GetValue<int>(TestRightColumns.IdColumn, joinedRow));
         }
 
+        [Test]
+        public void TestJoinFilledTables()
+        {
+            var leftTable = CreateLeftTable();
+            var rightTable = CreateRightTable();
+
+            var leftRow1 = leftTable.AddRow();
+            leftTable.SetValue(TestLeftColumns.IdColumn, leftRow1, 1);
+            leftTable.SetValue(TestLeftColumns.StringColumn, leftRow1, "Blah");
+
+            var rightRow1 = rightTable.AddRow();
+            rightTable.SetValue(TestRightColumns.IdColumn, rightRow1, 1);
+            rightTable.SetValue(TestRightColumns.LeftIdColumn, rightRow1, 1);
+
+            IReactiveTable joinedTable = leftTable.Join(rightTable, new Join<int>(leftTable, TestLeftColumns.IdColumn, rightTable, TestRightColumns.LeftIdColumn));
+
+            Assert.AreEqual(1, joinedTable.RowCount);
+        }
+
         private static ReactiveTable CreateJoinedTables(out ReactiveTable rightTable, out IReactiveTable joinedTable, JoinType joinType = JoinType.FullOuter)
         {
             var leftTable = CreateLeftTable();
@@ -1125,15 +1144,6 @@ namespace ReactiveTables.Framework.Tests.Joins
             return leftTable;
         }
 
-        private static ReactiveTable CreateRightTable()
-        {
-            ReactiveTable rightTable = new ReactiveTable();
-            rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.IdColumn));
-            rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.LeftIdColumn));
-            rightTable.AddColumn(new ReactiveColumn<decimal>(TestRightColumns.DecimalColumn));
-            return rightTable;
-        }
-
         private static ReactiveTable CreateLeftTable()
         {
             ReactiveTable leftTable = new ReactiveTable();
@@ -1141,6 +1151,15 @@ namespace ReactiveTables.Framework.Tests.Joins
             leftTable.AddColumn(new ReactiveColumn<string>(TestLeftColumns.StringColumn));
             leftTable.AddColumn(new ReactiveColumn<decimal>(TestLeftColumns.DecimalColumn));
             return leftTable;
+        }
+
+        private static ReactiveTable CreateRightTable()
+        {
+            ReactiveTable rightTable = new ReactiveTable();
+            rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.IdColumn));
+            rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.LeftIdColumn));
+            rightTable.AddColumn(new ReactiveColumn<decimal>(TestRightColumns.DecimalColumn));
+            return rightTable;
         }
 
         private static void SetAndTestLeftRow(ReactiveTable leftTable,
