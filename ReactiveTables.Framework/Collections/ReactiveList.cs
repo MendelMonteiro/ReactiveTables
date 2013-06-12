@@ -65,14 +65,17 @@ namespace ReactiveTables.Framework.Collections
 
             // Figure out segments to copy and copy each segment to new array so as to be contiguous
             int oldIndex = 0, newIndex = 0;
-            foreach (var deletedIndex in _deletedIndices)
+            if (_deletedIndices != null)
             {
-                int segmentLength = deletedIndex.Key - oldIndex;
-                if (segmentLength > 0)
+                foreach (var deletedIndex in _deletedIndices)
                 {
-                    Array.Copy(_items, oldIndex, newArray, newIndex, segmentLength);
-                    oldIndex += segmentLength;
-                    newIndex += segmentLength;
+                    int segmentLength = deletedIndex.Key - oldIndex;
+                    if (segmentLength > 0)
+                    {
+                        Array.Copy(_items, oldIndex, newArray, newIndex, segmentLength);
+                        oldIndex += segmentLength;
+                        newIndex += segmentLength;
+                    }
                 }
             }
 
@@ -82,7 +85,7 @@ namespace ReactiveTables.Framework.Collections
                 Array.Copy(_items, oldIndex, newArray, newIndex, segmentLength);
             }
 
-            _deletedIndices.Clear();
+            if (_deletedIndices != null) _deletedIndices.Clear();
 
             _items = newArray;
             return 1;
@@ -108,7 +111,7 @@ namespace ReactiveTables.Framework.Collections
             throw new System.NotImplementedException();
         }
 
-        public int Count { get; private set; }
+        public int Count { get { return _size; } }
         public bool IsReadOnly { get; private set; }
         public int IndexOf(T item)
         {

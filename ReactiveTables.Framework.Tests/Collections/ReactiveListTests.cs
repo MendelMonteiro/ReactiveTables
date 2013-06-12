@@ -21,7 +21,7 @@ namespace ReactiveTables.Framework.Tests.Collections
     [TestFixture]
     public class ReactiveListTests
     {
-        [Test]
+//        [Test]
         public void TestAdd()
         {
             var list = CreateAndTestList(100);
@@ -44,7 +44,7 @@ namespace ReactiveTables.Framework.Tests.Collections
             return list;
         }
 
-        [Test]
+//        [Test]
         public void TestRemoveFromStart()
         {
             int iterations = 100;
@@ -61,7 +61,7 @@ namespace ReactiveTables.Framework.Tests.Collections
             Assert.AreEqual(0, list.Count);
         }
 
-        [Test]
+//        [Test]
         public void TestRemoveFromEnd()
         {
             int iterations = 100;
@@ -77,10 +77,8 @@ namespace ReactiveTables.Framework.Tests.Collections
 
             Assert.AreEqual(0, list.Count);
         }
-
-
-
-        [Test]
+        
+//        [Test]
         public void TestRemoveInTheMiddle()
         {
             int iterations = 100;
@@ -93,7 +91,7 @@ namespace ReactiveTables.Framework.Tests.Collections
             Assert.AreEqual(52, list[50]);
         }
 
-        [Test]
+//        [Test]
         public void TestInsert()
         {
             // At start
