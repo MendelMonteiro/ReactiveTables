@@ -27,6 +27,11 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly ReactiveTable _targetTable;
         private readonly IThreadMarshaller _marshaller;
 
+        public object GetValue(string columnId, int rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public int RowCount
         {
             get { return _rowManager.RowCount; }
@@ -81,6 +86,16 @@ namespace ReactiveTables.Framework.Synchronisation
         public void ReplayRows(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
+        }
+
+        public int GetRowAt(int position)
+        {
+            return _rowManager.GetRowAt(position);
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return _rowManager.GetPositionOfRow(rowIndex);
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)

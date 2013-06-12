@@ -37,6 +37,11 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly object _shared = new object();
         private readonly System.Timers.Timer _timer1;
 
+        public object GetValue(string columnId, int rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public int RowCount
         {
             get { return _rowManager.RowCount; }
@@ -99,38 +104,39 @@ namespace ReactiveTables.Framework.Synchronisation
             }
 
             // Don't make dispatch granular so that we don't incur as many context switches.
-            _marshaller.Dispatch(
-                () =>
+            _marshaller.Dispatch(() => CopyChanges(rowUpdatesAdd, colUpdaters, rowUpdatesDelete));
+        }
+
+        private void CopyChanges(List<TableUpdate> rowUpdatesAdd, List<ITableColumnUpdater> colUpdaters, List<TableUpdate> rowUpdatesDelete)
+        {
+            try
+            {
+                if (rowUpdatesAdd != null)
+                {
+                    for (int i = 0; i < rowUpdatesAdd.Count; i++)
                     {
-                        try
-                        {
-                            if (rowUpdatesAdd != null)
-                            {
-                                for (int i = 0; i < rowUpdatesAdd.Count; i++)
-                                {
-                                    var row = _targetTable.AddRow();
+                        var row = _targetTable.AddRow();
 //                                    Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
-                                }
-                            }
+                    }
+                }
 
-                            foreach (var updater in colUpdaters)
-                            {
-                                updater.SetValues(_targetTable);
-                            }
+                foreach (var updater in colUpdaters)
+                {
+                    updater.SetValues(_targetTable);
+                }
 
-                            if (rowUpdatesDelete != null)
-                            {
-                                for (int i = 0; i < rowUpdatesDelete.Count; i++)
-                                {
-                                    _targetTable.DeleteRow(rowUpdatesDelete[i].RowIndex);
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            _timer1.Enabled = true;
-                        }
-                    });
+                if (rowUpdatesDelete != null)
+                {
+                    for (int i = 0; i < rowUpdatesDelete.Count; i++)
+                    {
+                        _targetTable.DeleteRow(rowUpdatesDelete[i].RowIndex);
+                    }
+                }
+            }
+            finally
+            {
+                _timer1.Enabled = true;
+            }
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
@@ -168,6 +174,15 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
+        public int GetRowAt(int position)
+        {
+            return _rowManager.GetRowAt(position);
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return _rowManager.GetPositionOfRow(rowIndex);
+        }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
         {

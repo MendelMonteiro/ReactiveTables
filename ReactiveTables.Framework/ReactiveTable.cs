@@ -1,22 +1,21 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 
@@ -25,13 +24,32 @@ namespace ReactiveTables.Framework
     public interface IReactiveTable : IObservable<TableUpdate>, ISubscribable<IObserver<TableUpdate>>
     {
         void AddColumn(IReactiveColumn column);
+
+        /// <summary>
+        /// Typed version
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         T GetValue<T>(string columnId, int rowIndex);
+
+        /// <summary>
+        /// Untyped version
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
+        object GetValue(string columnId, int rowIndex);
+
         int RowCount { get; }
         Dictionary<string, IReactiveColumn> Columns { get; }
         PropertyChangedNotifier ChangeNotifier { get; }
         IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
         IReactiveTable Filter(IReactivePredicate predicate);
         void ReplayRows(IObserver<TableUpdate> observer);
+        int GetRowAt(int position);
+        int GetPositionOfRow(int rowIndex);
     }
 
     public interface IWritableReactiveTable : IReactiveTable
@@ -46,7 +64,7 @@ namespace ReactiveTables.Framework
     {
         private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
         private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
-        
+
         private readonly FieldRowManager _rowManager = new FieldRowManager();
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
@@ -77,6 +95,11 @@ namespace ReactiveTables.Framework
         public T GetValue<T>(string columnId, int rowIndex)
         {
             return GetColumn<T>(columnId).GetValue(rowIndex);
+        }
+
+        public object GetValue(string columnId, int rowIndex)
+        {
+            return Columns[columnId].GetValue(rowIndex);
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
@@ -136,7 +159,25 @@ namespace ReactiveTables.Framework
             }
         }
 
-        public int RowCount { get { return _rowManager.RowCount; } }
+        public IEnumerable<int> GetRows()
+        {
+            return _rowManager.GetRows();
+        }
+
+        public int GetRowAt(int position)
+        {
+            return _rowManager.GetRowAt(position);
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return _rowManager.GetPositionOfRow(rowIndex);
+        }
+
+        public int RowCount
+        {
+            get { return _rowManager.RowCount; }
+        }
 
         public Dictionary<string, IReactiveColumn> Columns
         {
@@ -172,6 +213,5 @@ namespace ReactiveTables.Framework
             var column = GetColumn<T>(columnId);
             return column.Find(value);
         }
-
     }
 }

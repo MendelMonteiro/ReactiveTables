@@ -96,6 +96,23 @@ namespace ReactiveTables.Framework
             return GetColumn<T>(columnId).GetValue(rowIndex);
         }
 
+        public object GetValue(string columnId, int rowIndex)
+        {
+            IReactiveColumn column;
+            // Use the joiner for when the column is defined directly on them
+            // if the table is a joined table delegate the joining to it.
+            if (_leftTable.Columns.TryGetValue(columnId, out column))
+            {
+                return _leftTable.GetValue(columnId, _joiner.GetRowIndex(column, rowIndex));
+            }
+            if (_rightTable.Columns.TryGetValue(columnId, out column))
+            {
+                return _rightTable.GetValue(columnId, _joiner.GetRowIndex(column, rowIndex));
+            }
+            // Otherwise return calc'ed columns
+            return Columns[columnId].GetValue(rowIndex);
+        }
+
         private IReactiveColumn<T> GetColumn<T>(string columnId)
         {
             return (IReactiveColumn<T>) Columns[columnId];
@@ -133,6 +150,16 @@ namespace ReactiveTables.Framework
             {
                 observer.OnNext(rowAdd);
             }
+        }
+
+        public int GetRowAt(int position)
+        {
+            return _joiner.GetRowAt(position);
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return _joiner.GetPositionOfRow(rowIndex);
         }
 
         public void Dispose()

@@ -29,6 +29,7 @@ namespace ReactiveTables.Framework.Columns
         IReactiveColumn Clone();
         void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
         void RemoveField(int rowIndex);
+        object GetValue(int rowIndex);
     }
 
     public interface IReactiveColumn<T> : IReactiveColumn

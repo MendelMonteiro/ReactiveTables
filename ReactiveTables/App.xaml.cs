@@ -38,7 +38,7 @@ namespace ReactiveTables
         private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(500);
-        private const int BatchSize = 5;
+        private const int BatchSize = 50;
         private const int DataDelay = 0;
         private const int GuiDisplayDelay = 0;
         public static IReactiveTable Humans { get; set; }
@@ -49,6 +49,11 @@ namespace ReactiveTables
         private const int AccountIdOffset = 10000;
         private const int HumanDataPauseDelay = 2500;
         private const int AccountDataPauseDelay = 5000;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            Xceed.Wpf.DataGrid.Licenser.LicenseKey = "DGP45-L7AAA-RUWWA-5BBA";
+        }
 
         public App()
         {

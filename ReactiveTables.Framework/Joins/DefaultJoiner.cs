@@ -50,6 +50,16 @@ namespace ReactiveTables.Framework.Joins
             throw new NotImplementedException();
         }
 
+        public int GetRowAt(int position)
+        {
+            return position;
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return rowIndex;
+        }
+
         public void Dispose()
         {
         }

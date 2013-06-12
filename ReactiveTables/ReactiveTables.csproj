@@ -61,8 +61,14 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="ReachFramework" />
+    <Reference Include="Syncfusion.Grid.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
+    <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Printing" />
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -83,9 +89,13 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Controls.v4.5, Version=4.5.13165.13180, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL" />
+    <Reference Include="Xceed.Wpf.DataGrid.v4.5, Version=4.5.13165.13180, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -97,10 +107,20 @@
     <Compile Include="HumanAccountViewModel.cs" />
     <Compile Include="HumansViewModel.cs" />
     <Compile Include="MainViewModel.cs" />
+    <Compile Include="ReactiveBindingList.cs" />
+    <Compile Include="ReactiveObservableCollection.cs" />
+    <Compile Include="SyncfusionTest.xaml.cs">
+      <DependentUpon>SyncfusionTest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SyncfusionTestViewModel.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Columns.cs" />
     <Compile Include="NormalViewModel.cs" />
     <Compile Include="HumanViewModel.cs" />
+    <Compile Include="XceedTest.xaml.cs">
+      <DependentUpon>XceedTest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="XceedTestViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -113,6 +133,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SyncfusionTest.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="XceedTest.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

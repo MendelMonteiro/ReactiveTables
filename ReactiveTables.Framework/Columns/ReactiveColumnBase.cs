@@ -65,6 +65,11 @@ namespace ReactiveTables.Framework.Columns
 
         public abstract void RemoveField(int rowIndex);
 
+        object IReactiveColumn.GetValue(int rowIndex)
+        {
+            return GetValue(rowIndex);
+        }
+
         public abstract void SetValue(int rowIndex, T value);
 
         public abstract T GetValue(int rowIndex);

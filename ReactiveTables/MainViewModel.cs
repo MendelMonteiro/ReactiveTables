@@ -13,6 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using ReactiveTables.Framework;
 
 namespace ReactiveTables
@@ -23,11 +24,13 @@ namespace ReactiveTables
         {
             Humans = new HumansViewModel(App.Humans);
             Accounts = new AccountsViewModel(App.Accounts);
-            HumanAccounts = new HumanAccountsViewModel(App.AccountHumans, (IWritableReactiveTable) App.Accounts);
+            HumanAccounts = new HumanAccountsViewModel(App.AccountHumans, (IWritableReactiveTable)App.Accounts);
+            HumansBindingList = new ReactiveBindingList(App.Humans);
         }
 
         public AccountsViewModel Accounts { get; private set; }
         public HumansViewModel Humans { get; private set; }
         public HumanAccountsViewModel HumanAccounts { get; private set; }
+        public ReactiveBindingList HumansBindingList { get; set; }
     }
 }

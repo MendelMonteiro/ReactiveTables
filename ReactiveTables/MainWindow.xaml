@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ReactiveTables="clr-namespace:ReactiveTables"
         Title="MainWindow" Height="667" Width="810" WindowStartupLocation="CenterScreen" WindowState="Maximized" >
     <Window.DataContext>
-        <ReactiveTables:MainViewModel x:Name="ViewModel" />
+        <ReactiveTables:MainViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
@@ -22,7 +22,7 @@
             <TextBox Text="{Binding HumanAccounts.CurrentRowIndex, Mode=TwoWay}" />
             <Label Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" />
             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding HumanAccounts.AccountDetails}" VerticalAlignment="Top"  />
-<!--        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.IdName}" VerticalAlignment="Top" Grid.Column="2" Height="16" Width="0"  />-->
+            <!--        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.IdName}" VerticalAlignment="Top" Grid.Column="2" Height="16" Width="0"  />-->
             <Button Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Command="{Binding HumanAccounts.Change}" Grid.Column="3" />
         </StackPanel>
         <!--<ScrollViewer Grid.Row="1" Grid.ColumnSpan="4">
@@ -64,12 +64,29 @@
                 <StackPanel>
                     <Label Content="Account details joined" HorizontalAlignment="Center" />
                     <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}" VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
+            			VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
+            			VirtualizingPanel.CacheLength="2"/>
                     <!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->
                 </StackPanel>
             </ScrollViewer>
+            <ScrollViewer>
+                <StackPanel>
+                    <Label Content="People Binding list" HorizontalAlignment="Center" />
+                    <DataGrid ItemsSource="{Binding HumansBindingList}" VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
+                          VirtualizingPanel.CacheLength="2">
+                    </DataGrid>
+                </StackPanel>
+            </ScrollViewer>
+            <!--<ScrollViewer>
+                <StackPanel>
+                    <Label Content="Accounts" HorizontalAlignment="Center" />
+                    <DataGrid ItemsSource="{Binding Accounts.Accounts}" VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
+                          VirtualizingPanel.CacheLength="2">
+                    </DataGrid>
+                </StackPanel>
+            </ScrollViewer>-->
         </StackPanel>
     </Grid>
 </Window>

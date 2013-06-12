@@ -13,6 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 using ReactiveTables.Utils;
@@ -50,18 +51,4 @@ namespace ReactiveTables
             get { return _humans.GetValue<string>(HumanColumns.IdNameColumn, _rowIndex); }
         }
     }
-
-    /*public class ReactiveObservableCollection<T> : INotifyCollectionChanged, INotifyPropertyChanged
-    {
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private readonly ReactiveTable _table;
-
-        public ReactiveObservableCollection(ReactiveTable table)
-        {
-            _table = table;
-            _table.RegisterPropertyNotifiedConsumer(this);
-        }
-    }*/
 }

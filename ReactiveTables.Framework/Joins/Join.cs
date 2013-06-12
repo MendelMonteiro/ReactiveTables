@@ -162,6 +162,16 @@ namespace ReactiveTables.Framework.Joins
 //            List<IReactiveColumn> _columns = new List<IReactiveColumn> {column};
         }
 
+        public int GetRowAt(int position)
+        {
+            return _rowManager.GetRowAt(position);
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return _rowManager.GetPositionOfRow(rowIndex);
+        }
+
         private void OnNextLeft(TableUpdate update)
         {
             OnNext(update, JoinSide.Left);
