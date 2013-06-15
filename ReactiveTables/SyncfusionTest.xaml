@@ -6,8 +6,10 @@
         <ReactiveTables:SyncfusionTestViewModel />
     </Window.DataContext>
     <Grid>
-        <syncfusion:GridControl>
-            
-        </syncfusion:GridControl>
+        <ScrollViewer CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+            <ReactiveTables:SyncfusionTestGridControl ViewModel="{Binding}" ColumnCount="7" />
+        </ScrollViewer>
     </Grid>
 </Window>
