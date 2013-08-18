@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
+using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework
 {

@@ -18,7 +18,7 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Tests
 {
-    internal static class TableTestHelper
+    internal static class TestTableHelper
     {
         public static ReactiveTable CreateReactiveTable()
         {

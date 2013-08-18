@@ -25,7 +25,7 @@ namespace ReactiveTables
             Humans = new HumansViewModel(App.Humans);
             Accounts = new AccountsViewModel(App.Accounts);
             HumanAccounts = new HumanAccountsViewModel(App.AccountHumans, (IWritableReactiveTable)App.Accounts);
-            HumansBindingList = new ReactiveBindingList(App.Humans);
+//            HumansBindingList = new ReactiveBindingList(App.Humans);
         }
 
         public AccountsViewModel Accounts { get; private set; }

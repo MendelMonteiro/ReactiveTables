@@ -11,7 +11,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         [Test]
         public void TestNullFilter()
         {
-            var rawTable = TableTestHelper.CreateReactiveTable();
+            var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = (IReactiveTable)rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
                                                                       {
                                                                           rawTable.Columns[TestTableColumns.IdColumn]
@@ -38,7 +38,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         [Test]
         public void TestExclusionFilter()
         {
-            var rawTable = TableTestHelper.CreateReactiveTable();
+            var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
                                                                       {
                                                                           rawTable.Columns[TestTableColumns.IdColumn]
@@ -63,7 +63,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         [Test]
         public void TestOneColumnFilter()
         {
-            var rawTable = TableTestHelper.CreateReactiveTable();
+            var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(
                 new DelegatePredicate1<string>((ReactiveColumn<string>) rawTable.Columns[TestTableColumns.StringColumn],
                                                s => !string.IsNullOrEmpty(s) && s.EndsWith("2")));
@@ -87,7 +87,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         public void TestTwoColumnFilter()
         {
 
-            var rawTable = TableTestHelper.CreateReactiveTable();
+            var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(
                 new DelegatePredicate2<string, decimal>((ReactiveColumn<string>) rawTable.Columns[TestTableColumns.StringColumn],
                                                         (ReactiveColumn<decimal>) rawTable.Columns[TestTableColumns.DecimalColumn],
@@ -111,7 +111,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         [Test]
         public void TestFilterFilledTable()
         {
-            var rawTable = TableTestHelper.CreateReactiveTable();
+            var rawTable = TestTableHelper.CreateReactiveTable();
             AddRow(rawTable, 1, "Blah1", 123.123m);
             Assert.AreEqual(1, rawTable.RowCount);
 

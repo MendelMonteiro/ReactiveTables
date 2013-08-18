@@ -52,7 +52,7 @@ namespace ReactiveTables
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Xceed.Wpf.DataGrid.Licenser.LicenseKey = "DGP45-L7AAA-RUWWA-5BBA";
+//            Xceed.Wpf.DataGrid.Licenser.LicenseKey = "DGP45-L7AAA-RUWWA-5BBA";
         }
 
         public App()

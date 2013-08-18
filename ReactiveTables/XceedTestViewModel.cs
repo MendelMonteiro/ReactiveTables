@@ -67,7 +67,7 @@ namespace ReactiveTables
 
     public class XceedTestViewModel
     {
-        private List<TestViewModel> _objects;
+        private readonly List<TestViewModel> _objects;
 
         public XceedTestViewModel()
         {

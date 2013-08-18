@@ -51,11 +51,12 @@ namespace ReactiveTables.Framework.Columns
         /// </summary>
         private readonly IColumnIndex<T> _index;
 
-        public ReactiveColumn(string columnId, IColumnIndex<T> index = null)
+        public ReactiveColumn(string columnId, IColumnIndex<T> index = null, int? initialSize = null)
         {
             _index = index;
             ColumnId = columnId;
-            Fields = new List<T>();
+
+            Fields = initialSize == null ? new List<T>() : new List<T>(initialSize.Value);
         }
 
         public override void AddField(int rowIndex)

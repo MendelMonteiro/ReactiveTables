@@ -19,7 +19,7 @@ using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Joins
 {
     public class JoinedTable : IReactiveTable, IDisposable
     {
@@ -38,6 +38,8 @@ namespace ReactiveTables.Framework
             _joiner = joiner;
 
             Columns = new Dictionary<string, IReactiveColumn>();
+            AddColumns(leftTable);
+            AddColumns(rightTable);
             ChangeNotifier = new PropertyChangedNotifier(this);
 
             // TODO: need to process all existing values in the tables

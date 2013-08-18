@@ -29,63 +29,63 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestAdd()
         {
-            var table = TableTestHelper.CreateReactiveTable();
+            var table = TestTableHelper.CreateReactiveTable();
 
             var rowId1 = table.AddRow();
             Assert.AreEqual(1, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
 
             var rowId2 = table.AddRow();
             Assert.AreEqual(2, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
         }
 
         [Test]
         public void TestUpdate()
         {
-            var table = TableTestHelper.CreateReactiveTable();
+            var table = TestTableHelper.CreateReactiveTable();
 
             var rowId1 = table.AddRow();
             Assert.AreEqual(1, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
 
             var rowId2 = table.AddRow();
             Assert.AreEqual(2, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
 
-            TableTestHelper.SetAndTestValue(table, rowId2, 12341, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, "Hello", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, 321m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 12341, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, "Hello", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 321m, TestTableColumns.DecimalColumn);
 
-            TableTestHelper.SetAndTestValue(table, rowId1, 321, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, "Hello 334", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, 32132m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 321, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, "Hello 334", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 32132m, TestTableColumns.DecimalColumn);
         }
 
         [Test]
         public void TestDelete()
         {
-            var table = TableTestHelper.CreateReactiveTable();
+            var table = TestTableHelper.CreateReactiveTable();
 
             var rowId1 = table.AddRow();
             Assert.AreEqual(1, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 123, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, "Hello", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId1, 321m, TestTableColumns.DecimalColumn);
 
             var rowId2 = table.AddRow();
             Assert.AreEqual(2, table.RowCount);
-            TableTestHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
-            TableTestHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 1234, TestTableColumns.IdColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, "Hello 12", TestTableColumns.StringColumn);
+            TestTableHelper.SetAndTestValue(table, rowId2, 3214m, TestTableColumns.DecimalColumn);
 
             table.DeleteRow(rowId2);
             Assert.AreEqual(1, table.RowCount);
@@ -97,7 +97,7 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestSearch()
         {
-            var table = TableTestHelper.CreateIndexedReactiveTable();
+            var table = TestTableHelper.CreateIndexedReactiveTable();
 
             var addedRowIndex = table.AddRow();
             table.SetValue(TestTableColumns.IdColumn, addedRowIndex, 1);
@@ -122,7 +122,7 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestSearchMultipleRows()
         {
-            var table = TableTestHelper.CreateIndexedReactiveTable();
+            var table = TestTableHelper.CreateIndexedReactiveTable();
 
             var addedRowIndex1 = table.AddRow();
             table.SetValue(TestTableColumns.IdColumn, addedRowIndex1, 1);
