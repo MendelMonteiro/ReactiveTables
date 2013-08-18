@@ -77,6 +77,7 @@
     <Compile Include="Filters\DelegatePredicate2.cs" />
     <Compile Include="Filters\FilteredTable.cs" />
     <Compile Include="Filters\IReactivePredicate.cs" />
+    <Compile Include="Joins\JoinedTable.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
@@ -90,7 +91,6 @@
     <Compile Include="IObservableColumn.cs" />
     <Compile Include="IReactiveTableJoiner.cs" />
     <Compile Include="Marshalling\IThreadMarshaller.cs" />
-    <Compile Include="JoinedTable.cs" />
     <Compile Include="Joins\DefaultJoiner.cs" />
     <Compile Include="Joins\DelegateEqualityComparer.cs" />
     <Compile Include="Joins\Join.cs" />

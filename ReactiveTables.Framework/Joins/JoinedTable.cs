@@ -19,7 +19,7 @@ using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 
-namespace ReactiveTables.Framework
+namespace ReactiveTables.Framework.Joins
 {
     public class JoinedTable : IReactiveTable, IDisposable
     {

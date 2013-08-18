@@ -10,7 +10,7 @@ namespace ReactiveTables.Framework.Tests.Columns.Aggregate
         [Test]
         public void TestSimpleCount()
         {
-            var table = TableTestHelper.CreateReactiveTable();
+            var table = TestTableHelper.CreateReactiveTable();
             var stream = table;
             var countStream = stream.ColumnUpdates()
                 .Where(update => update.Column.ColumnId == TestTableColumns.IdColumn)
@@ -31,7 +31,7 @@ namespace ReactiveTables.Framework.Tests.Columns.Aggregate
         [Test]
         public void TestSimpleGroupBy()
         {
-            var table = TableTestHelper.CreateReactiveTable();
+            var table = TestTableHelper.CreateReactiveTable();
             var stream = table;
             var groupBy = stream
 //                .Where(update => update.Column.ColumnId == TestTableColumns.StringColumn)

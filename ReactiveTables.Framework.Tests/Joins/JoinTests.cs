@@ -272,7 +272,6 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(402, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, 2)); // Check both rows created
         }
 
-
         [Test]
         public void TestInnerJoin1ToNAllLeftFirst()
         {
