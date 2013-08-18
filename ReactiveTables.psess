@@ -67,6 +67,11 @@
       <ProjName>ReactiveTables</ProjName>
     </ProjBinary>
   </Binaries>
+  <Reports>
+    <Report>
+      <Path>ReactiveTables130818.vspx</Path>
+    </Report>
+  </Reports>
   <Launches>
     <ProjBinary>
       <Path>:PB:{5F235481-E866-4533-A67E-590ABE24CF5C}|ReactiveTables\ReactiveTables.csproj</Path>
