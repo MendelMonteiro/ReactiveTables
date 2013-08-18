@@ -1,0 +1,19 @@
+﻿<Window x:Class="ReactiveTables.TestLauncher"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TestLauncher" Height="300" Width="300">
+    <Grid>
+        <StackPanel>
+            <StackPanel.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Margin" Value="10,10,10,10"/>
+                    <Setter Property="Height" Value="40" />
+                </Style>
+            </StackPanel.Resources>
+            <Button Name="RealTimeButton" Click="RealTimeButton_Click">Real time demo</Button>
+            <Button Name="ExternalDataButton" Click="ExternalDataButton_Click">External data feed demo</Button>
+            <Button Name="SyncfusionButton" Click="SyncfusionButton_Click">Syncfusion demo</Button>
+            <Button Name="XceedButton" Click="XceedButton_Click">Xceed demo</Button>
+        </StackPanel>
+    </Grid>
+</Window>
