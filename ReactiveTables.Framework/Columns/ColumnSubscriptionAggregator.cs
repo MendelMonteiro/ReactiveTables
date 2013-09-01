@@ -1,18 +1,18 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using System;
 using System.Collections.Generic;
 
@@ -26,8 +26,8 @@ namespace ReactiveTables.Framework.Columns
     {
         private readonly ReactiveColumnBase<TOutput> _outputColumn;
         private readonly HashSet<object> _observers = new HashSet<object>();
-        private readonly List<IDisposable> _subscriptions = new List<IDisposable>(); 
-        
+        private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
+
         public ColumnSubscriptionAggregator(ReactiveColumnBase<TOutput> outputColumn)
         {
             _outputColumn = outputColumn;
@@ -57,7 +57,7 @@ namespace ReactiveTables.Framework.Columns
 
         public void SubscribeToColumn(IReactiveColumn column)
         {
-             _subscriptions.Add(column.Subscribe(GetObserver()));
+            _subscriptions.Add(column.Subscribe(GetObserver()));
         }
 
         public void Unsubscribe()
@@ -65,7 +65,7 @@ namespace ReactiveTables.Framework.Columns
             _subscriptions.ForEach(s => s.Dispose());
         }
 
-        class Observer :IColumnObserver
+        private sealed class Observer : IColumnObserver
         {
             private readonly ColumnSubscriptionAggregator<TOutput> _subscriptionAggregator;
 
