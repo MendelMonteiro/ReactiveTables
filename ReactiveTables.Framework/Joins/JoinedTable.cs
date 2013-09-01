@@ -38,8 +38,6 @@ namespace ReactiveTables.Framework.Joins
             _joiner = joiner;
 
             Columns = new Dictionary<string, IReactiveColumn>();
-            AddColumns(leftTable);
-            AddColumns(rightTable);
             ChangeNotifier = new PropertyChangedNotifier(this);
 
             // TODO: need to process all existing values in the tables
