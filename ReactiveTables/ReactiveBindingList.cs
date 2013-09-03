@@ -3,7 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using ReactiveTables.Framework;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public class ReactiveBindingList : IBindingList
     {

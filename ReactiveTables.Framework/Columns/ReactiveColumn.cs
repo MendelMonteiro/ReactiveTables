@@ -25,6 +25,8 @@ namespace ReactiveTables.Framework.Columns
         /// </summary>
         string ColumnId { get; }
 
+        Type Type { get; }
+
         void AddField(int rowIndex);
         IReactiveColumn Clone();
         void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);

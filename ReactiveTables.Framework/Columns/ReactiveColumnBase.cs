@@ -1,26 +1,35 @@
-/*This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
 using System;
 using System.Collections.Generic;
 
 namespace ReactiveTables.Framework.Columns
 {
-    public abstract class ReactiveColumnBase<T>: IReactiveColumn<T>
+    public abstract class ReactiveColumnBase<T> : IReactiveColumn<T>
     {
+// ReSharper disable StaticFieldInGenericType
+        private static readonly Type _type = typeof (T);
+// ReSharper restore StaticFieldInGenericType
+
         public string ColumnId { get; protected set; }
+
+        public virtual Type Type
+        {
+            get { return _type; }
+        }
 
         private readonly List<IColumnObserver> _observers = new List<IColumnObserver>();
 
@@ -33,7 +42,7 @@ namespace ReactiveTables.Framework.Columns
 
         protected virtual void Unsubscribe(object observer)
         {
-            _observers.Remove((IColumnObserver)observer);
+            _observers.Remove((IColumnObserver) observer);
         }
 
         internal void NotifyObserversOnNext(int index)
@@ -94,16 +103,17 @@ namespace ReactiveTables.Framework.Columns
         public abstract int Find(T value);
 
         #region IEquatable<IReactieColumn> implementation
+
         public bool Equals(IReactiveColumn other)
         {
-            return string.Equals(ColumnId, other.ColumnId);            
+            return string.Equals(ColumnId, other.ColumnId);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((ReactiveColumnBase<T>) obj);
         }
 
@@ -111,6 +121,7 @@ namespace ReactiveTables.Framework.Columns
         {
             return (ColumnId != null ? ColumnId.GetHashCode() : 0);
         }
+
         #endregion
     }
 }

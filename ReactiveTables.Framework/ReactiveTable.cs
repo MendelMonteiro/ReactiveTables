@@ -22,37 +22,6 @@ using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework
 {
-    public interface IReactiveTable : IObservable<TableUpdate>, ISubscribable<IObserver<TableUpdate>>
-    {
-        void AddColumn(IReactiveColumn column);
-
-        /// <summary>
-        /// Typed version
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="columnId"></param>
-        /// <param name="rowIndex"></param>
-        /// <returns></returns>
-        T GetValue<T>(string columnId, int rowIndex);
-
-        /// <summary>
-        /// Untyped version
-        /// </summary>
-        /// <param name="columnId"></param>
-        /// <param name="rowIndex"></param>
-        /// <returns></returns>
-        object GetValue(string columnId, int rowIndex);
-
-        int RowCount { get; }
-        Dictionary<string, IReactiveColumn> Columns { get; }
-        PropertyChangedNotifier ChangeNotifier { get; }
-        IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner);
-        IReactiveTable Filter(IReactivePredicate predicate);
-        void ReplayRows(IObserver<TableUpdate> observer);
-        int GetRowAt(int position);
-        int GetPositionOfRow(int rowIndex);
-    }
-
     public interface IWritableReactiveTable : IReactiveTable
     {
         void SetValue<T>(string columnId, int rowIndex, T value);
@@ -209,6 +178,13 @@ namespace ReactiveTables.Framework
             _observers.Remove(observer);
         }
 
+        /// <summary>
+        /// Finds a row for the given value when an index is defined for the column.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columnId"></param>
+        /// <param name="value"></param>
+        /// <returns>The row id</returns>
         public int Find<T>(string columnId, T value)
         {
             var column = GetColumn<T>(columnId);

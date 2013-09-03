@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using System.Windows;
 using ReactiveTables.Framework;
@@ -8,7 +7,7 @@ using Syncfusion.Windows.Controls.Cells;
 using Syncfusion.Windows.Controls.Grid;
 using System.Linq;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public class SyncfusionTestViewModel : IObservable<TableUpdate>
     {

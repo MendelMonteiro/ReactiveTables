@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables", "ReactiveTables\ReactiveTables.csproj", "{5F235481-E866-4533-A67E-590ABE24CF5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Demo", "ReactiveTables\ReactiveTables.Demo.csproj", "{5F235481-E866-4533-A67E-590ABE24CF5C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework", "ReactiveTables.Framework\ReactiveTables.Framework.csproj", "{A2A116D0-98CC-40B0-9C09-9151A657F5C7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Tests", "ReactiveTables.Framework.Tests\ReactiveTables.Framework.Tests.csproj", "{4E030EED-7E39-45D0-B309-D5E091E657B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.PerformanceTests", "ReactiveTables.Framework.PerformanceTests\ReactiveTables.Framework.PerformanceTests.csproj", "{FDF37DEF-FE21-4838-ACF5-B1372894EA55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Demo.Server", "ReactiveTables.Demo.Server\ReactiveTables.Demo.Server.csproj", "{0548D579-67B6-4876-A0F6-DDA5CC4082ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +87,20 @@ Global
 		{FDF37DEF-FE21-4838-ACF5-B1372894EA55}.Release|x64.Build.0 = Release|x64
 		{FDF37DEF-FE21-4838-ACF5-B1372894EA55}.Release|x86.ActiveCfg = Release|x86
 		{FDF37DEF-FE21-4838-ACF5-B1372894EA55}.Release|x86.Build.0 = Release|x86
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|x64.ActiveCfg = Debug|x64
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|x64.Build.0 = Debug|x64
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|x86.ActiveCfg = Debug|x86
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Debug|x86.Build.0 = Debug|x86
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{0548D579-67B6-4876-A0F6-DDA5CC4082ED}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

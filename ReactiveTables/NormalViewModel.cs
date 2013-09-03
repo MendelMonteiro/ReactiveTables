@@ -13,10 +13,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.ComponentModel;
-using ReactiveTables.Utils;
 
-namespace ReactiveTables
+using System.ComponentModel;
+using ReactiveTables.Demo.Utils;
+
+namespace ReactiveTables.Demo
 {
     public class NormalViewModel:INotifyPropertyChanged
     {

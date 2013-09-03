@@ -20,7 +20,7 @@ using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 using Xceed.Wpf.DataGrid;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public struct AccountHumansSelector : IReactivePropertyNotifiedConsumer, INotifyPropertyChanged
     {

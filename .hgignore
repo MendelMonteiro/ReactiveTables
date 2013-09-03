@@ -2,6 +2,8 @@ syntax: regexp
 _ReSharper.ReactiveTables/.*
 ReactiveTables/obj/.*
 ReactiveTables/bin/.*
+ReactiveTables.Demo.Server/obj/.*
+ReactiveTables.Demo.Server/bin/.*
 ReactiveTables.Framework.Tests/bin/.*
 ReactiveTables.Framework.Tests/obj/.*
 ReactiveTables.Framework/bin/.*

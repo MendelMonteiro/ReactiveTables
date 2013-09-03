@@ -25,6 +25,10 @@ using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
+    /// <summary>
+    /// Buffers access to a table by batching all changes (adds, updates and deletes) and replays them 
+    /// according to the delay specified in the constructor.
+    /// </summary>
     public class ReactiveBatchedPassThroughTable: IWritableReactiveTable, IDisposable
     {
         private readonly Queue<TableUpdate> _rowUpdatesAdd = new Queue<TableUpdate>();
@@ -90,7 +94,13 @@ namespace ReactiveTables.Framework.Synchronisation
                 if (_rowUpdatesAdd.Count > 0) rowUpdatesAdd = _rowUpdatesAdd.DequeueAllToList();
                 if (_rowUpdatesDelete.Count > 0) rowUpdatesDelete = _rowUpdatesDelete.DequeueAllToList();
 
-                colUpdaters = new List<ITableColumnUpdater>(from u in _columnUpdaters.Values where u.UpdateCount > 0 select u.Clone());
+                // Create a cloned list so we don't modify the main has list from multiple threads
+                // TODO: need to figure out a way to avoid clone as we're adding GC pressure.
+                colUpdaters = new List<ITableColumnUpdater>(from u in _columnUpdaters.Values
+                                                            where u.UpdateCount > 0 
+                                                            select u.Clone());
+
+                // Clear all the updates in the original version to indicate that there are no updates pending.
                 foreach (var tableColumnUpdater in _columnUpdaters.Values)
                 {
                     tableColumnUpdater.Clear();
@@ -103,7 +113,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 return;
             }
 
-            // Don't make dispatch granular so that we don't incur as many context switches.
+            // Don't make dispatch granular so that we don't generate as many messages on the pump
             _marshaller.Dispatch(() => CopyChanges(rowUpdatesAdd, colUpdaters, rowUpdatesDelete));
         }
 
@@ -116,7 +126,7 @@ namespace ReactiveTables.Framework.Synchronisation
                     for (int i = 0; i < rowUpdatesAdd.Count; i++)
                     {
                         var row = _targetTable.AddRow();
-//                                    Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
+//                      Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
                     }
                 }
 

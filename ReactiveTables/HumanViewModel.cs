@@ -16,9 +16,8 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
-using ReactiveTables.Utils;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public class HumanViewModel: ReactiveViewModelBase
     {

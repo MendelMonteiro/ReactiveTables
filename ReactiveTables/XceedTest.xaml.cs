@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     /// <summary>
     /// Interaction logic for XceedTest.xaml

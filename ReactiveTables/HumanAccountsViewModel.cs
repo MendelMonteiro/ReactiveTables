@@ -13,13 +13,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.ObjectModel;
+using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
-using ReactiveTables.Utils;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public class HumanAccountsViewModel : ReactiveViewModelBase
     {

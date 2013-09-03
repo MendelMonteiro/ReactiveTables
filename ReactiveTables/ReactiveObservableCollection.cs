@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using ReactiveTables.Framework;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     public class ReactiveObservableCollection : ICollection, INotifyCollectionChanged, INotifyPropertyChanged
     {

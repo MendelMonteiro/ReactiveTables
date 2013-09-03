@@ -95,6 +95,7 @@
     <Compile Include="Filters\DelegatePredicate2.cs" />
     <Compile Include="Filters\FilteredTable.cs" />
     <Compile Include="Filters\IReactivePredicate.cs" />
+    <Compile Include="IReactiveTable.cs" />
     <Compile Include="Joins\JoinedTable.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />

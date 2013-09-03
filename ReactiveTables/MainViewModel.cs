@@ -16,7 +16,7 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using ReactiveTables.Framework;
 
-namespace ReactiveTables
+namespace ReactiveTables.Demo
 {
     class MainViewModel
     {

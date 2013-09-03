@@ -27,7 +27,12 @@ namespace ReactiveTables.Framework.Columns
 
     public class ColumnIndex<T> : IColumnIndex<T>
     {
-        private readonly Dictionary<T, int> _valueRows = new Dictionary<T, int>();
+        private readonly Dictionary<T, int> _valueRows;
+
+        public ColumnIndex(int? initialSize = null)
+        {
+            _valueRows = initialSize != null ? new Dictionary<T, int>(initialSize.Value) : new Dictionary<T, int>();
+        }
 
         public int GetRow(T value)
         {
