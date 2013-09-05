@@ -30,7 +30,7 @@ namespace ReactiveTables.Demo.Server
                     WriteUpdate(value);
                     break;
                 case TableUpdate.TableUpdateAction.Delete:
-                    //                    WriteDelete(value);
+                    WriteDelete(value);
                     break;
             }
         }

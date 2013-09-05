@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using ReactiveTables.Demo.Client;
 
 namespace ReactiveTables.Demo
 {
@@ -20,7 +21,8 @@ namespace ReactiveTables.Demo
 
         private void ExternalDataButton_Click(object sender, RoutedEventArgs e)
         {
-//            window.Show();
+            FxClient window = new FxClient();
+            window.Show();
         }
 
         private void SyncfusionButton_Click(object sender, RoutedEventArgs e)

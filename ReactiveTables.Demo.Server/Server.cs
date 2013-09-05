@@ -16,6 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using ProtoBuf;
 using ReactiveTables.Framework;
@@ -23,65 +26,54 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Demo.Server
 {
-    public static class FxColumns
-    {
-        public static class CurrencyPair
-        {
-            public static readonly string Id = "Ccy.Id";
-            public static readonly string Ccy1 = "Ccy.Ccy1";
-            public static readonly string Ccy2 = "Ccy.Ccy2";
-            public static string CcyPair = "Ccy.CcyPairId";
-        }
-
-        public static class FxRates
-        {
-            public static readonly string CcyPairId = "Fx.CcyPairId";
-            public static readonly string Bid = "Fx.Bid";
-            public static readonly string Ask = "Fx.Ask";
-            public static readonly string Time = "Fx.Time";
-        }
-    }
-
     internal class Server
     {
         private static void Main(string[] args)
         {
             Server server = new Server();
             server.Start();
+            Console.CancelKeyPress += (sender, eventArgs) => server.Stop();
+            Console.WriteLine("Press Enter to stop server");
+            Console.ReadKey();
+            server.Stop();
         }
 
+        private void Stop()
+        {
+            _finished.Set();
+        }
+
+        private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD" };
+        private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
         private readonly Random _random = new Random();
 
         private void Start()
         {
+            _finished.Reset();
+
             // Create data tables
             var currencies = GetCurrenciesTable();
 
             ReactiveTable fxRates = new ReactiveTable();
-            fxRates.AddColumn(new ReactiveColumn<string>(FxColumns.FxRates.CcyPairId));
-            fxRates.AddColumn(new ReactiveColumn<double>(FxColumns.FxRates.Bid));
-            fxRates.AddColumn(new ReactiveColumn<double>(FxColumns.FxRates.Ask));
-            fxRates.AddColumn(new ReactiveColumn<DateTime>(FxColumns.FxRates.Time));
+            fxRates.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.FxRates.CcyPairId));
+            fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Bid));
+            fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Ask));
+            fxRates.AddColumn(new ReactiveColumn<DateTime>(FxTableDefinitions.FxRates.Time));
 
             // Start threads for each one
-            Task currenciesTask = Task.Factory.StartNew(StreamCurrencies, currencies);
-            Task ratesTask = Task.Factory.StartNew(StreamRates, fxRates);
-
-            currenciesTask.Wait();
-            ratesTask.Wait();
+            Task.Run(() => StreamCurrencies(currencies));
+            Task.Run(() => StreamRates(fxRates));
         }
 
         private static ReactiveTable GetCurrenciesTable()
         {
             ReactiveTable currencies = new ReactiveTable();
-            currencies.AddColumn(new ReactiveColumn<int>(FxColumns.CurrencyPair.Id));
-            currencies.AddColumn(new ReactiveColumn<string>(FxColumns.CurrencyPair.CcyPair));
-            currencies.AddColumn(new ReactiveColumn<string>(FxColumns.CurrencyPair.Ccy1));
-            currencies.AddColumn(new ReactiveColumn<string>(FxColumns.CurrencyPair.Ccy2));
+            currencies.AddColumn(new ReactiveColumn<int>(FxTableDefinitions.CurrencyPair.Id));
+            currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.CcyPair));
+            currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.Ccy1));
+            currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.Ccy2));
             return currencies;
         }
-
-        private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD" };
 
         private void StreamCurrencies(object o)
         {
@@ -90,36 +82,88 @@ namespace ReactiveTables.Demo.Server
             var observerStream = new MemoryStream();
             Dictionary<string, int> columnsToFieldIds = new Dictionary<string, int>
                                                             {
-                                                                {FxColumns.CurrencyPair.Id, 1},
-                                                                {FxColumns.CurrencyPair.CcyPair, 2},
-                                                                {FxColumns.CurrencyPair.Ccy1, 3},
-                                                                {FxColumns.CurrencyPair.Ccy2, 4},
+                                                                {FxTableDefinitions.CurrencyPair.Id, 1},
+                                                                {FxTableDefinitions.CurrencyPair.CcyPair, 2},
+                                                                {FxTableDefinitions.CurrencyPair.Ccy1, 3},
+                                                                {FxTableDefinitions.CurrencyPair.Ccy2, 4},
                                                             };
-            using (var protoWriter = new ProtoWriter(observerStream, null, null))
-            {
-                currencies.Subscribe(new ProtobufWriterObserver(currencies, protoWriter, columnsToFieldIds));
+            var protoWriter = new ProtoWriter(observerStream, null, null);
+            var protobufWriterObserver = new ProtobufWriterObserver(currencies, protoWriter, columnsToFieldIds);
+            currencies.Subscribe(protobufWriterObserver);
 
-                int ccyPairId = 1;
-                for (int i = 0; i < currencyList.Length; i++)
+            int ccyPairId = 1;
+            for (int i = 0; i < currencyList.Length; i++)
+            {
+                for (int j = i + 1; j < currencyList.Length; j++)
                 {
-                    for (int j = i + 1; j < currencyList.Length; j++)
-                    {
-                        var ccy1 = currencyList[i];
-                        var ccy2 = currencyList[j];
-                        var rowId = currencies.AddRow();
-                        currencies.SetValue(FxColumns.CurrencyPair.Id, rowId, ccyPairId++);
-                        currencies.SetValue(FxColumns.CurrencyPair.CcyPair, rowId, ccy1 + ccy2);
-                        currencies.SetValue(FxColumns.CurrencyPair.Ccy1, rowId, ccy1);
-                        currencies.SetValue(FxColumns.CurrencyPair.Ccy2, rowId, ccy2);
-                    }
+                    var ccy1 = currencyList[i];
+                    var ccy2 = currencyList[j];
+                    var rowId = currencies.AddRow();
+                    currencies.SetValue(FxTableDefinitions.CurrencyPair.Id, rowId, ccyPairId++);
+                    currencies.SetValue(FxTableDefinitions.CurrencyPair.CcyPair, rowId, ccy1 + ccy2);
+                    currencies.SetValue(FxTableDefinitions.CurrencyPair.Ccy1, rowId, ccy1);
+                    currencies.SetValue(FxTableDefinitions.CurrencyPair.Ccy2, rowId, ccy2);
                 }
             }
 
             ResetStream(observerStream);
-            //            ReadProtobuf(observerStream);
-            ReactiveTable output = GetCurrenciesTable();
-            ProtobufTableWriter tableWriter = new ProtobufTableWriter(output, InverseUniqueDictionary(columnsToFieldIds));
-            tableWriter.WriteStream(observerStream);
+            Console.WriteLine("Currencies written to stream - size {0}", observerStream.Length);
+
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 1337);
+            listener.Start();
+            listener.BeginAcceptTcpClient(ClientAccepted, new ClientState{Listener=listener, Stream = observerStream, Writer = protoWriter});
+//            Console.WriteLine("Waiting for client connection");
+//            AcceptClientAndWriteTable(listener, observerStream, protoWriter);
+
+            _finished.Wait();
+            listener.Stop();
+        }
+
+        private static void AcceptClientAndWriteTable(TcpListener listener, MemoryStream observerStream, ProtoWriter protoWriter)
+        {
+            while (!listener.Pending())
+            {
+                Thread.Sleep(10);
+            }
+
+            using (var client = listener.AcceptTcpClient())
+            using (var outputStream = client.GetStream())
+            {
+                observerStream.CopyTo(outputStream);
+
+                outputStream.Close();
+                client.Close();
+            }
+
+            protoWriter.Close();
+        }
+
+        private class ClientState
+        {
+            public TcpListener Listener { get; set; }
+            public Stream Stream { get; set; }
+            public ProtoWriter Writer { get; set; }
+        }
+
+        private void ClientAccepted(IAsyncResult ar)
+        {
+            var state = (ClientState)ar.AsyncState;
+            Console.WriteLine("Client connection accepted");
+            var listener = state.Listener;
+            // TODO: Keep connection open and stream changes
+//            while (!_finished.Wait(10))
+//            {
+                using(var client = listener.EndAcceptTcpClient(ar))
+                using (var outputStream = client.GetStream())
+                {
+                    state.Stream.CopyTo(outputStream);
+
+                    outputStream.Close();
+                    client.Close();
+                }
+//            }
+
+            state.Writer.Close();
         }
 
         private static void ResetStream(MemoryStream stream)
@@ -182,10 +226,138 @@ namespace ReactiveTables.Demo.Server
             }
         }
 
-        private void StreamRates(object o)
+        private async void StreamRates(object o)
         {
             ReactiveTable fxRates = (ReactiveTable)o;
 
+//            var observerStream = new ReplayStream();
+            Dictionary<string, int> columnsToFieldIds = new Dictionary<string, int>
+                                                            {
+                                                                {FxTableDefinitions.FxRates.CcyPairId, 1},
+                                                                {FxTableDefinitions.FxRates.Bid, 2},
+                                                                {FxTableDefinitions.FxRates.Ask, 3},
+                                                                {FxTableDefinitions.FxRates.Time, 4},
+                                                            };
+//            var protoWriter = new ProtoWriter(observerStream, null, null);
+//            var protobufWriterObserver = new ProtobufWriterObserver(fxRates, protoWriter, columnsToFieldIds);
+//            fxRates.Subscribe(protobufWriterObserver);
+            
+            Dictionary<string, int> ccyPairsToRowIds = new Dictionary<string, int>();
+            AddRates(fxRates, ccyPairsToRowIds);
+            UpdateRates(ccyPairsToRowIds, fxRates);
+
+            //ResetStream(observerStream);
+            TcpListener listener = TcpListener.Create(1337);
+            listener.Start();
+            while (!_finished.Wait(10))
+            {
+                if (listener.Pending())
+                {
+                    var client = await listener.AcceptTcpClientAsync();
+                    var outputStream = client.GetStream();
+
+                    // TODO: Find way to re-utilise the proto writers
+                    var protoWriter2 = new ProtoWriter(outputStream, null, null);
+                    var replayer = new ProtobufWriterObserver(fxRates, protoWriter2, columnsToFieldIds);
+                    // Replay state when new client connects
+                    fxRates.ReplayRows(replayer);
+                }
+
+                UpdateRates(ccyPairsToRowIds, fxRates);
+            }
+
+            listener.Stop();
+//            protoWriter.Close();
+        }
+
+        public class ReplayStream: Stream
+        {
+            private readonly List<Stream> _streams = new List<Stream>(); 
+
+            public void AddStream(Stream stream)
+            {
+                lock (_streams)
+                {
+                    _streams.Add(stream);
+                }
+            }
+
+            public void RemoveStream(Stream stream)
+            {
+                lock (_streams)
+                {
+                    _streams.Remove(stream);
+                }
+            }
+
+            public override void Flush()
+            {
+                if (_streams.Count == 0) return;
+                Stream[] copy;
+                lock (_streams)
+                {
+                    copy = _streams.ToArray();
+                }
+                foreach (var stream in copy)
+                {
+                    stream.Flush();
+                }
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                if (_streams.Count == 0) return;
+                Stream[] copy;
+                lock (_streams)
+                {
+                    copy = _streams.ToArray();
+                }
+                foreach (var stream in copy)
+                {
+                    stream.Write(buffer, offset, count);
+                }
+            }
+
+            public override bool CanRead
+            {
+                get { return false; }
+            }
+
+            public override bool CanSeek
+            {
+                get { return false; }
+            }
+
+            public override bool CanWrite
+            {
+                get { return true; }
+            }
+
+            public override long Length
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override long Position { get; set; }
+        }
+
+        private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)
+        {
             for (int i = 0; i < currencyList.Length; i++)
             {
                 for (int j = i + 1; j < currencyList.Length; j++)
@@ -194,10 +366,27 @@ namespace ReactiveTables.Demo.Server
                     var ccy2 = currencyList[j];
 
                     var rowId = fxRates.AddRow();
-                    fxRates.SetValue(FxColumns.FxRates.CcyPairId, rowId, ccy1 + ccy2);
-                    fxRates.SetValue(FxColumns.FxRates.Bid, rowId, GetRandomBidAsk());
-                    fxRates.SetValue(FxColumns.FxRates.Ask, rowId, GetRandomBidAsk());
-                    fxRates.SetValue(FxColumns.FxRates.Time, rowId, DateTime.UtcNow);
+                    var ccyPair = ccy1 + ccy2;
+                    ccyPairsToRowIds[ccyPair] = rowId;
+                }
+            }
+        }
+
+        private void UpdateRates(Dictionary<string, int> ccyPairsToRowIds, ReactiveTable fxRates)
+        {
+            for (int i = 0; i < currencyList.Length; i++)
+            {
+                for (int j = i + 1; j < currencyList.Length; j++)
+                {
+                    var ccy1 = currencyList[i];
+                    var ccy2 = currencyList[j];
+
+                    var ccyPair = ccy1 + ccy2;
+                    var rowId = ccyPairsToRowIds[ccyPair];
+                    fxRates.SetValue(FxTableDefinitions.FxRates.CcyPairId, rowId, ccyPair);
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Bid, rowId, GetRandomBidAsk());
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Ask, rowId, GetRandomBidAsk());
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Time, rowId, DateTime.UtcNow);
                 }
             }
         }

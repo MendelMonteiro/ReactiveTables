@@ -84,9 +84,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FxTableDefinitions.cs" />
     <Compile Include="ProtobufFieldIds.cs" />
     <Compile Include="ProtobufOperationTypes.cs" />
-    <Compile Include="ProtobufTableWriter.cs" />
     <Compile Include="ProtobufWriterObserver.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -53,7 +53,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public Dictionary<string, IReactiveColumn> Columns
         {
-            get { throw new NotImplementedException(); }
+            get { return _targetTable.Columns; }
         }
 
         public PropertyChangedNotifier ChangeNotifier

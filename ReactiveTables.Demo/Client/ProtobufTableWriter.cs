@@ -1,59 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using ProtoBuf;
+using ReactiveTables.Demo.Server;
 using ReactiveTables.Framework;
 
-namespace ReactiveTables.Demo.Server
+namespace ReactiveTables.Demo.Client
 {
     class ProtobufTableWriter
     {
-        private readonly ReactiveTable _table;
+        private readonly IWritableReactiveTable _table;
         private readonly Dictionary<int, string> _fieldIdsToColumns;
+        private readonly Stream _stream;
+        private readonly ProtoReader _reader;
+        readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
 
-        public ProtobufTableWriter(ReactiveTable table, Dictionary<int, string> fieldIdsToColumns)
+        public ProtobufTableWriter(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns, Stream stream)
         {
             _table = table;
             _fieldIdsToColumns = fieldIdsToColumns;
+            _stream = stream;
+            _reader = new ProtoReader(_stream, null, null);
         }
 
-        public void WriteStream(Stream stream)
+        public void Start()
         {
-            Dictionary<int, int> remoteToLocalRowIds = new Dictionary<int, int>();
-            using (var reader = new ProtoReader(stream, null, null))
+            var remoteToLocalRowIds = new Dictionary<int, int>();
+
+            _finished.Reset();
+            while (!_finished.Wait(10))
             {
-                int fieldId;
-                while ((fieldId = reader.ReadFieldHeader()) != 0)
+                try
                 {
-                    if (fieldId == ProtobufOperationTypes.Add)
+                    ReadStream(remoteToLocalRowIds);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            _finished.Set();
+        }
+
+        private void ReadStream(Dictionary<int, int> remoteToLocalRowIds)
+        {
+            int fieldId;
+            while ((fieldId = _reader.ReadFieldHeader()) != 0)
+            {
+                if (fieldId == ProtobufOperationTypes.Add)
+                {
+                    var rowId = ReadRowId(_reader);
+                    if (rowId >= 0)
                     {
-                        var rowId = ReadRowId(reader);
-                        if (rowId >= 0)
-                        {
-                            remoteToLocalRowIds.Add(rowId, _table.AddRow());
-                        }
+                        remoteToLocalRowIds.Add(rowId, _table.AddRow());
                     }
-                    if (fieldId == ProtobufOperationTypes.Update)
+                }
+                if (fieldId == ProtobufOperationTypes.Update)
+                {
+                    var token = ProtoReader.StartSubItem(_reader);
+
+                    fieldId = _reader.ReadFieldHeader();
+                    if (fieldId == ProtobufFieldIds.RowId) // Check for row id
                     {
-                        var token = ProtoReader.StartSubItem(reader);
+                        var rowId = _reader.ReadInt32();
 
-                        fieldId = reader.ReadFieldHeader();
-                        if (fieldId == ProtobufFieldIds.RowId) // Check for row id
-                        {
-                            var rowId = reader.ReadInt32();
-
-                            WriteFieldsToTable(_table, _fieldIdsToColumns, reader, remoteToLocalRowIds[rowId]);
-                        }
-
-                        ProtoReader.EndSubItem(token, reader);
+                        WriteFieldsToTable(_table, _fieldIdsToColumns, _reader, remoteToLocalRowIds[rowId]);
                     }
-                    else if (fieldId == ProtobufOperationTypes.Delete)
+
+                    ProtoReader.EndSubItem(token, _reader);
+                }
+                else if (fieldId == ProtobufOperationTypes.Delete)
+                {
+                    var rowId = ReadRowId(_reader);
+                    if (rowId >= 0)
                     {
-                        var rowId = ReadRowId(reader);
-                        if (rowId >= 0)
-                        {
-                            _table.DeleteRow(remoteToLocalRowIds[rowId]);
-                            remoteToLocalRowIds.Remove(rowId);
-                        }
+                        _table.DeleteRow(remoteToLocalRowIds[rowId]);
+                        remoteToLocalRowIds.Remove(rowId);
                     }
                 }
             }

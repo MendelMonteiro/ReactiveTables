@@ -11,7 +11,7 @@
                 </Style>
             </StackPanel.Resources>
             <Button Name="RealTimeButton" Click="RealTimeButton_Click">Real time demo</Button>
-            <Button Name="ExternalDataButton" Click="ExternalDataButton_Click">External data feed demo</Button>
+            <Button Name="ExternalDataButton" Click="ExternalDataButton_Click">Client server demo</Button>
             <Button Name="SyncfusionButton" Click="SyncfusionButton_Click">Syncfusion demo</Button>
             <Button Name="XceedButton" Click="XceedButton_Click">Xceed demo</Button>
         </StackPanel>
