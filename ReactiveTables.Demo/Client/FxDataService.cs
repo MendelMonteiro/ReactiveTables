@@ -21,6 +21,7 @@ namespace ReactiveTables.Demo.Client
         private readonly ReactiveTable _currencies;
         private ProtobufTableWriter _tableWriter;
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(500);
+        private TcpClient _client;
 
         public FxDataService()
         {
@@ -55,24 +56,24 @@ namespace ReactiveTables.Demo.Client
 
         private void StartReceiving(IWritableReactiveTable currenciesWire)
         {
-            using (var client = new TcpClient())
+            _client = new TcpClient();
+            // TODO: Handle disconnections
+            _client.Connect(IPAddress.Loopback, 1337);
+            using (var stream = _client.GetStream())
             {
-                client.Connect(IPAddress.Loopback, 1337);
-                using (var stream = client.GetStream())
-                {
-                    var columnsToFieldIds = new Dictionary<string, int>
-                                                {
-                                                    {FxTableDefinitions.CurrencyPair.Id, 1},
-                                                    {FxTableDefinitions.CurrencyPair.CcyPair, 2},
-                                                    {FxTableDefinitions.CurrencyPair.Ccy1, 3},
-                                                    {FxTableDefinitions.CurrencyPair.Ccy2, 4},
-                                                };
+                var columnsToFieldIds = new Dictionary<string, int>
+                                            {
+                                                {FxTableDefinitions.CurrencyPair.Id, 101},
+                                                {FxTableDefinitions.CurrencyPair.CcyPair, 102},
+                                                {FxTableDefinitions.CurrencyPair.Ccy1, 103},
+                                                {FxTableDefinitions.CurrencyPair.Ccy2, 104},
+                                            };
 
-                    var fieldIdsToColumns = InverseUniqueDictionary(columnsToFieldIds);
-                    _tableWriter = new ProtobufTableWriter(currenciesWire, fieldIdsToColumns, stream);
-                    _tableWriter.Start();
-                }
+                var fieldIdsToColumns = InverseUniqueDictionary(columnsToFieldIds);
+                _tableWriter = new ProtobufTableWriter(currenciesWire, fieldIdsToColumns, stream);
+                _tableWriter.Start();
             }
+            //_client.Close();
         }
 
         private static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
@@ -90,6 +91,7 @@ namespace ReactiveTables.Demo.Client
             if (_tableWriter != null)
             {
                 _tableWriter.Stop();
+                _client.Close();
             }
         }
     }

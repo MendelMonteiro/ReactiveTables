@@ -40,10 +40,12 @@ namespace ReactiveTables.Demo.Client
                     Console.WriteLine(e);
                 }
             }
+            Console.WriteLine("Stopped reading network stream");
         }
 
         public void Stop()
         {
+            Console.WriteLine("Stopping Fx dataservice");
             _finished.Set();
         }
 
@@ -58,21 +60,13 @@ namespace ReactiveTables.Demo.Client
                     if (rowId >= 0)
                     {
                         remoteToLocalRowIds.Add(rowId, _table.AddRow());
+                        fieldId = _reader.ReadFieldHeader();
+                        ReadUpdate(remoteToLocalRowIds);
                     }
                 }
-                if (fieldId == ProtobufOperationTypes.Update)
+                else if (fieldId == ProtobufOperationTypes.Update)
                 {
-                    var token = ProtoReader.StartSubItem(_reader);
-
-                    fieldId = _reader.ReadFieldHeader();
-                    if (fieldId == ProtobufFieldIds.RowId) // Check for row id
-                    {
-                        var rowId = _reader.ReadInt32();
-
-                        WriteFieldsToTable(_table, _fieldIdsToColumns, _reader, remoteToLocalRowIds[rowId]);
-                    }
-
-                    ProtoReader.EndSubItem(token, _reader);
+                    ReadUpdate(remoteToLocalRowIds);
                 }
                 else if (fieldId == ProtobufOperationTypes.Delete)
                 {
@@ -84,6 +78,21 @@ namespace ReactiveTables.Demo.Client
                     }
                 }
             }
+        }
+
+        private void ReadUpdate(Dictionary<int, int> remoteToLocalRowIds)
+        {
+            var token = ProtoReader.StartSubItem(_reader);
+
+            int fieldId = _reader.ReadFieldHeader();
+            if (fieldId == ProtobufFieldIds.RowId) // Check for row id
+            {
+                var rowId = _reader.ReadInt32();
+
+                WriteFieldsToTable(_table, _fieldIdsToColumns, _reader, remoteToLocalRowIds[rowId]);
+            }
+
+            ProtoReader.EndSubItem(token, _reader);
         }
 
         private static int ReadRowId(ProtoReader reader)
@@ -117,7 +126,9 @@ namespace ReactiveTables.Demo.Client
                 }
                 else if (column.Type == typeof(string))
                 {
-                    table.SetValue(columnId, rowId, reader.ReadString());
+                    var value = reader.ReadString();
+                    Console.WriteLine("Writing string {0}", value);
+                    table.SetValue(columnId, rowId, value);
                 }
                 else if (column.Type == typeof(bool))
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ProtoBuf;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
+using System.Linq;
 
 namespace ReactiveTables.Demo.Server
 {
@@ -25,9 +26,10 @@ namespace ReactiveTables.Demo.Server
             {
                 case TableUpdate.TableUpdateAction.Add:
                     WriteAdd(value);
+                    WriteUpdate(_table.Columns.Values, value.RowIndex);
                     break;
                 case TableUpdate.TableUpdateAction.Update:
-                    WriteUpdate(value);
+                    WriteUpdate(value.Columns, value.RowIndex);
                     break;
                 case TableUpdate.TableUpdateAction.Delete:
                     WriteDelete(value);
@@ -45,18 +47,19 @@ namespace ReactiveTables.Demo.Server
             WriteRowId(value, ProtobufOperationTypes.Delete);
         }
 
-        private void WriteUpdate(TableUpdate value)
+        private void WriteUpdate(IEnumerable<IReactiveColumn> columns, int rowIndex)
         {
+            // Start the row group
             ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, _writer);
-            var token = ProtoWriter.StartSubItem(value.RowIndex, _writer);
+            var token = ProtoWriter.StartSubItem(rowIndex, _writer);
 
-            var rowId = value.RowIndex;
+            var rowId = rowIndex;
 
             // Send the row id so that it can be matched against the local row id at the other end.
             ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, _writer);
             ProtoWriter.WriteInt32(rowId, _writer);
 
-            foreach (var column in value.Columns)
+            foreach (var column in columns)
             {
                 var fieldId = _columnsToFieldIds[column.ColumnId];
 
@@ -64,6 +67,8 @@ namespace ReactiveTables.Demo.Server
             }
 
             ProtoWriter.EndSubItem(token, _writer);
+//            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.EndGroup, _writer);
+//            ProtoWriter.WriteBoolean(true, _writer);
         }
 
         private void WriteColumn(IReactiveColumn column, int fieldId, int rowId)
@@ -81,7 +86,9 @@ namespace ReactiveTables.Demo.Server
             else if (column.Type == typeof(string))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.String, _writer);
-                ProtoWriter.WriteString(_table.GetValue<string>(column.ColumnId, rowId), _writer);
+                var value = _table.GetValue<string>(column.ColumnId, rowId);
+                Console.WriteLine("Writing string {0}", value);
+                ProtoWriter.WriteString(value ?? string.Empty, _writer);
             }
             else if (column.Type == typeof(bool))
             {

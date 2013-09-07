@@ -40,6 +40,7 @@ namespace ReactiveTables.Demo.Server
 
         private void Stop()
         {
+            Console.WriteLine("Stopping service");
             _finished.Set();
         }
 
@@ -80,16 +81,6 @@ namespace ReactiveTables.Demo.Server
             ReactiveTable currencies = (ReactiveTable)o;
 
             var observerStream = new MemoryStream();
-            Dictionary<string, int> columnsToFieldIds = new Dictionary<string, int>
-                                                            {
-                                                                {FxTableDefinitions.CurrencyPair.Id, 1},
-                                                                {FxTableDefinitions.CurrencyPair.CcyPair, 2},
-                                                                {FxTableDefinitions.CurrencyPair.Ccy1, 3},
-                                                                {FxTableDefinitions.CurrencyPair.Ccy2, 4},
-                                                            };
-            var protoWriter = new ProtoWriter(observerStream, null, null);
-            var protobufWriterObserver = new ProtobufWriterObserver(currencies, protoWriter, columnsToFieldIds);
-            currencies.Subscribe(protobufWriterObserver);
 
             int ccyPairId = 1;
             for (int i = 0; i < currencyList.Length; i++)
@@ -106,14 +97,19 @@ namespace ReactiveTables.Demo.Server
                 }
             }
 
-            ResetStream(observerStream);
-            Console.WriteLine("Currencies written to stream - size {0}", observerStream.Length);
+            //ResetStream(observerStream);
 
             TcpListener listener = new TcpListener(IPAddress.Loopback, 1337);
             listener.Start();
-            listener.BeginAcceptTcpClient(ClientAccepted, new ClientState{Listener=listener, Stream = observerStream, Writer = protoWriter});
-//            Console.WriteLine("Waiting for client connection");
-//            AcceptClientAndWriteTable(listener, observerStream, protoWriter);
+            listener.BeginAcceptTcpClient(ClientAccepted,
+                                          new ClientState
+                                              {
+                                                  Listener = listener,
+                                                  Stream = observerStream,
+                                                  Table = currencies
+                                              });
+            //            Console.WriteLine("Waiting for client connection");
+            //            AcceptClientAndWriteTable(listener, observerStream, protoWriter);
 
             _finished.Wait();
             listener.Stop();
@@ -142,7 +138,7 @@ namespace ReactiveTables.Demo.Server
         {
             public TcpListener Listener { get; set; }
             public Stream Stream { get; set; }
-            public ProtoWriter Writer { get; set; }
+            public IWritableReactiveTable Table { get; set; }
         }
 
         private void ClientAccepted(IAsyncResult ar)
@@ -151,19 +147,33 @@ namespace ReactiveTables.Demo.Server
             Console.WriteLine("Client connection accepted");
             var listener = state.Listener;
             // TODO: Keep connection open and stream changes
-//            while (!_finished.Wait(10))
-//            {
-                using(var client = listener.EndAcceptTcpClient(ar))
-                using (var outputStream = client.GetStream())
-                {
-                    state.Stream.CopyTo(outputStream);
+            using (var client = listener.EndAcceptTcpClient(ar))
+            using (var outputStream = client.GetStream())
+            {
+                var columnsToFieldIds = new Dictionary<string, int>
+                                            {
+                                                {FxTableDefinitions.CurrencyPair.Id, 101},
+                                                {FxTableDefinitions.CurrencyPair.CcyPair, 102},
+                                                {FxTableDefinitions.CurrencyPair.Ccy1, 103},
+                                                {FxTableDefinitions.CurrencyPair.Ccy2, 104},
+                                            };
+                var protoWriter = new ProtoWriter(outputStream, null, null);
+                var protobufWriterObserver = new ProtobufWriterObserver(state.Table, protoWriter, columnsToFieldIds);
+                var token = state.Table.Subscribe(protobufWriterObserver);
+                
+                state.Table.ReplayRows(protobufWriterObserver);
 
-                    outputStream.Close();
-                    client.Close();
-                }
-//            }
+                var last = state.Table.AddRow();
+                state.Table.SetValue(FxTableDefinitions.CurrencyPair.CcyPair, last, "Test");
 
-            state.Writer.Close();
+                protoWriter.Close();
+                outputStream.Flush();
+                while (client.Connected && !_finished.Wait(10)) { }
+
+                token.Dispose();
+                outputStream.Close();
+                client.Close();
+            }
         }
 
         private static void ResetStream(MemoryStream stream)
@@ -230,7 +240,7 @@ namespace ReactiveTables.Demo.Server
         {
             ReactiveTable fxRates = (ReactiveTable)o;
 
-//            var observerStream = new ReplayStream();
+            //            var observerStream = new ReplayStream();
             Dictionary<string, int> columnsToFieldIds = new Dictionary<string, int>
                                                             {
                                                                 {FxTableDefinitions.FxRates.CcyPairId, 1},
@@ -238,10 +248,10 @@ namespace ReactiveTables.Demo.Server
                                                                 {FxTableDefinitions.FxRates.Ask, 3},
                                                                 {FxTableDefinitions.FxRates.Time, 4},
                                                             };
-//            var protoWriter = new ProtoWriter(observerStream, null, null);
-//            var protobufWriterObserver = new ProtobufWriterObserver(fxRates, protoWriter, columnsToFieldIds);
-//            fxRates.Subscribe(protobufWriterObserver);
-            
+            //            var protoWriter = new ProtoWriter(observerStream, null, null);
+            //            var protobufWriterObserver = new ProtobufWriterObserver(fxRates, protoWriter, columnsToFieldIds);
+            //            fxRates.Subscribe(protobufWriterObserver);
+
             Dictionary<string, int> ccyPairsToRowIds = new Dictionary<string, int>();
             AddRates(fxRates, ccyPairsToRowIds);
             UpdateRates(ccyPairsToRowIds, fxRates);
@@ -267,12 +277,12 @@ namespace ReactiveTables.Demo.Server
             }
 
             listener.Stop();
-//            protoWriter.Close();
+            //            protoWriter.Close();
         }
 
-        public class ReplayStream: Stream
+        public class ReplayStream : Stream
         {
-            private readonly List<Stream> _streams = new List<Stream>(); 
+            private readonly List<Stream> _streams = new List<Stream>();
 
             public void AddStream(Stream stream)
             {
