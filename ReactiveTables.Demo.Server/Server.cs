@@ -44,7 +44,7 @@ namespace ReactiveTables.Demo.Server
             _finished.Set();
         }
 
-        private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD" };
+        private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD", "CNY", "ZAR", "BRL", "RUB", "JPY", "INR", "DKK", "NOK", "PLN" };
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
         private readonly Random _random = new Random();
 
@@ -54,16 +54,21 @@ namespace ReactiveTables.Demo.Server
 
             // Create data tables
             var currencies = GetCurrenciesTable();
+            var fxRates = GetRatesTable();
 
+            // Start threads for each one
+            Task.Run(() => StreamCurrencies(currencies));
+            Task.Run(() => StreamRates(fxRates));
+        }
+
+        private static ReactiveTable GetRatesTable()
+        {
             ReactiveTable fxRates = new ReactiveTable();
             fxRates.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.FxRates.CcyPairId));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Bid));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Ask));
             fxRates.AddColumn(new ReactiveColumn<DateTime>(FxTableDefinitions.FxRates.Time));
-
-            // Start threads for each one
-            Task.Run(() => StreamCurrencies(currencies));
-            Task.Run(() => StreamRates(fxRates));
+            return fxRates;
         }
 
         private static ReactiveTable GetCurrenciesTable()
@@ -80,8 +85,6 @@ namespace ReactiveTables.Demo.Server
         {
             ReactiveTable currencies = (ReactiveTable)o;
 
-            var observerStream = new MemoryStream();
-
             int ccyPairId = 1;
             for (int i = 0; i < currencyList.Length; i++)
             {
@@ -97,15 +100,12 @@ namespace ReactiveTables.Demo.Server
                 }
             }
 
-            //ResetStream(observerStream);
-
             TcpListener listener = new TcpListener(IPAddress.Loopback, 1337);
             listener.Start();
-            listener.BeginAcceptTcpClient(ClientAccepted,
+            listener.BeginAcceptTcpClient(AcceptCurrenciesClient,
                                           new ClientState
                                               {
                                                   Listener = listener,
-                                                  Stream = observerStream,
                                                   Table = currencies
                                               });
             //            Console.WriteLine("Waiting for client connection");
@@ -115,33 +115,18 @@ namespace ReactiveTables.Demo.Server
             listener.Stop();
         }
 
-        private static void AcceptClientAndWriteTable(TcpListener listener, MemoryStream observerStream, ProtoWriter protoWriter)
-        {
-            while (!listener.Pending())
-            {
-                Thread.Sleep(10);
-            }
-
-            using (var client = listener.AcceptTcpClient())
-            using (var outputStream = client.GetStream())
-            {
-                observerStream.CopyTo(outputStream);
-
-                outputStream.Close();
-                client.Close();
-            }
-
-            protoWriter.Close();
-        }
-
         private class ClientState
         {
             public TcpListener Listener { get; set; }
-            public Stream Stream { get; set; }
             public IWritableReactiveTable Table { get; set; }
         }
 
-        private void ClientAccepted(IAsyncResult ar)
+        private class RatesClientState:ClientState
+        {
+            public Dictionary<string, int> CcyPairsToRowIds { get; set; }
+        }
+
+        private void AcceptCurrenciesClient(IAsyncResult ar)
         {
             var state = (ClientState)ar.AsyncState;
             Console.WriteLine("Client connection accepted");
@@ -159,10 +144,11 @@ namespace ReactiveTables.Demo.Server
                                             };
                 var protoWriter = new ProtoWriter(outputStream, null, null);
                 var protobufWriterObserver = new ProtobufWriterObserver(state.Table, protoWriter, columnsToFieldIds);
+
                 var token = state.Table.Subscribe(protobufWriterObserver);
-                
                 state.Table.ReplayRows(protobufWriterObserver);
 
+                // Temp value to flush all the currencies
                 var last = state.Table.AddRow();
                 state.Table.SetValue(FxTableDefinitions.CurrencyPair.CcyPair, last, "Test");
 
@@ -192,92 +178,101 @@ namespace ReactiveTables.Demo.Server
             return inverse;
         }
 
-        private void ReadProtobuf(Stream stream)
-        {
-            using (ProtoReader reader = new ProtoReader(stream, null, null))
-            {
-                int field;
-                while ((field = reader.ReadFieldHeader()) != 0)
-                {
-                    if (field == 1)
-                    {
-                        var token = ProtoReader.StartSubItem(reader);
-                        while ((field = reader.ReadFieldHeader()) != 0)
-                        {
-                            object val;
-                            switch (field)
-                            {
-                                case 1:
-                                    val = reader.ReadInt32();
-                                    break;
-                                case 2:
-                                    val = reader.ReadString();
-                                    break;
-                                case 3:
-                                    val = reader.ReadString();
-                                    break;
-                                case 4:
-                                    val = reader.ReadString();
-                                    break;
-                                default:
-                                    val = null;
-                                    reader.SkipField();
-                                    break;
-                            }
-                            Console.WriteLine("Value is {0}", val);
-                        }
-                        ProtoReader.EndSubItem(token, reader);
-                    }
-                    else
-                    {
-                        reader.SkipField();
-                    }
-                }
-            }
-        }
-
         private async void StreamRates(object o)
         {
             ReactiveTable fxRates = (ReactiveTable)o;
-
-            //            var observerStream = new ReplayStream();
-            Dictionary<string, int> columnsToFieldIds = new Dictionary<string, int>
-                                                            {
-                                                                {FxTableDefinitions.FxRates.CcyPairId, 1},
-                                                                {FxTableDefinitions.FxRates.Bid, 2},
-                                                                {FxTableDefinitions.FxRates.Ask, 3},
-                                                                {FxTableDefinitions.FxRates.Time, 4},
-                                                            };
-            //            var protoWriter = new ProtoWriter(observerStream, null, null);
-            //            var protobufWriterObserver = new ProtobufWriterObserver(fxRates, protoWriter, columnsToFieldIds);
-            //            fxRates.Subscribe(protobufWriterObserver);
 
             Dictionary<string, int> ccyPairsToRowIds = new Dictionary<string, int>();
             AddRates(fxRates, ccyPairsToRowIds);
             UpdateRates(ccyPairsToRowIds, fxRates);
 
-            //ResetStream(observerStream);
-            TcpListener listener = TcpListener.Create(1337);
+            TcpListener listener = TcpListener.Create(1338);
             listener.Start();
-            while (!_finished.Wait(10))
-            {
-                if (listener.Pending())
-                {
-                    var client = await listener.AcceptTcpClientAsync();
-                    var outputStream = client.GetStream();
+            listener.BeginAcceptTcpClient(AcceptRatesClient, new RatesClientState
+                                                                 {
+                                                                     Listener = listener,
+                                                                     Table = fxRates,
+                                                                     CcyPairsToRowIds = ccyPairsToRowIds
+                                                                 });
 
-                    // TODO: Find way to re-utilise the proto writers
-                    var protoWriter2 = new ProtoWriter(outputStream, null, null);
-                    var replayer = new ProtobufWriterObserver(fxRates, protoWriter2, columnsToFieldIds);
-                    // Replay state when new client connects
-                    fxRates.ReplayRows(replayer);
-                }
-
-                UpdateRates(ccyPairsToRowIds, fxRates);
-            }
-
+            _finished.Wait();
             listener.Stop();
-            //            protoWriter.Close();
+        }
+
+        private void AcceptRatesClient(IAsyncResult ar)
+        {
+            var state = (RatesClientState) ar.AsyncState;
+            var client = state.Listener.EndAcceptTcpClient(ar);
+            var outputStream = client.GetStream();
+            var fxRates = state.Table;
+
+            // TODO: Find way to re-utilise the proto writers
+            var protoWriter = new ProtoWriter(outputStream, null, null);
+            var columnsToFieldIds = new Dictionary<string, int>
+                                        {
+                                            {FxTableDefinitions.FxRates.CcyPairId, 101},
+                                            {FxTableDefinitions.FxRates.Bid, 102},
+                                            {FxTableDefinitions.FxRates.Ask, 103},
+                                            {FxTableDefinitions.FxRates.Time, 104},
+                                        };
+            var writerObserver = new ProtobufWriterObserver(fxRates, protoWriter, columnsToFieldIds);
+            var token = fxRates.Subscribe(writerObserver);
+            // Replay state when new client connects
+            fxRates.ReplayRows(writerObserver);
+
+            outputStream.Flush();
+            while (client.Connected && !_finished.Wait(50))
+            {
+                // Update the rates every 50 milliseconds
+                UpdateRates(state.CcyPairsToRowIds, fxRates, false);
+                //outputStream.Flush();
+            }
+            protoWriter.Close();
+
+            token.Dispose();
+            outputStream.Close();
+            client.Close();
+
+        }
+
+        private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)
+        {
+            for (int i = 0; i < currencyList.Length; i++)
+            {
+                for (int j = i + 1; j < currencyList.Length; j++)
+                {
+                    var ccy1 = currencyList[i];
+                    var ccy2 = currencyList[j];
+
+                    var rowId = fxRates.AddRow();
+                    var ccyPair = ccy1 + ccy2;
+                    ccyPairsToRowIds[ccyPair] = rowId;
+                }
+            }
+        }
+
+        private void UpdateRates(Dictionary<string, int> ccyPairsToRowIds, IWritableReactiveTable fxRates, bool full = true)
+        {
+            for (int i = 0; i < currencyList.Length; i++)
+            {
+                for (int j = i + 1; j < currencyList.Length; j++)
+                {
+                    var ccy1 = currencyList[i];
+                    var ccy2 = currencyList[j];
+
+                    var ccyPair = ccy1 + ccy2;
+                    var rowId = ccyPairsToRowIds[ccyPair];
+                    if (full) fxRates.SetValue(FxTableDefinitions.FxRates.CcyPairId, rowId, ccyPair);
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Bid, rowId, GetRandomBidAsk());
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Ask, rowId, GetRandomBidAsk());
+                    fxRates.SetValue(FxTableDefinitions.FxRates.Time, rowId, DateTime.UtcNow);
+                }
+            }
+        }
+
+        private double GetRandomBidAsk()
+        {
+            return _random.Next(1, 1000) / 500d;
         }
 
         public class ReplayStream : Stream
@@ -366,44 +361,48 @@ namespace ReactiveTables.Demo.Server
             public override long Position { get; set; }
         }
 
-        private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)
+        private void ReadProtobuf(Stream stream)
         {
-            for (int i = 0; i < currencyList.Length; i++)
+            using (ProtoReader reader = new ProtoReader(stream, null, null))
             {
-                for (int j = i + 1; j < currencyList.Length; j++)
+                int field;
+                while ((field = reader.ReadFieldHeader()) != 0)
                 {
-                    var ccy1 = currencyList[i];
-                    var ccy2 = currencyList[j];
-
-                    var rowId = fxRates.AddRow();
-                    var ccyPair = ccy1 + ccy2;
-                    ccyPairsToRowIds[ccyPair] = rowId;
+                    if (field == 1)
+                    {
+                        var token = ProtoReader.StartSubItem(reader);
+                        while ((field = reader.ReadFieldHeader()) != 0)
+                        {
+                            object val;
+                            switch (field)
+                            {
+                                case 1:
+                                    val = reader.ReadInt32();
+                                    break;
+                                case 2:
+                                    val = reader.ReadString();
+                                    break;
+                                case 3:
+                                    val = reader.ReadString();
+                                    break;
+                                case 4:
+                                    val = reader.ReadString();
+                                    break;
+                                default:
+                                    val = null;
+                                    reader.SkipField();
+                                    break;
+                            }
+                            Console.WriteLine("Value is {0}", val);
+                        }
+                        ProtoReader.EndSubItem(token, reader);
+                    }
+                    else
+                    {
+                        reader.SkipField();
+                    }
                 }
             }
-        }
-
-        private void UpdateRates(Dictionary<string, int> ccyPairsToRowIds, ReactiveTable fxRates)
-        {
-            for (int i = 0; i < currencyList.Length; i++)
-            {
-                for (int j = i + 1; j < currencyList.Length; j++)
-                {
-                    var ccy1 = currencyList[i];
-                    var ccy2 = currencyList[j];
-
-                    var ccyPair = ccy1 + ccy2;
-                    var rowId = ccyPairsToRowIds[ccyPair];
-                    fxRates.SetValue(FxTableDefinitions.FxRates.CcyPairId, rowId, ccyPair);
-                    fxRates.SetValue(FxTableDefinitions.FxRates.Bid, rowId, GetRandomBidAsk());
-                    fxRates.SetValue(FxTableDefinitions.FxRates.Ask, rowId, GetRandomBidAsk());
-                    fxRates.SetValue(FxTableDefinitions.FxRates.Time, rowId, DateTime.UtcNow);
-                }
-            }
-        }
-
-        private double GetRandomBidAsk()
-        {
-            return _random.Next(1, 1000) / 500d;
         }
     }
 }

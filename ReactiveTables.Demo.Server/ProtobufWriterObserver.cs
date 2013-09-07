@@ -67,8 +67,6 @@ namespace ReactiveTables.Demo.Server
             }
 
             ProtoWriter.EndSubItem(token, _writer);
-//            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.EndGroup, _writer);
-//            ProtoWriter.WriteBoolean(true, _writer);
         }
 
         private void WriteColumn(IReactiveColumn column, int fieldId, int rowId)
@@ -87,7 +85,7 @@ namespace ReactiveTables.Demo.Server
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.String, _writer);
                 var value = _table.GetValue<string>(column.ColumnId, rowId);
-                Console.WriteLine("Writing string {0}", value);
+//                Console.WriteLine("Writing string {0}", value);
                 ProtoWriter.WriteString(value ?? string.Empty, _writer);
             }
             else if (column.Type == typeof(bool))
@@ -97,7 +95,7 @@ namespace ReactiveTables.Demo.Server
             }
             else if (column.Type == typeof(double))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, _writer);
                 ProtoWriter.WriteDouble(_table.GetValue<double>(column.ColumnId, rowId), _writer);
             }
             else if (column.Type == typeof(long))
@@ -109,6 +107,11 @@ namespace ReactiveTables.Demo.Server
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
                 BclHelpers.WriteDecimal(_table.GetValue<decimal>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof (DateTime))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
+                BclHelpers.WriteDateTime(_table.GetValue<DateTime>(column.ColumnId, rowId), _writer);
             }
         }
 

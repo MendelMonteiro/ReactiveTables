@@ -17,20 +17,21 @@ namespace ReactiveTables.Demo.Client
 {
     class FxDataService
     {
-        private readonly ReactiveTable _rates = new ReactiveTable();
         private readonly ReactiveTable _currencies;
-        private ProtobufTableWriter _tableWriter;
+        private readonly List<ProtobufTableWriter> _tableWriters = new List<ProtobufTableWriter>();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(500);
-        private TcpClient _client;
+        private readonly List<TcpClient> _clients = new List<TcpClient>();
+        private readonly ReactiveTable _fxRates;
 
         public FxDataService()
         {
             _currencies = GetCurrenciesTable();
+            _fxRates = GetRatesTable();
         }
 
-        public ReactiveTable Rates
+        public ReactiveTable FxRates
         {
-            get { return _rates; }
+            get { return _fxRates; }
         }
 
         public ReactiveTable Currencies
@@ -41,7 +42,22 @@ namespace ReactiveTables.Demo.Client
         public void Start(Dispatcher dispatcher)
         {
             var currenciesWire = new ReactiveBatchedPassThroughTable(_currencies, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
-            Task.Run(() => StartReceiving(currenciesWire));
+            Task.Run(() => StartReceiving(currenciesWire, new Dictionary<string, int>
+                                                              {
+                                                                  {FxTableDefinitions.CurrencyPair.Id, 101},
+                                                                  {FxTableDefinitions.CurrencyPair.CcyPair, 102},
+                                                                  {FxTableDefinitions.CurrencyPair.Ccy1, 103},
+                                                                  {FxTableDefinitions.CurrencyPair.Ccy2, 104},
+                                                              }, 1337));
+
+            var ratesWire = new ReactiveBatchedPassThroughTable(_fxRates, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+            Task.Run(() => StartReceiving(ratesWire, new Dictionary<string, int>
+                                                         {
+                                                             {FxTableDefinitions.FxRates.CcyPairId, 101},
+                                                             {FxTableDefinitions.FxRates.Bid, 102},
+                                                             {FxTableDefinitions.FxRates.Ask, 103},
+                                                             {FxTableDefinitions.FxRates.Time, 104},
+                                                         }, 1338));
         }
 
         private static ReactiveTable GetCurrenciesTable()
@@ -54,24 +70,28 @@ namespace ReactiveTables.Demo.Client
             return currencies;
         }
 
-        private void StartReceiving(IWritableReactiveTable currenciesWire)
+        private static ReactiveTable GetRatesTable()
         {
-            _client = new TcpClient();
-            // TODO: Handle disconnections
-            _client.Connect(IPAddress.Loopback, 1337);
-            using (var stream = _client.GetStream())
-            {
-                var columnsToFieldIds = new Dictionary<string, int>
-                                            {
-                                                {FxTableDefinitions.CurrencyPair.Id, 101},
-                                                {FxTableDefinitions.CurrencyPair.CcyPair, 102},
-                                                {FxTableDefinitions.CurrencyPair.Ccy1, 103},
-                                                {FxTableDefinitions.CurrencyPair.Ccy2, 104},
-                                            };
+            ReactiveTable fxRates = new ReactiveTable();
+            fxRates.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.FxRates.CcyPairId));
+            fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Bid));
+            fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Ask));
+            fxRates.AddColumn(new ReactiveColumn<DateTime>(FxTableDefinitions.FxRates.Time));
+            return fxRates;
+        }
 
+        private void StartReceiving(IWritableReactiveTable currenciesWire, Dictionary<string, int> columnsToFieldIds, int port)
+        {
+            var client = new TcpClient();
+            _clients.Add(client);
+            // TODO: Handle disconnections
+            client.Connect(IPAddress.Loopback, port);
+            using (var stream = client.GetStream())
+            {
                 var fieldIdsToColumns = InverseUniqueDictionary(columnsToFieldIds);
-                _tableWriter = new ProtobufTableWriter(currenciesWire, fieldIdsToColumns, stream);
-                _tableWriter.Start();
+                var tableWriter = new ProtobufTableWriter(currenciesWire, fieldIdsToColumns, stream);
+                _tableWriters.Add(tableWriter);
+                tableWriter.Start();
             }
             //_client.Close();
         }
@@ -88,10 +108,16 @@ namespace ReactiveTables.Demo.Client
 
         public void Stop()
         {
-            if (_tableWriter != null)
+            if (_tableWriters != null)
             {
-                _tableWriter.Stop();
-                _client.Close();
+                foreach (var writer in _tableWriters)
+                {
+                    writer.Stop();
+                }
+                foreach (var client in _clients)
+                {
+                    client.Close();
+                }
             }
         }
     }

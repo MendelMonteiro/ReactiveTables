@@ -127,7 +127,7 @@ namespace ReactiveTables.Demo.Client
                 else if (column.Type == typeof(string))
                 {
                     var value = reader.ReadString();
-                    Console.WriteLine("Writing string {0}", value);
+//                    Console.WriteLine("Writing string {0}", value);
                     table.SetValue(columnId, rowId, value);
                 }
                 else if (column.Type == typeof(bool))
@@ -145,6 +145,10 @@ namespace ReactiveTables.Demo.Client
                 else if (column.Type == typeof(decimal))
                 {
                     table.SetValue(columnId, rowId, BclHelpers.ReadDecimal(reader));
+                }
+                else if (column.Type == typeof(DateTime))
+                {
+                    table.SetValue(columnId, rowId, BclHelpers.ReadDateTime(reader));
                 }
             }
         }
