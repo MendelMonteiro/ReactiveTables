@@ -61,18 +61,18 @@ namespace ReactiveTables.Framework.Joins
             _calculatedColumnObservers.Add(observer);
 
             var subscriptionToken = new SubscriptionToken<JoinedTable, IObserver<TableUpdate>>(this, observer);
-            _tokens.Add(observer, new Tuple<IDisposable, IDisposable>(subscriptionToken, null));
+//            _tokens.Add(observer, new Tuple<IDisposable, IDisposable>(null, null));
             return subscriptionToken;
         }
 
         public void Unsubscribe(IObserver<TableUpdate> observer)
         {
-            var tokens = _tokens[observer];
+            /*var tokens = _tokens[observer];
             if (tokens != null)
             {
                 if (tokens.Item1 != null) tokens.Item1.Dispose();
                 if (tokens.Item2 != null) tokens.Item2.Dispose();
-            }
+            }*/
 
             _calculatedColumnObservers.Remove(observer);
         }

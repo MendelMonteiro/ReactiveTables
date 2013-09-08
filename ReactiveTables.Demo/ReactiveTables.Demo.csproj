@@ -129,6 +129,10 @@
     <Compile Include="Client\FxClient.xaml.cs">
       <DependentUpon>FxClient.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Client\FxClientSyncfusion.xaml.cs">
+      <DependentUpon>FxClientSyncfusion.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Client\FxClientSyncfusionViewModel.cs" />
     <Compile Include="Client\FxClientViewModel.cs" />
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
     <Compile Include="Client\FxDataService.cs" />
@@ -139,10 +143,13 @@
     <Compile Include="MainViewModel.cs" />
     <Compile Include="ReactiveBindingList.cs" />
     <Compile Include="ReactiveObservableCollection.cs" />
-    <Compile Include="SyncfusionTest.xaml.cs">
+    <Compile Include="Syncfusion\SyncfusionTest.xaml.cs">
       <DependentUpon>SyncfusionTest.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SyncfusionTestViewModel.cs" />
+    <Compile Include="Syncfusion\SyncfusionTestViewModel.cs" />
+    <Compile Include="Syncfusion\ISyncfusionViewModel.cs" />
+    <Compile Include="Syncfusion\SyncfusionTestGridControl.cs" />
+    <Compile Include="Syncfusion\SyncfusionViewModelBase.cs" />
     <Compile Include="TestLauncher.xaml.cs">
       <DependentUpon>TestLauncher.xaml</DependentUpon>
     </Compile>
@@ -158,6 +165,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Client\FxClientSyncfusion.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -170,7 +181,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="SyncfusionTest.xaml">
+    <Page Include="Syncfusion\SyncfusionTest.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -30,27 +30,24 @@ namespace ReactiveTables.Demo.Client
         public FxClientViewModel()
         {
             CurrencyPairs = new ObservableCollection<FxCurrencyPairViewModel>();
-            _currenciesSubscription = _dataService.Currencies.ReplayAndSubscribe(update =>
-                                                                                     {
-                                                                                         if (update.Action ==
-                                                                                             TableUpdate.TableUpdateAction.Add)
-                                                                                         {
-                                                                                             CurrencyPairs.Add(
-                                                                                                 new FxCurrencyPairViewModel(
-                                                                                                     _dataService.Currencies,
-                                                                                                     update.RowIndex));
-                                                                                         }
-                                                                                     });
+            _currenciesSubscription = _dataService.Currencies.ReplayAndSubscribe(
+                update =>
+                    {
+                        if (update.Action == TableUpdate.TableUpdateAction.Add)
+                        {
+                            CurrencyPairs.Add(new FxCurrencyPairViewModel(_dataService.Currencies, update.RowIndex));
+                        }
+                    });
 
             FxRates = new ObservableCollection<FxRateViewModel>();
-            _fxRatesSubscription = _dataService.FxRates.ReplayAndSubscribe(update =>
-                                                                               {
-                                                                                   if (update.Action == TableUpdate.TableUpdateAction.Add)
-                                                                                   {
-                                                                                       FxRates.Add(new FxRateViewModel(
-                                                                                                       _dataService.FxRates, update.RowIndex));
-                                                                                   }
-                                                                               });
+            _fxRatesSubscription = _dataService.FxRates.ReplayAndSubscribe(
+                update =>
+                    {
+                        if (update.Action == TableUpdate.TableUpdateAction.Add)
+                        {
+                            FxRates.Add(new FxRateViewModel(_dataService.FxRates, update.RowIndex));
+                        }
+                    });
 
             _dataService.Start(Application.Current.Dispatcher);
         }
