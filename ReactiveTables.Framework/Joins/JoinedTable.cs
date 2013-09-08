@@ -21,6 +21,9 @@ using ReactiveTables.Framework.Filters;
 
 namespace ReactiveTables.Framework.Joins
 {
+    /// <summary>
+    /// Joins the output of two tables using the given <see cref="IReactiveTableJoiner"/>.
+    /// </summary>
     public class JoinedTable : IReactiveTable, IDisposable
     {
         private readonly IReactiveTable _leftTable;
@@ -39,8 +42,17 @@ namespace ReactiveTables.Framework.Joins
 
             Columns = new Dictionary<string, IReactiveColumn>();
             ChangeNotifier = new PropertyChangedNotifier(this);
-
+            AddBaseTableColumns(leftTable);
+            AddBaseTableColumns(rightTable);
             // TODO: need to process all existing values in the tables
+        }
+
+        private void AddBaseTableColumns(IReactiveTable table)
+        {
+            foreach (var column in table.Columns)
+            {
+                Columns.Add(column.Value.ColumnId, column.Value);
+            }
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
@@ -48,24 +60,21 @@ namespace ReactiveTables.Framework.Joins
             _joiner.AddObserver(observer);
             _calculatedColumnObservers.Add(observer);
 
-            return new SubscriptionToken<JoinedTable, IObserver<TableUpdate>>(this, observer);
+            var subscriptionToken = new SubscriptionToken<JoinedTable, IObserver<TableUpdate>>(this, observer);
+            _tokens.Add(observer, new Tuple<IDisposable, IDisposable>(subscriptionToken, null));
+            return subscriptionToken;
         }
 
         public void Unsubscribe(IObserver<TableUpdate> observer)
         {
             var tokens = _tokens[observer];
-            tokens.Item1.Dispose();
-            tokens.Item2.Dispose();
+            if (tokens != null)
+            {
+                if (tokens.Item1 != null) tokens.Item1.Dispose();
+                if (tokens.Item2 != null) tokens.Item2.Dispose();
+            }
 
             _calculatedColumnObservers.Remove(observer);
-        }
-
-        private void AddColumns(IReactiveTable reactiveTable)
-        {
-            foreach (var reactiveColumn in reactiveTable.Columns)
-            {
-                AddColumn(reactiveColumn.Value);
-            }
         }
 
         public void AddColumn(IReactiveColumn column)

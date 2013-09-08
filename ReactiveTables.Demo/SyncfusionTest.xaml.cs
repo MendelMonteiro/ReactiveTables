@@ -11,5 +11,11 @@ namespace ReactiveTables.Demo
         {
             InitializeComponent();
         }
+
+        protected override void OnClosed(System.EventArgs e)
+        {
+            ViewModel.Dispose();
+            base.OnClosed(e);
+        }
     }
 }

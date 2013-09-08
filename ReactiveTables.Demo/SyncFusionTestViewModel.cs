@@ -9,11 +9,11 @@ using System.Linq;
 
 namespace ReactiveTables.Demo
 {
-    public class SyncfusionTestViewModel : IObservable<TableUpdate>
+    public class SyncfusionTestViewModel : IObservable<TableUpdate>, IDisposable
     {
         private readonly IReactiveTable _table;
         private readonly List<IObserver<TableUpdate>> _observers = new List<IObserver<TableUpdate>>();
-        private IDisposable _token;
+        private readonly IDisposable _token;
         readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
 
         public SyncfusionTestViewModel()
@@ -58,6 +58,11 @@ namespace ReactiveTables.Demo
         {
             // TODO: Nasty - should keep a list of columns that are actually used by the grid and a map of their indeces
             return _table.Columns.Keys.IndexOf(columnId);
+        }
+
+        public void Dispose()
+        {
+            if (_token != null) _token.Dispose();
         }
     }
 

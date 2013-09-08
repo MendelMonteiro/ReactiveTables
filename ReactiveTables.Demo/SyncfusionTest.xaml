@@ -4,7 +4,7 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" xmlns:Demo="clr-namespace:ReactiveTables.Demo"
         Title="SyncfusionTest" Height="300" Width="300">
     <Window.DataContext>
-        <Demo:SyncfusionTestViewModel />
+        <Demo:SyncfusionTestViewModel x:Name="ViewModel" />
     </Window.DataContext>
     <Grid>
         <ScrollViewer CanContentScroll="True"
