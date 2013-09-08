@@ -1,20 +1,36 @@
-﻿using System;
+﻿// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using ProtoBuf;
-using ReactiveTables.Demo.Server;
-using ReactiveTables.Framework;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Framework.Comms.Protobuf
 {
-    class ProtobufTableWriter
+    /// <summary>
+    /// Writes changes from the given protobuf stream to an <see cref="IWritableReactiveTable"/>.
+    /// </summary>
+    public class ProtobufTableWriter
     {
         private readonly IWritableReactiveTable _table;
         private readonly Dictionary<int, string> _fieldIdsToColumns;
         private readonly Stream _stream;
         private readonly ProtoReader _reader;
-        readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
 
         public ProtobufTableWriter(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns, Stream stream)
         {
@@ -40,12 +56,10 @@ namespace ReactiveTables.Demo.Client
                     Console.WriteLine(e);
                 }
             }
-            Console.WriteLine("Stopped reading network stream");
         }
 
         public void Stop()
         {
-            Console.WriteLine("Stopping Fx dataservice");
             _finished.Set();
         }
 
@@ -107,8 +121,10 @@ namespace ReactiveTables.Demo.Client
             return rowId;
         }
 
-        private void WriteFieldsToTable(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns,
-                                        ProtoReader reader, int rowId)
+        private void WriteFieldsToTable(IWritableReactiveTable table,
+                                        Dictionary<int, string> fieldIdsToColumns,
+                                        ProtoReader reader,
+                                        int rowId)
         {
             int fieldId;
             while ((fieldId = reader.ReadFieldHeader()) != 0)
@@ -116,39 +132,47 @@ namespace ReactiveTables.Demo.Client
                 var columnId = fieldIdsToColumns[fieldId];
                 var column = table.Columns[columnId];
 
-                if (column.Type == typeof(int))
+                if (column.Type == typeof (int))
                 {
                     table.SetValue(columnId, rowId, reader.ReadInt32());
                 }
-                else if (column.Type == typeof(short))
+                else if (column.Type == typeof (short))
                 {
                     table.SetValue(columnId, rowId, reader.ReadInt16());
                 }
-                else if (column.Type == typeof(string))
+                else if (column.Type == typeof (string))
                 {
                     var value = reader.ReadString();
 //                    Console.WriteLine("Writing string {0}", value);
                     table.SetValue(columnId, rowId, value);
                 }
-                else if (column.Type == typeof(bool))
+                else if (column.Type == typeof (bool))
                 {
                     table.SetValue(columnId, rowId, reader.ReadBoolean());
                 }
-                else if (column.Type == typeof(double))
+                else if (column.Type == typeof (double))
                 {
                     table.SetValue(columnId, rowId, reader.ReadDouble());
                 }
-                else if (column.Type == typeof(long))
+                else if (column.Type == typeof (long))
                 {
                     table.SetValue(columnId, rowId, reader.ReadInt64());
                 }
-                else if (column.Type == typeof(decimal))
+                else if (column.Type == typeof (decimal))
                 {
                     table.SetValue(columnId, rowId, BclHelpers.ReadDecimal(reader));
                 }
-                else if (column.Type == typeof(DateTime))
+                else if (column.Type == typeof (DateTime))
                 {
                     table.SetValue(columnId, rowId, BclHelpers.ReadDateTime(reader));
+                }
+                else if (column.Type == typeof (TimeSpan))
+                {
+                    table.SetValue(columnId, rowId, BclHelpers.ReadTimeSpan(reader));
+                }
+                else if (column.Type == typeof (Guid))
+                {
+                    table.SetValue(columnId, rowId, BclHelpers.ReadGuid(reader));
                 }
             }
         }

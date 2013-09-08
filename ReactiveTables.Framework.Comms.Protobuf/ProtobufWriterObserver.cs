@@ -1,13 +1,29 @@
-﻿using System;
+﻿// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using ProtoBuf;
-using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
-using System.Linq;
 
-namespace ReactiveTables.Demo.Server
+namespace ReactiveTables.Framework.Comms.Protobuf
 {
-    internal class ProtobufWriterObserver : IObserver<TableUpdate>
+    /// <summary>
+    /// Observes an <see cref="IReactiveTable"/> and replicates the updates to the given ProtoWriter.
+    /// </summary>
+    public class ProtobufWriterObserver : IObserver<TableUpdate>
     {
         private readonly Dictionary<string, int> _columnsToFieldIds;
         private readonly ProtoWriter _writer;
@@ -71,39 +87,39 @@ namespace ReactiveTables.Demo.Server
 
         private void WriteColumn(IReactiveColumn column, int fieldId, int rowId)
         {
-            if (column.Type == typeof(int))
+            if (column.Type == typeof (int))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
                 ProtoWriter.WriteInt32(_table.GetValue<int>(column.ColumnId, rowId), _writer);
             }
-            else if (column.Type == typeof(short))
+            else if (column.Type == typeof (short))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
                 ProtoWriter.WriteInt16(_table.GetValue<short>(column.ColumnId, rowId), _writer);
             }
-            else if (column.Type == typeof(string))
+            else if (column.Type == typeof (string))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.String, _writer);
                 var value = _table.GetValue<string>(column.ColumnId, rowId);
 //                Console.WriteLine("Writing string {0}", value);
                 ProtoWriter.WriteString(value ?? string.Empty, _writer);
             }
-            else if (column.Type == typeof(bool))
+            else if (column.Type == typeof (bool))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
                 ProtoWriter.WriteBoolean(_table.GetValue<bool>(column.ColumnId, rowId), _writer);
             }
-            else if (column.Type == typeof(double))
+            else if (column.Type == typeof (double))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, _writer);
                 ProtoWriter.WriteDouble(_table.GetValue<double>(column.ColumnId, rowId), _writer);
             }
-            else if (column.Type == typeof(long))
+            else if (column.Type == typeof (long))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
                 ProtoWriter.WriteInt64(_table.GetValue<long>(column.ColumnId, rowId), _writer);
             }
-            else if (column.Type == typeof(decimal))
+            else if (column.Type == typeof (decimal))
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
                 BclHelpers.WriteDecimal(_table.GetValue<decimal>(column.ColumnId, rowId), _writer);
@@ -112,6 +128,16 @@ namespace ReactiveTables.Demo.Server
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
                 BclHelpers.WriteDateTime(_table.GetValue<DateTime>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof (TimeSpan))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
+                BclHelpers.WriteTimeSpan(_table.GetValue<TimeSpan>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof (Guid))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
+                BclHelpers.WriteGuid(_table.GetValue<Guid>(column.ColumnId, rowId), _writer);
             }
         }
 

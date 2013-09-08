@@ -1,4 +1,4 @@
-// This file is part of ReactiveTables.
+﻿// This file is part of ReactiveTables.
 // 
 // ReactiveTables is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,28 +23,23 @@ namespace ReactiveTables.Framework.Columns.Calculated
     /// </summary>
     /// <typeparam name="TOut"></typeparam>
     /// <typeparam name="TIn1"></typeparam>
-    /// <typeparam name="TIn2"></typeparam>
-    public class ReactiveCalculatedColumn2<TOut, TIn1, TIn2> : ReactiveColumnBase<TOut>, IReactiveJoinableColumn
+    public class ReactiveCalculatedColumn1<TOut, TIn1> : ReactiveColumnBase<TOut>, IReactiveJoinableColumn
     {
         private readonly IReactiveColumn<TIn1> _inputColumn1;
-        private readonly IReactiveColumn<TIn2> _inputColumn2;
-        private readonly Func<TIn1, TIn2, TOut> _converter;
+        private readonly Func<TIn1, TOut> _converter;
         private IReactiveTableJoiner _joiner = DefaultJoiner.DefaultJoinerInstance;
         private readonly ColumnSubscriptionAggregator<TOut> _aggregator;
 
-        public ReactiveCalculatedColumn2(string columnId,
+        public ReactiveCalculatedColumn1(string columnId,
                                          IReactiveColumn<TIn1> inputColumn1,
-                                         IReactiveColumn<TIn2> inputColumn2,
-                                         Func<TIn1, TIn2, TOut> converter)
+                                         Func<TIn1, TOut> converter)
         {
             ColumnId = columnId;
             _inputColumn1 = inputColumn1;
-            _inputColumn2 = inputColumn2;
             _converter = converter;
 
             _aggregator = new ColumnSubscriptionAggregator<TOut>(this);
             _aggregator.SubscribeToColumn(_inputColumn1);
-            _aggregator.SubscribeToColumn(_inputColumn2);
         }
 
         public override void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
@@ -83,8 +78,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
         {
             // TODO: cache values??
             var rowIndex1 = _joiner.GetRowIndex(_inputColumn1, rowIndex);
-            var rowIndex2 = _joiner.GetRowIndex(_inputColumn2, rowIndex);
-            return GetValue(_inputColumn1.GetValue(rowIndex1), _inputColumn2.GetValue(rowIndex2));
+            return GetValue(_inputColumn1.GetValue(rowIndex1));
         }
 
         public override int Find(TOut value)
@@ -92,9 +86,9 @@ namespace ReactiveTables.Framework.Columns.Calculated
             throw new NotImplementedException();
         }
 
-        private TOut GetValue(TIn1 value1, TIn2 value2)
+        private TOut GetValue(TIn1 value1)
         {
-            var value = _converter(value1, value2);
+            var value = _converter(value1);
             return value;
         }
 
@@ -110,7 +104,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
         protected override void Unsubscribe(object observer)
         {
             _aggregator.Unsubscribe();
-//            base.Unsubscribe(observer);
+            //            base.Unsubscribe(observer);
         }
     }
 }

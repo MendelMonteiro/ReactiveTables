@@ -13,24 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Windows;
+using System.Collections.Generic;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Framework.Comms.Protobuf
 {
-    /// <summary>
-    /// Interaction logic for FxClient.xaml
-    /// </summary>
-    public partial class FxClient : Window
+    public class ProtobufEncoderState
     {
-        public FxClient()
-        {
-            InitializeComponent();
-        }
-
-        protected override void OnClosed(System.EventArgs e)
-        {
-            ViewModel.Dispose();
-            base.OnClosed(e);
-        }
+        public Dictionary<string, int> ColumnsToFieldIds { get; set; }
     }
 }

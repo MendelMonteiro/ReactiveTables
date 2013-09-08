@@ -13,24 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Windows;
+using System;
+using System.IO;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Framework.Comms
 {
     /// <summary>
-    /// Interaction logic for FxClient.xaml
+    /// A class used for encoding data sent on the wire
     /// </summary>
-    public partial class FxClient : Window
+    public interface IReactiveTableEncoder : IDisposable
     {
-        public FxClient()
-        {
-            InitializeComponent();
-        }
-
-        protected override void OnClosed(System.EventArgs e)
-        {
-            ViewModel.Dispose();
-            base.OnClosed(e);
-        }
+        void Setup(Stream outputStream, IReactiveTable fxRates, object state);
+        void Close();
     }
 }

@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\ReactiveList.cs" />
+    <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Filters\DelegatePredicate1.cs" />
     <Compile Include="Filters\DelegatePredicate2.cs" />

@@ -23,7 +23,7 @@
                     </DataGrid>
                 </StackPanel>
             </ScrollViewer>
-            <ScrollViewer>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <Label Content="Fx Rates" HorizontalAlignment="Center" />
                     <DataGrid ItemsSource="{Binding Path=FxRates}" VirtualizingPanel.IsVirtualizing="True"

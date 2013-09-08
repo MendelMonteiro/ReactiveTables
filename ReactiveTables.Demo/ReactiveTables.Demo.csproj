@@ -81,9 +81,6 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>..\packages\protobuf-net.2.0.0.664\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="ReachFramework" />
     <Reference Include="Syncfusion.Grid.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
@@ -128,12 +125,6 @@
     <Compile Include="..\ReactiveTables.Demo.Server\FxTableDefinitions.cs">
       <Link>Client\FxTableDefinitions.cs</Link>
     </Compile>
-    <Compile Include="..\ReactiveTables.Demo.Server\ProtobufFieldIds.cs">
-      <Link>Client\ProtobufFieldIds.cs</Link>
-    </Compile>
-    <Compile Include="..\ReactiveTables.Demo.Server\ProtobufOperationTypes.cs">
-      <Link>Client\ProtobufOperationTypes.cs</Link>
-    </Compile>
     <Compile Include="AccountViewModel.cs" />
     <Compile Include="Client\FxClient.xaml.cs">
       <DependentUpon>FxClient.xaml</DependentUpon>
@@ -142,7 +133,6 @@
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
     <Compile Include="Client\FxDataService.cs" />
     <Compile Include="Client\FxRateViewModel.cs" />
-    <Compile Include="Client\ProtobufTableWriter.cs" />
     <Compile Include="HumanAccountsViewModel.cs" />
     <Compile Include="HumanAccountViewModel.cs" />
     <Compile Include="HumansViewModel.cs" />
@@ -225,6 +215,10 @@
     <Resource Include="Notes.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ReactiveTables.Framework.Comms.Protobuf\ReactiveTables.Framework.Comms.Protobuf.csproj">
+      <Project>{dd7b70dd-d622-4b6f-b654-bb1f58a3a562}</Project>
+      <Name>ReactiveTables.Framework.Comms.Protobuf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
       <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>
       <Name>ReactiveTables.Framework</Name>
