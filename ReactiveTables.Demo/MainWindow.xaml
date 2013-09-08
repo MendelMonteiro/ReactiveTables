@@ -4,7 +4,7 @@
         xmlns:Demo="clr-namespace:ReactiveTables.Demo"
         Title="MainWindow" Height="667" Width="810" WindowStartupLocation="CenterScreen" WindowState="Maximized" >
     <Window.DataContext>
-        <Demo:MainViewModel />
+        <Demo:MainViewModel x:Name="ViewModel" />
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>

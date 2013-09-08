@@ -1,18 +1,17 @@
-/*This file is part of ReactiveTables.
-
-ReactiveTables is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-ReactiveTables is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.ObjectModel;
@@ -22,22 +21,23 @@ using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class HumanAccountsViewModel : ReactiveViewModelBase
+    public class HumanAccountsViewModel : ReactiveViewModelBase, IDisposable
     {
         private readonly IReactiveTable _humanAccounts;
         private int _currentRowIndex;
+        private readonly IDisposable _subscription;
 
         public HumanAccountsViewModel(IReactiveTable humanAccounts, IWritableReactiveTable accounts)
         {
             _humanAccounts = humanAccounts;
 
             HumanAccounts = new ObservableCollection<HumanAccountViewModel>();
-            _humanAccounts.ReplayAndSubscribe(update =>
-                                                  {
-                                                      if (update.IsRowUpdate()) HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex));
-                                                  });
+            _subscription = _humanAccounts.ReplayAndSubscribe(
+                update => { if (update.IsRowUpdate()) HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex)); });
 
-            Change = new DelegateCommand(() => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
+            Change =
+                new DelegateCommand(
+                    () => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
 
             _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
         }
@@ -61,8 +61,21 @@ namespace ReactiveTables.Demo
             get { return _humanAccounts.GetValue<string>(HumanAccountColumns.AccountDetails, CurrentRowIndex); }
         }
 
-        public IReactiveTable Table { get { return _humanAccounts; } }
+        public IReactiveTable Table
+        {
+            get { return _humanAccounts; }
+        }
 
         public DelegateCommand Change { get; private set; }
+
+        public void Dispose()
+        {
+            _subscription.Dispose();
+            _humanAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
+            foreach (var humanAccountViewModel in HumanAccounts)
+            {
+                humanAccountViewModel.Dispose();
+            }
+        }
     }
 }
