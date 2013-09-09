@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Subjects;
 using ReactiveTables.Framework;
 
@@ -48,7 +47,7 @@ namespace ReactiveTables.Demo.Syncfusion
             var row = _table.GetRowAt(rowIndex);
             if (row >= 0 && columnIndex >= 0)
             {
-                var reactiveColumn = _table.Columns.Values.ElementAt(columnIndex);
+                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
                 return _table.GetValue(reactiveColumn.ColumnId, row);
             }
 
@@ -70,6 +69,9 @@ namespace ReactiveTables.Demo.Syncfusion
         {
             if (_token != null) _token.Dispose();
         }
+
+        // TODO: Handle columns added after the VM is created.
+        public int ColumnCount { get { return _table.Columns.Count; } }
     }
 
     public static class CollectionExtensions

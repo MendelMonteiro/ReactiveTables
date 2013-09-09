@@ -11,7 +11,7 @@
         <ScrollViewer CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
-            <Syncfusion:SyncfusionTestGridControl ViewModel="{Binding}" ColumnCount="7" />
+            <Syncfusion:SyncfusionTestGridControl ViewModel="{Binding}" ColumnCount="{Binding Path=ColumnCount}" />
         </ScrollViewer>
     </Grid>
 </Window>

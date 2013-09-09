@@ -33,7 +33,7 @@ namespace ReactiveTables.Demo.Client
     {
         private readonly ReactiveTable _currencies;
         private readonly List<ProtobufTableWriter> _tableWriters = new List<ProtobufTableWriter>();
-        private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(300);
+        private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(200);
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly ReactiveTable _fxRates;
 

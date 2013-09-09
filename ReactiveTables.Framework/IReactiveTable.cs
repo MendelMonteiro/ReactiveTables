@@ -41,7 +41,12 @@ namespace ReactiveTables.Framework
         /// <summary>
         /// All the columns
         /// </summary>
-        Dictionary<string, IReactiveColumn> Columns { get; }
+        IDictionary<string, IReactiveColumn> Columns { get; }
+
+        /// <summary>
+        /// All the columns - addressable by index
+        /// </summary>
+        IReactiveColumn GetColumnByIndex(int index);
 
         /// <summary>
         /// Facility class for propagating PropertyChanged events

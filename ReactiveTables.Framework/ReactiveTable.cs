@@ -16,12 +16,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// The main writable/readable table.
+    /// </summary>
     public interface IWritableReactiveTable : IReactiveTable
     {
         void SetValue<T>(string columnId, int rowIndex, T value);
@@ -30,12 +34,21 @@ namespace ReactiveTables.Framework
         void DeleteRow(int rowIndex);
     }
 
+    /// <summary>
+    /// The main writable/readable table.
+    /// </summary>
     public class ReactiveTable : IWritableReactiveTable
     {
-        private readonly Dictionary<string, IReactiveColumn> _columns = new Dictionary<string, IReactiveColumn>();
+        private readonly IndexedDictionary<string, IReactiveColumn> _columns = new IndexedDictionary<string, IReactiveColumn>();
         private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
 
         private readonly FieldRowManager _rowManager = new FieldRowManager();
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            IList<IReactiveColumn> list = _columns;
+            return list[index];
+        }
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
 
@@ -149,7 +162,7 @@ namespace ReactiveTables.Framework
             get { return _rowManager.RowCount; }
         }
 
-        public Dictionary<string, IReactiveColumn> Columns
+        public IDictionary<string, IReactiveColumn> Columns
         {
             get { return _columns; }
         }

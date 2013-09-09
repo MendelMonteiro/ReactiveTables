@@ -37,9 +37,14 @@ namespace ReactiveTables.Framework.Synchronisation
             get { return _rowManager.RowCount; }
         }
 
-        public Dictionary<string, IReactiveColumn> Columns
+        public IDictionary<string, IReactiveColumn> Columns
         {
             get { throw new NotImplementedException(); }
+        }
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            throw new NotImplementedException();
         }
 
         public PropertyChangedNotifier ChangeNotifier

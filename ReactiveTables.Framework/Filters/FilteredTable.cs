@@ -141,7 +141,12 @@ namespace ReactiveTables.Framework.Filters
             get { return _rowManager.RowCount; }
         }
 
-        public Dictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            return _sourceTable.GetColumnByIndex(index);
+        }
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
 

@@ -136,7 +136,12 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        public Dictionary<string, IReactiveColumn> Columns { get; private set; }
+        public IDictionary<string, IReactiveColumn> Columns { get; private set; }
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            throw new NotImplementedException();
+        }
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }
 

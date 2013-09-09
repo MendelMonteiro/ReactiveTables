@@ -51,9 +51,14 @@ namespace ReactiveTables.Framework.Synchronisation
             get { return _rowManager.RowCount; }
         }
 
-        public Dictionary<string, IReactiveColumn> Columns
+        public IDictionary<string, IReactiveColumn> Columns
         {
             get { return _targetTable.Columns; }
+        }
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            return _targetTable.GetColumnByIndex(index);
         }
 
         public PropertyChangedNotifier ChangeNotifier
