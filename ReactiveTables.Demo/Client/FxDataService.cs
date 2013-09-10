@@ -31,11 +31,21 @@ namespace ReactiveTables.Demo.Client
 {
     internal class FxDataService
     {
+        public static class CalculateColumns
+        {
+            public static class FxRates
+            {
+                public const string LongTime = "FxRates.LongTime";
+                public const string Micros = "FxRates.Micros";
+            } 
+        }
+
         private readonly ReactiveTable _currencies;
         private readonly List<ProtobufTableWriter> _tableWriters = new List<ProtobufTableWriter>();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(200);
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly ReactiveTable _fxRates;
+        private static readonly DateTime _start = DateTime.Today;
 
         public FxDataService()
         {
@@ -51,14 +61,6 @@ namespace ReactiveTables.Demo.Client
         public ReactiveTable Currencies
         {
             get { return _currencies; }
-        }
-
-        public static class CalculateColumns
-        {
-            public static class FxRates
-            {
-                public const string LongTime = "FxRates.LongTime";
-            } 
         }
 
         public void Start(Dispatcher dispatcher)
@@ -94,9 +96,18 @@ namespace ReactiveTables.Demo.Client
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Change));
             var timeColumn = new ReactiveColumn<DateTime>(FxTableDefinitions.FxRates.Time);
             fxRates.AddColumn(timeColumn);
-            fxRates.AddColumn(new ReactiveCalculatedColumn1<string, DateTime>(CalculateColumns.FxRates.LongTime,
+//            var tickColumn = new ReactiveColumn<long>(FxTableDefinitions.FxRates.Ticks);
+//            fxRates.AddColumn(tickColumn);
+            fxRates.AddColumn(new ReactiveCalculatedColumn1<double, DateTime>(CalculateColumns.FxRates.LongTime,
                                                                               timeColumn,
-                                                                              time => time.ToString("HH:mm:ss:fffff")));
+                                                                              time => (DateTime.UtcNow - time).TotalMilliseconds));
+            /*fxRates.AddColumn(new ReactiveCalculatedColumn1<long, long>(CalculateColumns.FxRates.Micros,
+                                                                        tickColumn,
+                                                                        tickStart =>
+                                                                        {
+                                                                            var ticksElapsed = DateTime.Now.Ticks - _start.Ticks;
+                                                                            return (ticksElapsed - tickStart) * 10;
+                                                                        }));*/
             return fxRates;
         }
 

@@ -61,10 +61,13 @@ namespace ReactiveTables.Demo.Syncfusion
             }
             else
             {
-                var rowIndex = ViewModel.GetRowPosition(tableUpdate.RowIndex);
-                var colIndex = ViewModel.GetColPosition(tableUpdate.Column.ColumnId);
-                // TODO: handle updates to multiple columns
-                Model.InvalidateCell(new RowColumnIndex(rowIndex, colIndex));
+                var rowIndex = ViewModel.GetRowPosition(tableUpdate.RowIndex) + Model.HeaderRows;
+                var colIndex = ViewModel.GetColPosition(tableUpdate.Column.ColumnId) + Model.HeaderColumns;
+                // TODO: handle updates to multiple columns (i.e. CellSpanInfo)
+                if (IsRowVisible(rowIndex) && IsColumnVisible(colIndex))
+                {
+                    Model.InvalidateCell(new RowColumnIndex(rowIndex, colIndex));
+                }
             }
         }
 

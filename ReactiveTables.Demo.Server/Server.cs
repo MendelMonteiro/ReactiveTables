@@ -47,6 +47,7 @@ namespace ReactiveTables.Demo.Server
         private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD", "CNY", "ZAR", "BRL", "RUB", "JPY", "INR", "DKK", "NOK", "PLN" };
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
         private readonly Random _random = new Random();
+        private readonly DateTime _start = DateTime.Today;
 
         private void Start()
         {
@@ -73,6 +74,7 @@ namespace ReactiveTables.Demo.Server
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.YearRangeEnd));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Change));
             fxRates.AddColumn(new ReactiveColumn<DateTime>(FxTableDefinitions.FxRates.Time));
+//            fxRates.AddColumn(new ReactiveColumn<long>(FxTableDefinitions.FxRates.Ticks));
             return fxRates;
         }
 
@@ -173,6 +175,8 @@ namespace ReactiveTables.Demo.Server
                     fxRates.SetValue(FxTableDefinitions.FxRates.YearRangeEnd, rowId, GetRandomBidAsk());
                     fxRates.SetValue(FxTableDefinitions.FxRates.Change, rowId, GetRandomBidAsk());
                     fxRates.SetValue(FxTableDefinitions.FxRates.Time, rowId, DateTime.UtcNow);
+//                    var ticksElapsed = DateTime.Now.Ticks - _start.Ticks;
+//                    fxRates.SetValue(FxTableDefinitions.FxRates.Ticks, rowId, ticksElapsed);
                 }
             }
         }

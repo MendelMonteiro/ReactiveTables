@@ -7,8 +7,10 @@
 6. Update data from GUI - done
 7. Handle deletes       - done
 8. Search by primary key - done
-9. Searching on any col - 
+9. Searching on any col - done
 10. Batched synch		- done
+11. Unit tests for Comms - 
+12. Measure time between server and client - done
 
 Notes
 * Should the property change notifier live in the view model base instead? What's more efficient?

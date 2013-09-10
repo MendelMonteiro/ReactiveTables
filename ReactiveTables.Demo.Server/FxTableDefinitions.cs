@@ -46,6 +46,7 @@ namespace ReactiveTables.Demo.Server
             public static readonly string YearRangeStart = "Fx.YearRangeStart";
             public static readonly string YearRangeEnd = "Fx.YearRangeEnd";
             public static readonly string Time = "Fx.Time";
+            public static readonly string Ticks = "Fx.Ticks";
 
             public static readonly Dictionary<string, int> ColumnsToFieldIds =
                 new Dictionary<string, int>
@@ -59,6 +60,7 @@ namespace ReactiveTables.Demo.Server
                         {YearRangeEnd, 107},
                         {Change, 108},
                         {Time, 109},
+                        {Ticks, 110},
                     };
         }
     }
