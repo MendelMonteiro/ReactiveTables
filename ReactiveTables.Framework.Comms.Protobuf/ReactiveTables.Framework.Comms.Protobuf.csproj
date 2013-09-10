@@ -64,7 +64,7 @@
     <Compile Include="ProtobufEncoderState.cs" />
     <Compile Include="ProtobufFieldIds.cs" />
     <Compile Include="ProtobufOperationTypes.cs" />
-    <Compile Include="ProtobufTableWriter.cs" />
+    <Compile Include="ProtobufTableDecoder.cs" />
     <Compile Include="ProtobufWriterObserver.cs" />
     <Compile Include="ProtobufTableEncoder.cs" />
   </ItemGroup>

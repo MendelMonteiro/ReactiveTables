@@ -23,7 +23,7 @@ namespace ReactiveTables.Framework.Comms
     /// </summary>
     public interface IReactiveTableEncoder : IDisposable
     {
-        void Setup(Stream outputStream, IReactiveTable fxRates, object state);
+        void Setup(Stream outputStream, IReactiveTable table, object state);
         void Close();
     }
 }

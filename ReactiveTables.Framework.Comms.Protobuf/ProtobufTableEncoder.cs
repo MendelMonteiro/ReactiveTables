@@ -28,15 +28,15 @@ namespace ReactiveTables.Framework.Comms.Protobuf
         private IDisposable _token;
         private ProtoWriter _protoWriter;
 
-        public void Setup(Stream outputStream, IReactiveTable fxRates, object state)
+        public void Setup(Stream outputStream, IReactiveTable table, object state)
         {
             var config = (ProtobufEncoderState) state;
             // TODO: Find way to re-utilise the proto writers (object pool?)
             _protoWriter = new ProtoWriter(outputStream, null, null);
-            var writerObserver = new ProtobufWriterObserver(fxRates, _protoWriter, config.ColumnsToFieldIds);
-            _token = fxRates.Subscribe(writerObserver);
+            var writerObserver = new ProtobufWriterObserver(table, _protoWriter, config.ColumnsToFieldIds);
+            _token = table.Subscribe(writerObserver);
             // Replay state when new client connects
-            fxRates.ReplayRows(writerObserver);
+            table.ReplayRows(writerObserver);
         }
 
         public void Close()

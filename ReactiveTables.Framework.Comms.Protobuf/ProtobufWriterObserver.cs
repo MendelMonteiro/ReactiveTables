@@ -23,7 +23,7 @@ namespace ReactiveTables.Framework.Comms.Protobuf
     /// <summary>
     /// Observes an <see cref="IReactiveTable"/> and replicates the updates to the given ProtoWriter.
     /// </summary>
-    public class ProtobufWriterObserver : IObserver<TableUpdate>
+    internal class ProtobufWriterObserver : IObserver<TableUpdate>
     {
         private readonly Dictionary<string, int> _columnsToFieldIds;
         private readonly ProtoWriter _writer;

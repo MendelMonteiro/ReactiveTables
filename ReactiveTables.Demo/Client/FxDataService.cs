@@ -26,6 +26,7 @@ using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Comms.Protobuf;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Synchronisation;
+using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Client
 {
@@ -41,7 +42,7 @@ namespace ReactiveTables.Demo.Client
         }
 
         private readonly ReactiveTable _currencies;
-        private readonly List<ProtobufTableWriter> _tableWriters = new List<ProtobufTableWriter>();
+        private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(200);
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly ReactiveTable _fxRates;
@@ -119,22 +120,12 @@ namespace ReactiveTables.Demo.Client
             client.Connect(IPAddress.Loopback, port);
             using (var stream = client.GetStream())
             {
-                var fieldIdsToColumns = InverseUniqueDictionary(columnsToFieldIds);
-                var tableWriter = new ProtobufTableWriter(currenciesWire, fieldIdsToColumns, stream);
-                _tableWriters.Add(tableWriter);
-                tableWriter.Start();
+                var fieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary();
+                var tableDecoder = new ProtobufTableDecoder(currenciesWire, fieldIdsToColumns, stream);
+                _tableWriters.Add(tableDecoder);
+                tableDecoder.Start();
             }
             //_client.Close();
-        }
-
-        private static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
-        {
-            var inverse = new Dictionary<TValue, TKey>(dictionary.Count);
-            foreach (var value in dictionary)
-            {
-                inverse.Add(value.Value, value.Key);
-            }
-            return inverse;
         }
 
         public void Stop()

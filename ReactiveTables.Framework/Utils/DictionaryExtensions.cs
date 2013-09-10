@@ -39,5 +39,15 @@ namespace ReactiveTables.Utils
                 target.Add(keyValue.Key, keyValue.Value);
             }
         }
+
+        public static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
+        {
+            var inverse = new Dictionary<TValue, TKey>(dictionary.Count);
+            foreach (var value in dictionary)
+            {
+                inverse.Add(value.Value, value.Key);
+            }
+            return inverse;
+        }
     }
 }

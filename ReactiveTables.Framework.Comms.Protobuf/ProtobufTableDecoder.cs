@@ -24,7 +24,7 @@ namespace ReactiveTables.Framework.Comms.Protobuf
     /// <summary>
     /// Writes changes from the given protobuf stream to an <see cref="IWritableReactiveTable"/>.
     /// </summary>
-    public class ProtobufTableWriter
+    public class ProtobufTableDecoder
     {
         private readonly IWritableReactiveTable _table;
         private readonly Dictionary<int, string> _fieldIdsToColumns;
@@ -32,7 +32,7 @@ namespace ReactiveTables.Framework.Comms.Protobuf
         private readonly ProtoReader _reader;
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
 
-        public ProtobufTableWriter(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns, Stream stream)
+        public ProtobufTableDecoder(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns, Stream stream)
         {
             _table = table;
             _fieldIdsToColumns = fieldIdsToColumns;
