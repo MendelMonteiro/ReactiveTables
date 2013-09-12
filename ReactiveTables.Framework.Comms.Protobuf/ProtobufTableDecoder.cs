@@ -174,6 +174,18 @@ namespace ReactiveTables.Framework.Comms.Protobuf
                 {
                     table.SetValue(columnId, rowId, BclHelpers.ReadGuid(reader));
                 }
+                else if (column.Type == typeof(byte))
+                {
+                    table.SetValue(columnId, rowId, reader.ReadByte());
+                }
+                else if (column.Type == typeof(char))
+                {
+                    table.SetValue(columnId, rowId, (char)reader.ReadInt16());
+                }
+                else if (column.Type == typeof(float))
+                {
+                    table.SetValue(columnId, rowId, reader.ReadSingle());
+                }
             }
         }
     }

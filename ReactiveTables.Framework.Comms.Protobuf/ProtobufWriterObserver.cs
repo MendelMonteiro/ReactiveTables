@@ -23,7 +23,7 @@ namespace ReactiveTables.Framework.Comms.Protobuf
     /// <summary>
     /// Observes an <see cref="IReactiveTable"/> and replicates the updates to the given ProtoWriter.
     /// </summary>
-    internal class ProtobufWriterObserver : IObserver<TableUpdate>
+    class ProtobufWriterObserver : IObserver<TableUpdate>
     {
         private readonly Dictionary<string, int> _columnsToFieldIds;
         private readonly ProtoWriter _writer;
@@ -111,7 +111,7 @@ namespace ReactiveTables.Framework.Comms.Protobuf
             }
             else if (column.Type == typeof (double))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed64, _writer);
                 ProtoWriter.WriteDouble(_table.GetValue<double>(column.ColumnId, rowId), _writer);
             }
             else if (column.Type == typeof (long))
@@ -138,6 +138,21 @@ namespace ReactiveTables.Framework.Comms.Protobuf
             {
                 ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
                 BclHelpers.WriteGuid(_table.GetValue<Guid>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof(float))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, _writer);
+                ProtoWriter.WriteSingle(_table.GetValue<float>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof(byte))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
+                ProtoWriter.WriteByte(_table.GetValue<byte>(column.ColumnId, rowId), _writer);
+            }
+            else if (column.Type == typeof(char))
+            {
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
+                ProtoWriter.WriteInt16((short)_table.GetValue<char>(column.ColumnId, rowId), _writer);
             }
         }
 

@@ -98,7 +98,6 @@
     <Compile Include="Columns\Calculated\CalculatedColumnTest.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="Comms\Protobuf\ProtobufTableEncoderTest.cs" />
-    <Compile Include="Comms\Protobuf\ProtobufWriterObserverTest.cs" />
     <Compile Include="Filters\FilterTest.cs" />
     <Compile Include="Joins\JoinTests.cs" />
     <Compile Include="PassThroughTableTests.cs" />

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using NUnit.Framework;
 using ReactiveTables.Framework.Columns;
 
@@ -26,6 +27,25 @@ namespace ReactiveTables.Framework.Tests
             table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn));
             table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn));
             table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn));
+            return table;
+        }
+
+        public static ReactiveTable CreateReactiveTableFull()
+        {
+            ReactiveTable table = new ReactiveTable();
+            table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn));
+            table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn));
+            table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn));
+            table.AddColumn(new ReactiveColumn<bool>(TestTableColumns.BoolColumn));
+            table.AddColumn(new ReactiveColumn<double>(TestTableColumns.DoubleColumn));
+            table.AddColumn(new ReactiveColumn<short>(TestTableColumns.ShortColumn));
+            table.AddColumn(new ReactiveColumn<long>(TestTableColumns.LongColumn));
+            table.AddColumn(new ReactiveColumn<DateTime>(TestTableColumns.DateTimeColumn));
+            table.AddColumn(new ReactiveColumn<TimeSpan>(TestTableColumns.TimespanColumn));
+            table.AddColumn(new ReactiveColumn<Guid>(TestTableColumns.GuidColumn));
+            table.AddColumn(new ReactiveColumn<float>(TestTableColumns.FloatColumn));
+            table.AddColumn(new ReactiveColumn<byte>(TestTableColumns.ByteColumn));
+            table.AddColumn(new ReactiveColumn<char>(TestTableColumns.CharColumn));
             return table;
         }
 

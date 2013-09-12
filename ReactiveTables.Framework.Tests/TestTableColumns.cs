@@ -20,5 +20,15 @@ namespace ReactiveTables.Framework.Tests
         public const string IdColumn = "TestTable.IdColumn";
         public const string StringColumn = "TestTable.StringColumn";
         public const string DecimalColumn = "TestTable.DecimalColumn";
+        public const string BoolColumn = "TestTable.BoolColumn";
+        public const string DoubleColumn = "TestTable.DoubleColumn";
+        public const string ShortColumn = "TestTable.ShortColumn";
+        public const string LongColumn = "TestTable.LongColumn";
+        public const string DateTimeColumn = "TestTable.DateTimeColumn";
+        public const string TimespanColumn = "TestTable.TimespanColumn";
+        public const string GuidColumn = "TestTable.GuidColumn";
+        public const string FloatColumn = "TestTable.FloatColumn";
+        public const string ByteColumn = "TestTable.ByteColumn";
+        public const string CharColumn = "TestTable.CharColumn";
     }
 }
