@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+    <projectUrl>https://bitbucket.org/mendelmonteiro/reactivetables</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Looking for a way to display and manipulate real-time in a GUI?</description>
+    <releaseNotes>First Release</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags>olap protobuf realtime rx wpf ui</tags>
+  </metadata>
+</package>
