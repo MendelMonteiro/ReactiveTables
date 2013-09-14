@@ -23,8 +23,8 @@ using ReactiveTables.Demo.Server;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
-using ReactiveTables.Framework.Comms.Protobuf;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Utils;
 

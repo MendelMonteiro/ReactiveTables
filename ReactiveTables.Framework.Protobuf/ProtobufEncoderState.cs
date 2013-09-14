@@ -15,7 +15,7 @@
 
 using System.Collections.Generic;
 
-namespace ReactiveTables.Framework.Comms.Protobuf
+namespace ReactiveTables.Framework.Protobuf
 {
     public class ProtobufEncoderState
     {

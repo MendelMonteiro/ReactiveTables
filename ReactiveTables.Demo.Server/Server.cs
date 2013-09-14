@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Comms;
-using ReactiveTables.Framework.Comms.Protobuf;
+using ReactiveTables.Framework.Protobuf;
 
 namespace ReactiveTables.Demo.Server
 {

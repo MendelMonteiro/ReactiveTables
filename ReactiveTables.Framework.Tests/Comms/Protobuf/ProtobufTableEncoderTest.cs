@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using ReactiveTables.Framework.Comms.Protobuf;
+using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Utils;
 
 namespace ReactiveTables.Framework.Tests.Comms.Protobuf

@@ -16,8 +16,9 @@
 using System;
 using System.IO;
 using ProtoBuf;
+using ReactiveTables.Framework.Comms;
 
-namespace ReactiveTables.Framework.Comms.Protobuf
+namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
     /// Encodes a <see cref="IReactiveTable"/> by observing all changes and writing them to the given stream

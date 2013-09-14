@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using ProtoBuf;
 using ReactiveTables.Framework.Columns;
 
-namespace ReactiveTables.Framework.Comms.Protobuf
+namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
     /// Observes an <see cref="IReactiveTable"/> and replicates the updates to the given ProtoWriter.

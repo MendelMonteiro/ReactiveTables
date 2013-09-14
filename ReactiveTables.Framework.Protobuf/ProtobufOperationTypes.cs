@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ReactiveTables.Framework.Comms.Protobuf
+namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
     /// The field ids used for the basic protobuf operations.

@@ -19,7 +19,7 @@ using System.IO;
 using System.Threading;
 using ProtoBuf;
 
-namespace ReactiveTables.Framework.Comms.Protobuf
+namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
     /// Writes changes from the given protobuf stream to an <see cref="IWritableReactiveTable"/>.
