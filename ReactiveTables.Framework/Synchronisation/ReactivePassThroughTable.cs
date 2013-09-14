@@ -68,7 +68,7 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
-        public void AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             throw new NotImplementedException();
         }

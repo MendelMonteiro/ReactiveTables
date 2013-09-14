@@ -112,7 +112,7 @@ namespace ReactiveTables.Demo
 
         private IWritableReactiveTable SetupAccountTable(IWritableReactiveTable accounts, List<IReactiveColumn> baseAccountColumns, Dispatcher dispatcher)
         {
-            baseAccountColumns.ForEach(accounts.AddColumn);
+            baseAccountColumns.ForEach(col => accounts.AddColumn(col));
 
             // Create the wire table
             var accountsWire = new ReactiveBatchedPassThroughTable(accounts, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
@@ -139,7 +139,7 @@ namespace ReactiveTables.Demo
 
         private IWritableReactiveTable SetupHumanTable(IWritableReactiveTable humans, List<IReactiveColumn> baseColumns, Dispatcher dispatcher)
         {
-            baseColumns.ForEach(humans.AddColumn);
+            baseColumns.ForEach(col => humans.AddColumn(col));
 
             // Wire up the two tables before the dynamic columns
             var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);

@@ -14,7 +14,7 @@ namespace ReactiveTables.Framework
         /// Add a column to the table
         /// </summary>
         /// <param name="column"></param>
-        void AddColumn(IReactiveColumn column);
+        IReactiveColumn AddColumn(IReactiveColumn column);
 
         /// <summary>
         /// Typed version

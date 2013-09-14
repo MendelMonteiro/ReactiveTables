@@ -77,7 +77,7 @@ namespace ReactiveTables.Framework.Joins
             _calculatedColumnObservers.Remove(observer);
         }
 
-        public void AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             // Add calc'ed columns
             Columns.Add(column.ColumnId, column);
@@ -86,6 +86,7 @@ namespace ReactiveTables.Framework.Joins
 
             // Need to subscribe to changes in calculated columns
             column.Subscribe(new ColumnChangePublisher(column, _calculatedColumnObservers));
+            return column;
         }
 
         public T GetValue<T>(string columnId, int rowIndex)

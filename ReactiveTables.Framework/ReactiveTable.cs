@@ -62,12 +62,13 @@ namespace ReactiveTables.Framework
             CloneColumns(reactiveTable);
         }
 
-        public void AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
             column.Subscribe(new ColumnChangePublisher(column, _observers));
             // TODO: fire events for existing rows
+            return column;
         }
 
         private IReactiveColumn<T> GetColumn<T>(string columnId)

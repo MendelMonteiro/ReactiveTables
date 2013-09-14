@@ -21,6 +21,14 @@ namespace ReactiveTables.Framework
 {
     public struct TableUpdate
     {
+        [Flags]
+        public enum TableUpdateAction : short
+        {
+            Add = 1,
+            Update = 2,
+            Delete = 4,
+        }
+
         private readonly TableUpdateAction _action;
         private readonly int _rowIndex;
         private readonly IReactiveColumn _column;
@@ -51,12 +59,24 @@ namespace ReactiveTables.Framework
             }
         }
 
-        [Flags]
-        public enum TableUpdateAction : short
+        public TableUpdateAction Action
         {
-            Add = 1,
-            Update = 2,
-            Delete = 4,
+            get { return _action; }
+        }
+
+        public int RowIndex
+        {
+            get { return _rowIndex; }
+        }
+
+        public IReactiveColumn Column
+        {
+            get { return _column; }
+        }
+
+        public IList<IReactiveColumn> Columns
+        {
+            get { return _columns; }
         }
 
         public bool IsRowUpdate()
@@ -87,26 +107,6 @@ namespace ReactiveTables.Framework
         public static bool IsColumnUpdate(TableUpdateAction action)
         {
             return action == TableUpdateAction.Update;
-        }
-
-        public TableUpdateAction Action
-        {
-            get { return _action; }
-        }
-
-        public int RowIndex
-        {
-            get { return _rowIndex; }
-        }
-
-        public IReactiveColumn Column
-        {
-            get { return _column; }
-        }
-
-        public IList<IReactiveColumn> Columns
-        {
-            get { return _columns; }
         }
     }
 }

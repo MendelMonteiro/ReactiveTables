@@ -119,7 +119,7 @@ namespace ReactiveTables.Framework.Filters
             _observers.Remove(observer);
         }
 
-        public void AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             // TODO: Maybe we should delegate to the source column, bearing in mind that calculated columns don't mean much on a filtered table.
             throw new NotImplementedException();
