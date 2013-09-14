@@ -11,8 +11,8 @@ ReactiveTables.Framework/bin/.*
 ReactiveTables.Framework/obj/.*
 ReactiveTables.Framework.Comms/bin/.*
 ReactiveTables.Framework.Comms/obj/.*
-ReactiveTables.Framework.Comms.Protobuf/bin/.*
-ReactiveTables.Framework.Comms.Protobuf/obj/.*
+ReactiveTables.Framework.Protobuf/bin/.*
+ReactiveTables.Framework.Protobuf/obj/.*
 ReactiveTables.Framework.PerformanceTests/bin/.*
 ReactiveTables.Framework.PerformanceTests/obj/.*
 .*user

@@ -113,20 +113,18 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveTables.Framework.Comms.Protobuf\ReactiveTables.Framework.Comms.Protobuf.csproj">
+    <ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj">
       <Project>{dd7b70dd-d622-4b6f-b654-bb1f58a3a562}</Project>
-      <Name>ReactiveTables.Framework.Comms.Protobuf</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ReactiveTables.Framework.Comms\ReactiveTables.Framework.Comms.csproj">
-      <Project>{394069f4-052f-446c-989b-25ce733ca991}</Project>
-      <Name>ReactiveTables.Framework.Comms</Name>
+      <Name>ReactiveTables.Framework.Protobuf</Name>
     </ProjectReference>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
       <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>
       <Name>ReactiveTables.Framework</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

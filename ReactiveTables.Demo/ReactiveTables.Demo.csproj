@@ -226,9 +226,9 @@
     <Resource Include="Notes.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveTables.Framework.Comms.Protobuf\ReactiveTables.Framework.Comms.Protobuf.csproj">
+    <ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj">
       <Project>{dd7b70dd-d622-4b6f-b654-bb1f58a3a562}</Project>
-      <Name>ReactiveTables.Framework.Comms.Protobuf</Name>
+      <Name>ReactiveTables.Framework.Protobuf</Name>
     </ProjectReference>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
       <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>

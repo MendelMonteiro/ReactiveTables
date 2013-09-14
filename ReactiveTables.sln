@@ -11,9 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Demo.Server"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Demo", "ReactiveTables.Demo\ReactiveTables.Demo.csproj", "{5F235481-E866-4533-A67E-590ABE24CF5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Comms", "ReactiveTables.Framework.Comms\ReactiveTables.Framework.Comms.csproj", "{394069F4-052F-446C-989B-25CE733CA991}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Comms.Protobuf", "ReactiveTables.Framework.Comms.Protobuf\ReactiveTables.Framework.Comms.Protobuf.csproj", "{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Protobuf", "ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj", "{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,20 +104,6 @@ Global
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Release|x64.Build.0 = Release|x64
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Release|x86.ActiveCfg = Release|x86
 		{5F235481-E866-4533-A67E-590ABE24CF5C}.Release|x86.Build.0 = Release|x86
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|x64.ActiveCfg = Debug|x64
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|x64.Build.0 = Debug|x64
-		{394069F4-052F-446C-989B-25CE733CA991}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|Any CPU.Build.0 = Release|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|x64.ActiveCfg = Release|x64
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|x64.Build.0 = Release|x64
-		{394069F4-052F-446C-989B-25CE733CA991}.Release|x86.ActiveCfg = Release|Any CPU
 		{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

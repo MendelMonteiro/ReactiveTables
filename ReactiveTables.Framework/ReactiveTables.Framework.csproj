@@ -77,15 +77,6 @@
     <Reference Include="System.Reactive.Linq">
       <HintPath>..\packages\Rx-Linq.2.1.30214.0\lib\Net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Presentation" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -93,6 +84,9 @@
     <Compile Include="Collections\ReactiveList.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
+    <Compile Include="Comms\ClientState.cs" />
+    <Compile Include="Comms\IReactiveTableEncoder.cs" />
+    <Compile Include="Comms\ReactiveTableTcpServer.cs" />
     <Compile Include="Filters\DelegatePredicate1.cs" />
     <Compile Include="Filters\DelegatePredicate2.cs" />
     <Compile Include="Filters\FilteredTable.cs" />

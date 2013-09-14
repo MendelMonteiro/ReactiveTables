@@ -7,8 +7,8 @@
     <ProjectGuid>{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ReactiveTables.Framework.Comms.Protobuf</RootNamespace>
-    <AssemblyName>ReactiveTables.Framework.Comms.Protobuf</AssemblyName>
+    <RootNamespace>ReactiveTables.Framework.Protobuf</RootNamespace>
+    <AssemblyName>ReactiveTables.Framework.Protobuf</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -53,11 +53,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,10 +64,6 @@
     <Compile Include="ProtobufTableEncoder.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveTables.Framework.Comms\ReactiveTables.Framework.Comms.csproj">
-      <Project>{394069f4-052f-446c-989b-25ce733ca991}</Project>
-      <Name>ReactiveTables.Framework.Comms</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
       <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>
       <Name>ReactiveTables.Framework</Name>

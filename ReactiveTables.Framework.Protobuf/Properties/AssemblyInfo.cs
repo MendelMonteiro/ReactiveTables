@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ReactiveTables.Framework.Comms.Protobuf")]
+[assembly: AssemblyTitle("ReactiveTables.Framework.Protobuf")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ReactiveTables.Framework.Comms.Protobuf")]
+[assembly: AssemblyCompany("Mendel Monteiro-Beckerman")]
+[assembly: AssemblyProduct("ReactiveTables.Protobuf")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
