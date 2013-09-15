@@ -19,8 +19,14 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// Represents an update to a <see cref="ReactiveTable"/>
+    /// </summary>
     public struct TableUpdate
     {
+        /// <summary>
+        /// The action being performed to the row
+        /// </summary>
         [Flags]
         public enum TableUpdateAction : short
         {
@@ -59,51 +65,91 @@ namespace ReactiveTables.Framework
             }
         }
 
+        /// <summary>
+        /// The action being performed in this update
+        /// </summary>
         public TableUpdateAction Action
         {
             get { return _action; }
         }
 
+        /// <summary>
+        /// The row index of the table being affected
+        /// </summary>
         public int RowIndex
         {
             get { return _rowIndex; }
         }
 
+        /// <summary>
+        /// The column being affected (or first column if multiple columns are affected)
+        /// </summary>
         public IReactiveColumn Column
         {
             get { return _column; }
         }
 
+        /// <summary>
+        /// The columns being affected by the change
+        /// </summary>
         public IList<IReactiveColumn> Columns
         {
             get { return _columns; }
         }
 
+        /// <summary>
+        /// Whether this change affects the whole row
+        /// </summary>
+        /// <returns></returns>
         public bool IsRowUpdate()
         {
             return IsRowUpdate(Action);
         }
 
+        /// <summary>
+        /// Whether this change affects the whole row 
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
         public static bool IsRowUpdate(TableUpdate update)
         {
             return update.IsRowUpdate();
         }
 
+        /// <summary>
+        /// Whether this change affects the whole row 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public static bool IsRowUpdate(TableUpdateAction action)
         {
             return action == TableUpdateAction.Add || action == TableUpdateAction.Delete;
         }
         
+        /// <summary>
+        /// Whether this change only affects one or more columns, but not the whole row.
+        /// </summary>
+        /// <returns></returns>
         public bool IsColumnUpdate()
         {
             return IsColumnUpdate(Action);
         }
 
+        /// <summary>
+        /// Whether this change only affects one or more columns, but not the whole row.        
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
         public static bool IsColumnUpdate(TableUpdate update)
         {
             return update.IsColumnUpdate();
         }
 
+        /// <summary>
+        /// Whether this change only affects one or more columns, but not the whole row.        
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public static bool IsColumnUpdate(TableUpdateAction action)
         {
             return action == TableUpdateAction.Update;

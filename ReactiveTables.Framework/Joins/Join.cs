@@ -157,9 +157,11 @@ namespace ReactiveTables.Framework.Joins
             _rightRowDeleteHandler.AddRowObserver(observer);
         }
 
-        public void AddColumn(IReactiveColumn column)
+        public void RemoveObserver(IObserver<TableUpdate> observer)
         {
-//            List<IReactiveColumn> _columns = new List<IReactiveColumn> {column};
+            _updateObservers.Remove(observer);
+            _leftRowDeleteHandler.RemoveRowObserver(observer);
+            _rightRowDeleteHandler.RemoveRowObserver(observer);
         }
 
         public int GetRowAt(int position)

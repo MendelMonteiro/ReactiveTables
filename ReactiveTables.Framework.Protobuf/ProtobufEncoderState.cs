@@ -17,8 +17,14 @@ using System.Collections.Generic;
 
 namespace ReactiveTables.Framework.Protobuf
 {
+    /// <summary>
+    /// The state used to encode using the <see cref="ProtobufTableEncoder"/>
+    /// </summary>
     public class ProtobufEncoderState
     {
+        /// <summary>
+        /// A map of column ids to Protobuf field ids
+        /// </summary>
         public Dictionary<string, int> ColumnsToFieldIds { get; set; }
     }
 }

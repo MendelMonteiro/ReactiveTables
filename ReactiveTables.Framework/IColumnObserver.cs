@@ -17,10 +17,26 @@ using System;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// IObserver implementation that notifies exceptions/completions with the row index being processed.
+    /// </summary>
     public interface IColumnObserver 
     {
+        /// <summary>
+        /// Column has been modified at row <see cref="rowIndex"/>
+        /// </summary>
+        /// <param name="rowIndex"></param>
         void OnNext(int rowIndex);
+        /// <summary>
+        /// Error has occurred whe processing column at row <see cref="rowIndex"/>
+        /// </summary>
+        /// <param name="error"></param>
+        /// <param name="rowIndex"></param>
         void OnError(Exception error, int rowIndex);
+        /// <summary>
+        /// Completed processing of row at <see cref="rowIndex"/>
+        /// </summary>
+        /// <param name="rowIndex"></param>
         void OnCompleted(int rowIndex);
     }
 }

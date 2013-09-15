@@ -23,7 +23,17 @@ namespace ReactiveTables.Framework.Comms
     /// </summary>
     public interface IReactiveTableEncoder : IDisposable
     {
+        /// <summary>
+        /// Configure the encoder
+        /// </summary>
+        /// <param name="outputStream">The stream to write to</param>
+        /// <param name="table">The table to read from</param>
+        /// <param name="state">Any state required by the encoder</param>
         void Setup(Stream outputStream, IReactiveTable table, object state);
+
+        /// <summary>
+        /// Stop encoding the table
+        /// </summary>
         void Close();
     }
 }

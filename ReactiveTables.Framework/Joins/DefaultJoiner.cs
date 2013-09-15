@@ -37,17 +37,17 @@ namespace ReactiveTables.Framework.Joins
             throw new NotImplementedException();
         }
 
+        public void RemoveObserver(IObserver<TableUpdate> observer)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<int> GetRows()
         {
             for (int i = 0; i < RowCount; i++)
             {
                 yield return i;
             }
-        }
-
-        public void AddColumn(IReactiveColumn column)
-        {
-            throw new NotImplementedException();
         }
 
         public int GetRowAt(int position)

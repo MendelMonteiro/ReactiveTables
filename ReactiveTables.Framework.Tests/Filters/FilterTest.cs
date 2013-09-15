@@ -171,7 +171,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             _rowIsVisible = rowIsVisible;
         }
 
-        public List<IReactiveColumn> Columns { get; private set; }
+        public IList<IReactiveColumn> Columns { get; private set; }
         public bool RowIsVisible(int rowIndex)
         {
             return _rowIsVisible;

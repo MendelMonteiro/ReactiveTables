@@ -19,14 +19,54 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
+    /// <summary>
+    /// Joins two reactive tables
+    /// </summary>
     public interface IReactiveTableJoiner : IDisposable
     {
+        /// <summary>
+        /// The number of rows in the table.
+        /// </summary>
         int RowCount { get; }
+
+        /// <summary>
+        /// Get the underlying row index (in the original table) for the <see cref="joinRowIndex"/>
+        /// </summary>
+        /// <param name="column"></param>
+        /// <param name="joinRowIndex"></param>
+        /// <returns></returns>
         int GetRowIndex(IReactiveColumn column, int joinRowIndex);
+        
+        /// <summary>
+        /// Register an observer with this joiner
+        /// </summary>
+        /// <param name="observer"></param>
         void AddObserver(IObserver<TableUpdate> observer);
+        
+        /// <summary>
+        /// Unregister an observer with this joiner
+        /// </summary>
+        /// <param name="observer"></param>
+        void RemoveObserver(IObserver<TableUpdate> observer);
+        
+        /// <summary>
+        /// Get all the row indeces present in this table
+        /// </summary>
+        /// <returns></returns>
         IEnumerable<int> GetRows();
-        void AddColumn(IReactiveColumn column);
+        
+        /// <summary>
+        /// Get the index of the row at <see cref="position"/>
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
         int GetRowAt(int position);
+        
+        /// <summary>
+        /// Get the position of the given <see cref="rowIndex"/> in the table.
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         int GetPositionOfRow(int rowIndex);
     }
 }

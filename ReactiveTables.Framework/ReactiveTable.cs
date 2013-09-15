@@ -28,9 +28,35 @@ namespace ReactiveTables.Framework
     /// </summary>
     public interface IWritableReactiveTable : IReactiveTable
     {
+        /// <summary>
+        /// Set a value at a given column and row index
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <param name="value"></param>
         void SetValue<T>(string columnId, int rowIndex, T value);
+
+        /// <summary>
+        /// Copy the value from the given column at the specified row index.
+        /// Used for generic code which cannot specify the type at run time.
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <param name="sourceColumn"></param>
+        /// <param name="sourceRowIndex"></param>
         void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
+
+        /// <summary>
+        /// Add a row to the table
+        /// </summary>
+        /// <returns></returns>
         int AddRow();
+
+        /// <summary>
+        /// Delete a row from the table.
+        /// </summary>
+        /// <param name="rowIndex"></param>
         void DeleteRow(int rowIndex);
     }
 

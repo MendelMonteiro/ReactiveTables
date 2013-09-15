@@ -40,6 +40,9 @@ namespace ReactiveTables.Framework.Protobuf
             _reader = new ProtoReader(_stream, null, null);
         }
 
+        /// <summary>
+        /// Start listening for changes on the stream and writing to the table
+        /// </summary>
         public void Start()
         {
             var remoteToLocalRowIds = new Dictionary<int, int>();
@@ -58,6 +61,9 @@ namespace ReactiveTables.Framework.Protobuf
             }
         }
 
+        /// <summary>
+        /// Stop listening to updates from the stream
+        /// </summary>
         public void Stop()
         {
             _finished.Set();

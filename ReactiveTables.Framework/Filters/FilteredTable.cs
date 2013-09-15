@@ -6,6 +6,9 @@ using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework.Filters
 {
+    /// <summary>
+    /// A table that is filtered using the supplied <see cref="IReactivePredicate"/>
+    /// </summary>
     public class FilteredTable : IReactiveTable, IDisposable
     {
         private readonly IReactiveTable _sourceTable;

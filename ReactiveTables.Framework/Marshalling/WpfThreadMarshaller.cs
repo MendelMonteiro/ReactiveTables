@@ -19,6 +19,7 @@ using System.Windows.Threading;
 namespace ReactiveTables.Framework.Marshalling
 {
     /// <summary>
+    /// Marshals all actions onto the specified WPF Dispatcher.
     /// TODO: Move this to a GUI specific class library
     /// </summary>
     public class WpfThreadMarshaller : IThreadMarshaller

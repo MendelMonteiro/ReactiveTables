@@ -100,7 +100,6 @@
     <Compile Include="Columns\FieldRowManager.cs" />
     <Compile Include="Columns\ReactiveColumn.cs" />
     <Compile Include="Columns\ReactiveColumnBase.cs" />
-    <Compile Include="ColumnUpdate.cs" />
     <Compile Include="Marshalling\DefaultThreadMarshaller.cs" />
     <Compile Include="IColumnObserver.cs" />
     <Compile Include="IObservableColumn.cs" />
@@ -114,7 +113,6 @@
     <Compile Include="Joins\JoinSide.cs" />
     <Compile Include="PropertyChangedNotifier.cs" />
     <Compile Include="ReactiveTable.cs" />
-    <Compile Include="RowUpdate.cs" />
     <Compile Include="RowUpdateAggregator.cs" />
     <Compile Include="SubscriptionToken.cs" />
     <Compile Include="Synchronisation\ReactiveBatchedPassThroughTable.cs" />

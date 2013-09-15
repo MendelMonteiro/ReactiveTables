@@ -259,5 +259,10 @@ namespace ReactiveTables.Framework.Joins
         {
             _observers.Add(observer);
         }
+
+        public void RemoveRowObserver(IObserver<TableUpdate> observer)
+        {
+            _observers.Remove(observer);
+        }
     }
 }

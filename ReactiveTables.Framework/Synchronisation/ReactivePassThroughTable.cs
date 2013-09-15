@@ -21,11 +21,22 @@ using ReactiveTables.Framework.Marshalling;
 
 namespace ReactiveTables.Framework.Synchronisation
 {
+    /// <summary>
+    /// A table that does not store any values but instead writes all updates received to another table.
+    /// </summary>
     public class ReactivePassThroughTable : IWritableReactiveTable
     {
         private readonly FieldRowManager _rowManager = new FieldRowManager();
+
         private readonly ReactiveTable _targetTable;
+
         private readonly IThreadMarshaller _marshaller;
+
+        public ReactivePassThroughTable(ReactiveTable table, IThreadMarshaller marshaller)
+        {
+            _targetTable = table;
+            _marshaller = marshaller;
+        }
 
         public object GetValue(string columnId, int rowIndex)
         {
@@ -50,12 +61,6 @@ namespace ReactiveTables.Framework.Synchronisation
         public PropertyChangedNotifier ChangeNotifier
         {
             get { throw new NotImplementedException(); }
-        }
-
-        public ReactivePassThroughTable(ReactiveTable table, IThreadMarshaller marshaller)
-        {
-            _targetTable = table;
-            _marshaller = marshaller;
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)

@@ -53,7 +53,7 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             var destTable = TestTableHelper.CreateReactiveTableFull();
             ProtobufTableDecoder tableDecoder = new ProtobufTableDecoder(destTable, columnsToFieldIds.InverseUniqueDictionary(), stream);
             Task.Run(() => tableDecoder.Start());
-            Thread.Sleep(50);
+            Thread.Sleep(100);
             tableDecoder.Stop();
 
             CompareTables(table, destTable);

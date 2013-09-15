@@ -20,6 +20,9 @@ namespace ReactiveTables.Framework.Protobuf
     /// </summary>
     public static class ProtobufFieldIds
     {
+        /// <summary>
+        /// The row index field id
+        /// </summary>
         public const int RowId = short.MaxValue;
     }
 }

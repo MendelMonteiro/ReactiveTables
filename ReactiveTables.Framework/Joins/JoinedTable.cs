@@ -75,6 +75,8 @@ namespace ReactiveTables.Framework.Joins
             }*/
 
             _calculatedColumnObservers.Remove(observer);
+            _joiner.RemoveObserver(observer);
+            _calculatedColumnObservers.Remove(observer);
         }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)

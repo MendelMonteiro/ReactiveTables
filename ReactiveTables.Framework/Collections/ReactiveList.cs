@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ReactiveTables.Framework.Collections
 {
@@ -26,8 +25,6 @@ namespace ReactiveTables.Framework.Collections
         {
             _growthFactor = growthFactor;
             _startingSize = startingSize;
-
-            
         }
 
         public IEnumerator<T> GetEnumerator()

@@ -17,11 +17,17 @@ using System.ComponentModel;
 
 namespace ReactiveTables.Framework.UI
 {
+    /// <summary>
+    /// Can consume property changed events
+    /// </summary>
     public interface IReactivePropertyNotifiedConsumer
     {
         void OnPropertyChanged(string propertyName);
     }
 
+    /// <summary>
+    /// A base view model class that can consume property changed events and broadcast them as <see cref="INotifyPropertyChanged"/> events
+    /// </summary>
     public class ReactiveViewModelBase : INotifyPropertyChanged, IReactivePropertyNotifiedConsumer
     {
         public event PropertyChangedEventHandler PropertyChanged;

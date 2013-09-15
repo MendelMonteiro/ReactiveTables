@@ -13,6 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Demo", "Reac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveTables.Framework.Protobuf", "ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj", "{DD7B70DD-D622-4B6F-B654-BB1F58A3A562}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12BE3CFD-FE5E-49C5-856A-D341CD76433E}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
