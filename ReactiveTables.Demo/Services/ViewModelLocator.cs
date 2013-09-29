@@ -13,25 +13,34 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Windows;
+using Ninject;
+using ReactiveTables.Demo.Client;
+using ReactiveTables.Demo.Syncfusion;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Demo.Services
 {
-    /// <summary>
-    /// Interaction logic for FxClient.xaml
-    /// </summary>
-    public partial class FxClient : Window
+    internal class ViewModelLocator
     {
-        public FxClient()
+        public IKernel Kernel { get; set; }
+
+        public MainViewModel MainViewModel
         {
-            InitializeComponent();
+            get { return Kernel.Get<MainViewModel>(); }
         }
 
-        protected override void OnClosed(System.EventArgs e)
+        public SyncfusionTestViewModel SyncfusionTestViewModel
         {
-            var viewModel = (FxClientSyncfusionViewModel) DataContext;
-            viewModel.Dispose();
-            base.OnClosed(e);
+            get { return Kernel.Get<SyncfusionTestViewModel>(); }
+        }
+
+        public XceedTestViewModel XceedTestViewModel
+        {
+            get { return Kernel.Get<XceedTestViewModel>(); }
+        }
+
+        public FxClientViewModel FxClientViewModel
+        {
+            get { return Kernel.Get<FxClientViewModel>(); }
         }
     }
 }

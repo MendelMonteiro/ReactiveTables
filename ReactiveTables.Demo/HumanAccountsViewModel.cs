@@ -14,10 +14,12 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
+using System.Linq;
 
 namespace ReactiveTables.Demo
 {
@@ -32,14 +34,25 @@ namespace ReactiveTables.Demo
             _humanAccounts = humanAccounts;
 
             HumanAccounts = new ObservableCollection<HumanAccountViewModel>();
-            _subscription = _humanAccounts.ReplayAndSubscribe(
-                update => { if (update.IsRowUpdate()) HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex)); });
+            _subscription = _humanAccounts.ReplayAndSubscribe(OnNext);
 
             Change =
                 new DelegateCommand(
                     () => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
 
             _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
+        }
+
+        private void OnNext(TableUpdate update)
+        {
+            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            {
+                HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex));
+            }
+            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            {
+                HumanAccounts.RemoveAt(HumanAccounts.TakeWhile(h => h.RowIndex != update.RowIndex).Count());
+            }
         }
 
         public ObservableCollection<HumanAccountViewModel> HumanAccounts { get; private set; }

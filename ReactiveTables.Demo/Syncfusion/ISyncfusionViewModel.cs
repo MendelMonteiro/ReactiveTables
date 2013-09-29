@@ -20,8 +20,10 @@ namespace ReactiveTables.Demo.Syncfusion
 {
     public interface ISyncfusionViewModel : IObservable<TableUpdate>
     {
+        T GetValue<T>(int rowIndex, int columnIndex);
         object GetValue(int rowIndex, int columnIndex);
         int GetRowPosition(int rowIndex);
         int GetColPosition(string columnId);
+        string GetColumnId(int columnIndex);
     }
 }

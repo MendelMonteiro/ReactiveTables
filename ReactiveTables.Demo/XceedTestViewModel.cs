@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 using Xceed.Wpf.DataGrid;
@@ -65,13 +66,13 @@ namespace ReactiveTables.Demo
         public decimal AccountBalance { get; set; }
     }
 
-    public class XceedTestViewModel
+    class XceedTestViewModel
     {
         private readonly List<TestViewModel> _objects;
 
-        public XceedTestViewModel()
+        public XceedTestViewModel(IAccountBalanceDataService dataService)
         {
-            Accounts = App.AccountHumans;
+            Accounts = dataService.AccountHumans;
 
             _objects = new List<TestViewModel>();
             for (int i = 0; i < 200; i++)

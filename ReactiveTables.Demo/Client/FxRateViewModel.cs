@@ -15,6 +15,7 @@
 
 using System;
 using ReactiveTables.Demo.Server;
+using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 

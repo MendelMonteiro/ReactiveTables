@@ -13,13 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using ReactiveTables.Demo.Services;
+
 namespace ReactiveTables.Demo.Syncfusion
 {
-    public class SyncfusionTestViewModel : SyncfusionViewModelBase
+    class SyncfusionTestViewModel : SyncfusionViewModelBase
     {
-        public SyncfusionTestViewModel()
+        public SyncfusionTestViewModel(IAccountBalanceDataService dataService)
         {
-            var table = App.AccountHumans;
+            var table = dataService.AccountHumans;
             SetTable(table);
         }
     }

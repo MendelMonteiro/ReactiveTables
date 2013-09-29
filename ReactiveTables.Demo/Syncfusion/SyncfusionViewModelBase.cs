@@ -14,9 +14,10 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Reactive.Subjects;
+using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
@@ -42,12 +43,24 @@ namespace ReactiveTables.Demo.Syncfusion
             _subject.OnNext(tableUpdate);
         }
 
+        public T GetValue<T>(int rowIndex, int columnIndex)
+        {
+            var row = _table.GetRowAt(rowIndex);
+            if (row >= 0 && columnIndex >= 0)
+            {
+                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
+                return _table.GetValue<T>(reactiveColumn.ColumnId, row);
+            }
+            return default(T);
+        }
+
         public object GetValue(int rowIndex, int columnIndex)
         {
             var row = _table.GetRowAt(rowIndex);
             if (row >= 0 && columnIndex >= 0)
             {
                 var reactiveColumn = _table.GetColumnByIndex(columnIndex);
+                // Nasty - boxing!!
                 return _table.GetValue(reactiveColumn.ColumnId, row);
             }
 
@@ -65,6 +78,12 @@ namespace ReactiveTables.Demo.Syncfusion
             return _table.Columns.Keys.IndexOf(columnId);
         }
 
+        public string GetColumnId(int columnIndex)
+        {
+            var reactiveColumn = _table.GetColumnByIndex(columnIndex);
+            return reactiveColumn.ColumnId;
+        }
+
         public void Dispose()
         {
             if (_token != null) _token.Dispose();
@@ -72,22 +91,5 @@ namespace ReactiveTables.Demo.Syncfusion
 
         // TODO: Handle columns added after the VM is created.
         public int ColumnCount { get { return _table.Columns.Count; } }
-    }
-
-    public static class CollectionExtensions
-    {
-        public static int IndexOf<T>(this IEnumerable<T> collection, T item)
-        {
-            var i = 0;
-            foreach (var foo in collection)
-            {
-                if (foo.Equals(item))
-                {
-                    return i;
-                }
-                i++;
-            }
-            return -1;
-        }
     }
 }

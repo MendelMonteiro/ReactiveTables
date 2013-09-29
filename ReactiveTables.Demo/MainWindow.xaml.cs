@@ -29,7 +29,8 @@ namespace ReactiveTables.Demo
 
         protected override void OnClosed(System.EventArgs e)
         {
-            ViewModel.Dispose();
+            var viewModel = (MainViewModel) DataContext;
+            viewModel.Dispose();
             base.OnClosed(e);
         }
     }

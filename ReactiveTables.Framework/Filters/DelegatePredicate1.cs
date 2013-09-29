@@ -6,20 +6,20 @@ namespace ReactiveTables.Framework.Filters
 {
     public class DelegatePredicate1<T> : IReactivePredicate
     {
-        private readonly ReactiveColumn<T> _column;
+        private readonly string _columnId;
         private readonly Predicate<T> _predicate;
 
-        public DelegatePredicate1(ReactiveColumn<T> column, Predicate<T> predicate)
+        public DelegatePredicate1(string columnId, Predicate<T> predicate)
         {
-            _column = column;
+            _columnId = columnId;
             _predicate = predicate;
-            Columns = new List<IReactiveColumn>{column};
+            Columns = new List<string>{columnId};
         }
 
-        public IList<IReactiveColumn> Columns { get; private set; }
-        public bool RowIsVisible(int rowIndex)
+        public IList<string> Columns { get; private set; }
+        public bool RowIsVisible(IReactiveTable sourceTable, int rowIndex)
         {
-            return _predicate(_column.GetValue(rowIndex));
+            return _predicate(sourceTable.GetValue<T>(_columnId, rowIndex));
         }
     }
 }

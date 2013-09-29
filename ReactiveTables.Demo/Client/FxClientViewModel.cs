@@ -16,6 +16,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
+using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
 
@@ -23,12 +24,13 @@ namespace ReactiveTables.Demo.Client
 {
     internal class FxClientViewModel : ReactiveViewModelBase, IDisposable
     {
-        private readonly FxDataService _dataService = new FxDataService();
+        private readonly IFxDataService _dataService;
         private readonly IDisposable _currenciesSubscription;
         private readonly IDisposable _fxRatesSubscription;
 
-        public FxClientViewModel()
+        public FxClientViewModel(IFxDataService dataService)
         {
+            _dataService = dataService;
             CurrencyPairs = new ObservableCollection<FxCurrencyPairViewModel>();
             _currenciesSubscription = _dataService.Currencies.ReplayAndSubscribe(
                 update =>

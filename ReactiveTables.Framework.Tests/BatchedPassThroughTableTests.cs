@@ -49,7 +49,7 @@ namespace ReactiveTables.Framework.Tests
             TestTableHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
             TestTableHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
 
-            Thread.Sleep(delay + 50);
+            Thread.Sleep(delay + 100);
             Assert.AreEqual(2, target.RowCount);
 
             TestTableHelper.TestValue(target, updateHandler.RowsUpdated[0], 101, TestTableColumns.IdColumn);

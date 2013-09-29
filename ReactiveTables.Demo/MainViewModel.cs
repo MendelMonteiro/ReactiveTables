@@ -14,24 +14,51 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Windows.Input;
+using ReactiveTables.Demo.Services;
+using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Filters;
 
 namespace ReactiveTables.Demo
 {
-    internal class MainViewModel : IDisposable
+    internal class MainViewModel : BaseViewModel, IDisposable
     {
-        public MainViewModel()
+        private readonly IAccountBalanceDataService _dataService;
+        private decimal _balanceBelowFilter;
+
+        public MainViewModel(IAccountBalanceDataService dataService)
         {
-            Humans = new HumansViewModel(App.Humans);
-            Accounts = new AccountsViewModel(App.Accounts);
-            HumanAccounts = new HumanAccountsViewModel(App.AccountHumans, (IWritableReactiveTable) App.Accounts);
-//            HumansBindingList = new ReactiveBindingList(App.Humans);
+            _dataService = dataService;
+
+            Humans = new HumansViewModel(_dataService.Humans);
+            Accounts = new AccountsViewModel(_dataService.Accounts);
+
+            FilteredTable accountFilter = new FilteredTable(
+                _dataService.AccountHumans,
+                new DelegatePredicate1<decimal>(AccountColumns.AccountBalance, b => b > BalanceBelowFilter));
+            HumanAccounts = new HumanAccountsViewModel(accountFilter, (IWritableReactiveTable)_dataService.Accounts);
+            //            HumansBindingList = new ReactiveBindingList(App.Humans);
+
+            StartData = new DelegateCommand(() => _dataService.Start());
+            StopData = new DelegateCommand(() => _dataService.Stop());
         }
 
         public AccountsViewModel Accounts { get; private set; }
         public HumansViewModel Humans { get; private set; }
         public HumanAccountsViewModel HumanAccounts { get; private set; }
         public ReactiveBindingList HumansBindingList { get; set; }
+
+        public ICommand StopData { get; private set; }
+        public ICommand StartData { get; private set; }
+
+        public decimal BalanceBelowFilter
+        {
+            get { return _balanceBelowFilter; }
+            set { SetProperty(ref _balanceBelowFilter, value); }
+        }
+
         public void Dispose()
         {
             Humans.Dispose();

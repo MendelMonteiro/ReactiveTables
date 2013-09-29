@@ -122,6 +122,7 @@
     <Compile Include="TableUpdate.cs" />
     <Compile Include="UI\ReactiveViewModelBase.cs" />
     <Compile Include="Utils\BidirectionalDictionary.cs" />
+    <Compile Include="Utils\CollectionExtensions.cs" />
     <Compile Include="Utils\DictionaryExtensions.cs" />
     <Compile Include="Marshalling\WpfThreadMarshaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

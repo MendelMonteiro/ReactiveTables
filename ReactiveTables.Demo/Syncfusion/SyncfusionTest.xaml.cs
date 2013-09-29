@@ -25,11 +25,22 @@ namespace ReactiveTables.Demo.Syncfusion
         public SyncfusionTest()
         {
             InitializeComponent();
+
+            Grid.AddColumn<int>(AccountColumns.IdColumn);
+            Grid.AddColumn<decimal>(AccountColumns.AccountBalance);
+            Grid.AddColumn<int>(AccountColumns.HumanId);
+
+            Grid.AddColumn<int>(HumanColumns.IdColumn);
+            Grid.AddColumn<string>(HumanColumns.IdNameColumn);
+            Grid.AddColumn<string>(HumanColumns.NameColumn);
+
+            Grid.AddColumn<string>(HumanAccountColumns.AccountDetails);
         }
 
         protected override void OnClosed(System.EventArgs e)
         {
-            ViewModel.Dispose();
+            var viewModel = (SyncfusionTestViewModel)DataContext;
+            viewModel.Dispose();
             base.OnClosed(e);
         }
     }

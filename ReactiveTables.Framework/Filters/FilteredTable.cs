@@ -7,7 +7,7 @@ using ReactiveTables.Framework.Joins;
 namespace ReactiveTables.Framework.Filters
 {
     /// <summary>
-    /// A table that is filtered using the supplied <see cref="IReactivePredicate"/>
+    /// A table that filters the underlying table using the supplied <see cref="IReactivePredicate"/>
     /// </summary>
     public class FilteredTable : IReactiveTable, IDisposable
     {
@@ -38,11 +38,11 @@ namespace ReactiveTables.Framework.Filters
             }
 
             bool shouldCheck = tableUpdate.Action == TableUpdate.TableUpdateAction.Add ||
-                               _predicate.Columns.Contains(tableUpdate.Column);
+                               _predicate.Columns.Contains(tableUpdate.Column.ColumnId);
 
             if (!shouldCheck) return;
 
-            var rowIsVisible = _predicate.RowIsVisible(tableUpdate.RowIndex);
+            var rowIsVisible = _predicate.RowIsVisible(_sourceTable, tableUpdate.RowIndex);
             int filterRow;
             // We already have this row mapped
             if (_sourceRowToFilterRow.TryGetValue(tableUpdate.RowIndex, out filterRow))
@@ -103,9 +103,9 @@ namespace ReactiveTables.Framework.Filters
 
         private void TryRemoveMapping(int rowIndex)
         {
-            if (_sourceRowToFilterRow.ContainsKey(rowIndex))
+            int filterRow;
+            if (_sourceRowToFilterRow.TryGetValue(rowIndex, out filterRow))
             {
-                var filterRow = _sourceRowToFilterRow[rowIndex];
                 _sourceRowToFilterRow.Remove(rowIndex);
                 _filterRowToSourceRow.Remove(filterRow);
             }
@@ -124,19 +124,30 @@ namespace ReactiveTables.Framework.Filters
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
-            // TODO: Maybe we should delegate to the source column, bearing in mind that calculated columns don't mean much on a filtered table.
+            // TODO: Maybe we should delegate to the source table
             throw new NotImplementedException();
         }
 
         public T GetValue<T>(string columnId, int rowIndex)
         {
-            int realRowIndex = _filterRowToSourceRow[rowIndex];
-            return _sourceTable.GetValue<T>(columnId, realRowIndex);
+            int realRowIndex;
+            if (_filterRowToSourceRow.TryGetValue(rowIndex, out realRowIndex))
+            {
+                return _sourceTable.GetValue<T>(columnId, realRowIndex);
+            }
+            
+            return default(T);
         }
 
         public object GetValue(string columnId, int rowIndex)
         {
-            return _sourceTable.GetValue(columnId, rowIndex);
+            int realRowIndex;
+            if (_filterRowToSourceRow.TryGetValue(rowIndex, out realRowIndex))
+            {
+                return _sourceTable.GetValue(columnId, rowIndex);
+            }
+
+            return null;
         }
 
         public int RowCount

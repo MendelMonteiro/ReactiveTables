@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using ReactiveTables.Framework;
 using Syncfusion.Windows.Controls.Cells;
@@ -23,6 +24,8 @@ namespace ReactiveTables.Demo.Syncfusion
 {
     public class SyncfusionTestGridControl : GridControlBase
     {
+        readonly Dictionary<string, IViewModelAccessor> _viewModelAccessors = new Dictionary<string, IViewModelAccessor>(); 
+
         private IDisposable CurrentToken { get; set; }
 
         public static readonly DependencyProperty ViewModelProperty =
@@ -81,7 +84,16 @@ namespace ReactiveTables.Demo.Syncfusion
         {
             var rowIndex = e.Cell.RowIndex - Model.HeaderRows;
             var columnIndex = e.Cell.ColumnIndex - Model.HeaderColumns;
-            e.Style.CellValue = ViewModel.GetValue(rowIndex, columnIndex);
+
+            if (rowIndex >= 0 && columnIndex >= 0)
+            {
+                var columnId = ViewModel.GetColumnId(columnIndex);
+                IViewModelAccessor accessor;
+                if (_viewModelAccessors.TryGetValue(columnId, out accessor))
+                {
+                    accessor.SetValue(e.Style, rowIndex, columnIndex);
+                }
+            }
         }
 
         public override void Dispose(bool disposing)
@@ -92,5 +104,34 @@ namespace ReactiveTables.Demo.Syncfusion
             }
             base.Dispose(disposing);
         }
+
+        public void AddColumn<T>(string columnId)
+        {
+            _viewModelAccessors.Add(columnId, new ViewModelAccessor<T>(ViewModel, columnId));
+        }
+    }
+
+    public class ViewModelAccessor<T> : IViewModelAccessor
+    {
+        private readonly ISyncfusionViewModel _viewModel;
+
+        public ViewModelAccessor(ISyncfusionViewModel viewModel, string columnId)
+        {
+            _viewModel = viewModel;
+            ColumnId = columnId;
+        }
+
+        public string ColumnId { get; private set; }
+
+        public void SetValue(GridStyleInfo style, int rowIndex, int columnIndex)
+        {
+            // TODO: Need to check with syncfusion if there's another way of setting the value which does not incur boxing.
+            style.CellValue = _viewModel.GetValue<T>(rowIndex, columnIndex);
+        }
+    }
+
+    public interface IViewModelAccessor
+    {
+        void SetValue(GridStyleInfo style, int rowIndex, int columnIndex);
     }
 }

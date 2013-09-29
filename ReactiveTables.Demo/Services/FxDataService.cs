@@ -28,9 +28,17 @@ using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Utils;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Demo.Services
 {
-    internal class FxDataService
+    internal interface IFxDataService
+    {
+        ReactiveTable FxRates { get; }
+        ReactiveTable Currencies { get; }
+        void Start(Dispatcher dispatcher);
+        void Stop();
+    }
+
+    internal class FxDataService : IFxDataService
     {
         public static class CalculateColumns
         {

@@ -81,6 +81,9 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.0.1.10\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
     <Reference Include="ReachFramework" />
     <Reference Include="Syncfusion.Grid.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
@@ -135,7 +138,8 @@
     <Compile Include="Client\FxClientSyncfusionViewModel.cs" />
     <Compile Include="Client\FxClientViewModel.cs" />
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
-    <Compile Include="Client\FxDataService.cs" />
+    <Compile Include="Services\AccountBalanceDataService.cs" />
+    <Compile Include="Services\FxDataService.cs" />
     <Compile Include="Client\FxRateViewModel.cs" />
     <Compile Include="HumanAccountsViewModel.cs" />
     <Compile Include="HumanAccountViewModel.cs" />
@@ -143,6 +147,7 @@
     <Compile Include="MainViewModel.cs" />
     <Compile Include="ReactiveBindingList.cs" />
     <Compile Include="ReactiveObservableCollection.cs" />
+    <Compile Include="Services\ViewModelLocator.cs" />
     <Compile Include="Syncfusion\SyncfusionTest.xaml.cs">
       <DependentUpon>SyncfusionTest.xaml</DependentUpon>
     </Compile>
@@ -153,6 +158,7 @@
     <Compile Include="TestLauncher.xaml.cs">
       <DependentUpon>TestLauncher.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\BaseViewModel.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Columns.cs" />
     <Compile Include="NormalViewModel.cs" />

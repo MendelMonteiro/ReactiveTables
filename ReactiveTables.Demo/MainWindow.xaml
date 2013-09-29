@@ -1,11 +1,10 @@
 ﻿<Window x:Class="ReactiveTables.Demo.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ReactiveTables="clr-namespace:ReactiveTables"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ReactiveTables="clr-namespace:ReactiveTables"
         xmlns:Demo="clr-namespace:ReactiveTables.Demo"
-        Title="MainWindow" Height="667" Width="810" WindowStartupLocation="CenterScreen" WindowState="Maximized" >
-    <Window.DataContext>
-        <Demo:MainViewModel x:Name="ViewModel" />
-    </Window.DataContext>
+        Title="Real-time demo" Height="667" Width="810" WindowStartupLocation="CenterScreen" WindowState="Maximized" 
+        DataContext="{Binding Path=MainViewModel, Source={StaticResource ViewModelLocator}}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="91"/>
@@ -20,28 +19,13 @@
             <ColumnDefinition Width="Auto" MinWidth="29"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal">
-            <TextBox Text="{Binding HumanAccounts.CurrentRowIndex, Mode=TwoWay}" />
-            <Label Content="Name:" HorizontalAlignment="Left" VerticalAlignment="Top" />
-            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding HumanAccounts.AccountDetails}" VerticalAlignment="Top"  />
-            <!--        <TextBlock Margin="20,20,0,0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Humans.CurrentHuman.IdName}" VerticalAlignment="Top" Grid.Column="2" Height="16" Width="0"  />-->
-            <Button Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Command="{Binding HumanAccounts.Change}" Grid.Column="3" />
+            <Button Content="Start data" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Command="{Binding StartData}" Margin="10"/>
+            <Button Content="Stop data" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                    Command="{Binding StopData}"  Margin="10"/>
+            <TextBlock  Margin="10">Filter balances below</TextBlock>
+            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10"></TextBox>
         </StackPanel>
-        <!--<ScrollViewer Grid.Row="1" Grid.ColumnSpan="4">
-        <StackPanel >
-                <Label Content="People" HorizontalAlignment="Center" />
-                <DataGrid ItemsSource="{Binding Humans.Humans}">
-            </DataGrid>
-~1~            <Button Content="Add" Command="{Binding Humans.Add}" />@1@
-        </StackPanel>
-        </ScrollViewer>
-        <ScrollViewer Grid.Row="1" Grid.Column="4">
-        <StackPanel  >
-                <Label Content="Accounts" HorizontalAlignment="Center" />
-                <DataGrid ItemsSource="{Binding Accounts.Accounts}">
-                </DataGrid>
-~1~            <Button Content="Add" Command="{Binding Accounts.Add}" />@1@
-        </StackPanel>
-        </ScrollViewer>-->
         <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Orientation="Horizontal" HorizontalAlignment="Center">
             <ScrollViewer>
                 <StackPanel>
@@ -67,27 +51,8 @@
                     <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}" VirtualizingPanel.IsVirtualizing="True"
             			VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
             			VirtualizingPanel.CacheLength="2"/>
-                    <!--            <Button Content="Add" Command="{Binding Accounts.Add}" />-->
                 </StackPanel>
             </ScrollViewer>
-            <!--<ScrollViewer>
-                <StackPanel>
-                    <Label Content="People Binding list" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding HumansBindingList}" VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
-                </StackPanel>
-            </ScrollViewer>-->
-            <!--<ScrollViewer>
-                <StackPanel>
-                    <Label Content="Accounts" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding Accounts.Accounts}" VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
-                </StackPanel>
-            </ScrollViewer>-->
         </StackPanel>
     </Grid>
 </Window>

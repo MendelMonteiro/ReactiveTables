@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Windows;
+using ReactiveTables.Demo.Services;
 using ReactiveTables.Demo.Syncfusion;
 
 namespace ReactiveTables.Demo.Client

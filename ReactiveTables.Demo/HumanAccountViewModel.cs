@@ -57,6 +57,11 @@ namespace ReactiveTables.Demo
             get { return _humanAccounts.GetValue<string>(HumanAccountColumns.AccountDetails, _rowIndex); }
         }
 
+        public int RowIndex
+        {
+            get { return _rowIndex; }
+        }
+
         public void Dispose()
         {
             _humanAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);

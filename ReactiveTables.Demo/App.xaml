@@ -1,9 +1,9 @@
 ﻿<Application x:Class="ReactiveTables.Demo.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Services="clr-namespace:ReactiveTables.Demo.Services"
              StartupUri="TestLauncher.xaml">
     <Application.Resources>
-         
-<!--        <ReactiveTables:ReactiveTable x:Key="HumansTable" x:Name="HumansTable" />-->
+        <Services:ViewModelLocator x:Key="ViewModelLocator"/>
     </Application.Resources>
 </Application>

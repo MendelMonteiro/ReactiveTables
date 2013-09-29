@@ -11,13 +11,14 @@ namespace ReactiveTables.Framework.Filters
         /// <summary>
         /// The columns used to apply this predicate
         /// </summary>
-        IList<IReactiveColumn> Columns { get; }
+        IList<string> Columns { get; }
 
         /// <summary>
         /// Whether the row at <see cref="rowIndex"/> is visible or not.
         /// </summary>
+        /// <param name="sourceTable"></param>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
-        bool RowIsVisible(int rowIndex);
+        bool RowIsVisible(IReactiveTable sourceTable, int rowIndex);
     }
 }

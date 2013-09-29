@@ -12,9 +12,9 @@ namespace ReactiveTables.Framework.Tests.Filters
         public void TestNullFilter()
         {
             var rawTable = TestTableHelper.CreateReactiveTable();
-            var filteredTable = (IReactiveTable)rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
+            var filteredTable = (IReactiveTable)rawTable.Filter(new TestPredicate(new List<string>
                                                                       {
-                                                                          rawTable.Columns[TestTableColumns.IdColumn]
+                                                                          TestTableColumns.IdColumn
                                                                       },
                                                                   true
                                                     ));
@@ -39,9 +39,9 @@ namespace ReactiveTables.Framework.Tests.Filters
         public void TestExclusionFilter()
         {
             var rawTable = TestTableHelper.CreateReactiveTable();
-            var filteredTable = rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
+            var filteredTable = rawTable.Filter(new TestPredicate(new List<string>
                                                                       {
-                                                                          rawTable.Columns[TestTableColumns.IdColumn]
+                                                                          TestTableColumns.IdColumn
                                                                       },
                                                                   false
                                                     ));
@@ -65,7 +65,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         {
             var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(
-                new DelegatePredicate1<string>((ReactiveColumn<string>) rawTable.Columns[TestTableColumns.StringColumn],
+                new DelegatePredicate1<string>(TestTableColumns.StringColumn,
                                                s => !string.IsNullOrEmpty(s) && s.EndsWith("2")));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
@@ -89,8 +89,8 @@ namespace ReactiveTables.Framework.Tests.Filters
 
             var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(
-                new DelegatePredicate2<string, decimal>((ReactiveColumn<string>) rawTable.Columns[TestTableColumns.StringColumn],
-                                                        (ReactiveColumn<decimal>) rawTable.Columns[TestTableColumns.DecimalColumn],
+                new DelegatePredicate2<string, decimal>(TestTableColumns.StringColumn,
+                                                        TestTableColumns.DecimalColumn,
                                                         (s, d) => !string.IsNullOrEmpty(s) && s.StartsWith("Blah") && d > 100m));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
@@ -118,9 +118,9 @@ namespace ReactiveTables.Framework.Tests.Filters
             AddRow(rawTable, 2, "Blah2", 123.123m);
             Assert.AreEqual(2, rawTable.RowCount);
 
-            var filteredTable = rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
+            var filteredTable = rawTable.Filter(new TestPredicate(new List<string>
                                                                       {
-                                                                          rawTable.Columns[TestTableColumns.IdColumn]
+                                                                          TestTableColumns.IdColumn
                                                                       },
                                                                   false
                                                     ));
@@ -131,9 +131,9 @@ namespace ReactiveTables.Framework.Tests.Filters
             Assert.AreEqual(0, filteredTable.RowCount);
             Assert.AreEqual(0, updateHandler.CurrentRowCount);
 
-            var filteredTable2 = rawTable.Filter(new TestPredicate(new List<IReactiveColumn>
+            var filteredTable2 = rawTable.Filter(new TestPredicate(new List<string>
                                                                       {
-                                                                          rawTable.Columns[TestTableColumns.IdColumn]
+                                                                          TestTableColumns.IdColumn
                                                                       },
                                                                   true
                                                     ));
@@ -165,14 +165,15 @@ namespace ReactiveTables.Framework.Tests.Filters
     {
         private readonly bool _rowIsVisible;
 
-        public TestPredicate(List<IReactiveColumn> columns, bool rowIsVisible)
+        public TestPredicate(IList<string> columns, bool rowIsVisible)
         {
             Columns = columns;
             _rowIsVisible = rowIsVisible;
         }
 
-        public IList<IReactiveColumn> Columns { get; private set; }
-        public bool RowIsVisible(int rowIndex)
+        public IList<string> Columns { get; private set; }
+
+        public bool RowIsVisible(IReactiveTable sourceTable, int rowIndex)
         {
             return _rowIsVisible;
         }

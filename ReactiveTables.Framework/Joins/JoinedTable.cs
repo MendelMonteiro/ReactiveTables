@@ -14,10 +14,13 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
+using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework.Joins
 {
@@ -34,13 +37,15 @@ namespace ReactiveTables.Framework.Joins
         private readonly Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>> _tokens =
             new Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>>();
 
+        private readonly IndexedDictionary<string, IReactiveColumn> _columns;
+
         public JoinedTable(IReactiveTable leftTable, IReactiveTable rightTable, IReactiveTableJoiner joiner)
         {
             _leftTable = leftTable;
             _rightTable = rightTable;
             _joiner = joiner;
 
-            Columns = new Dictionary<string, IReactiveColumn>();
+            _columns = new IndexedDictionary<string, IReactiveColumn>();
             ChangeNotifier = new PropertyChangedNotifier(this);
             AddBaseTableColumns(leftTable);
             AddBaseTableColumns(rightTable);
@@ -139,11 +144,15 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        public IDictionary<string, IReactiveColumn> Columns { get; private set; }
+        public IDictionary<string, IReactiveColumn> Columns
+        {
+            get { return _columns; }
+        }
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
-            throw new NotImplementedException();
+            IList<IReactiveColumn> reactiveColumns = _columns;
+            return reactiveColumns[index];
         }
 
         public PropertyChangedNotifier ChangeNotifier { get; private set; }

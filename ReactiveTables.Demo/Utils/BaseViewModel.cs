@@ -13,25 +13,27 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Windows;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
-namespace ReactiveTables.Demo.Client
+namespace ReactiveTables.Demo.Utils
 {
-    /// <summary>
-    /// Interaction logic for FxClient.xaml
-    /// </summary>
-    public partial class FxClient : Window
+    internal class BaseViewModel
     {
-        public FxClient()
+        public event PropertyChangedEventHandler PropertyChanged;
+        
+        protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
         {
-            InitializeComponent();
-        }
-
-        protected override void OnClosed(System.EventArgs e)
-        {
-            var viewModel = (FxClientSyncfusionViewModel) DataContext;
-            viewModel.Dispose();
-            base.OnClosed(e);
+            if (!EqualityComparer<T>.Default.Equals(field, value))
+            {
+                field = value;
+                var handler = PropertyChanged;
+                if (handler != null)
+                {
+                    handler(this, new PropertyChangedEventArgs(name));
+                }
+            }
         }
     }
 }
