@@ -7,7 +7,9 @@ using ReactiveTables.Framework.Joins;
 namespace ReactiveTables.Framework.Filters
 {
     /// <summary>
-    /// A table that filters the underlying table using the supplied <see cref="IReactivePredicate"/>
+    /// A table that filters the underlying table using the supplied <see cref="IReactivePredicate"/>.
+    /// A current limitation is that if the predicate changes in-flight the subscribers will not be notified
+    /// of the changes that the change in predicate brings about.
     /// </summary>
     public class FilteredTable : IReactiveTable, IDisposable
     {
@@ -18,6 +20,9 @@ namespace ReactiveTables.Framework.Filters
         private readonly IDisposable _token;
         private readonly FieldRowManager _rowManager = new FieldRowManager();
         private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
+
+        public PropertyChangedNotifier ChangeNotifier { get; private set; }
+        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
 
         public FilteredTable(IReactiveTable sourceTable, IReactivePredicate predicate)
         {
@@ -155,14 +160,10 @@ namespace ReactiveTables.Framework.Filters
             get { return _rowManager.RowCount; }
         }
 
-        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
-
         public IReactiveColumn GetColumnByIndex(int index)
         {
             return _sourceTable.GetColumnByIndex(index);
         }
-
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {

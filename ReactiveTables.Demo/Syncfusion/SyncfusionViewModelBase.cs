@@ -15,7 +15,6 @@
 
 using System;
 using System.Reactive.Subjects;
-using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Utils;
 
@@ -89,7 +88,7 @@ namespace ReactiveTables.Demo.Syncfusion
             if (_token != null) _token.Dispose();
         }
 
-        // TODO: Handle columns added after the VM is created.
+        // TODO: Handle columns added after the ViewModel is created.
         public int ColumnCount { get { return _table.Columns.Count; } }
     }
 }
