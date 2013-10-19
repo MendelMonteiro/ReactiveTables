@@ -390,6 +390,48 @@ namespace ReactiveTables.Framework.Tests.Filters
             Assert.AreEqual("Blah6", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
         }
 
+        [Test]
+        public void TestExistingRowsBug()
+        {
+            var rawTable = TestTableHelper.CreateReactiveTable();
+
+            AddRow(rawTable, 1, "Foo1", 1);
+            AddRow(rawTable, 2, "Foo2", 2);
+            AddRow(rawTable, 3, "Foo3", 3);
+            
+            decimal[] filter = { 0 };
+            var filteredTable = (FilteredTable) rawTable.Filter(new DelegatePredicate1<decimal>(
+                                                                    TestTableColumns.DecimalColumn, s => s > filter[0]));
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            filteredTable.Subscribe(updateHandler);
+
+            AddRow(rawTable, 4, "Foo4", 4);
+            AddRow(rawTable, 5, "Foo5", 5);
+            Assert.AreEqual(5, filteredTable.RowCount);
+
+            filter[0] = 50;
+            filteredTable.PredicateChanged();
+            Assert.AreEqual(0, filteredTable.RowCount);
+
+            AddRow(rawTable, 6, "Foo6", 6);
+
+            filter[0] = 3;
+            filteredTable.PredicateChanged();
+            Assert.AreEqual(3, filteredTable.RowCount);
+
+            AddRow(rawTable, 7, "Foo7", 7);
+            Assert.AreEqual(4, filteredTable.RowCount);
+
+            filter[0] = 50;
+            filteredTable.PredicateChanged();
+            Assert.AreEqual(0, filteredTable.RowCount);
+
+            filter[0] = 2;
+            filteredTable.PredicateChanged();
+            Assert.AreEqual(5, filteredTable.RowCount);
+        }
+
         private static int AddRow(IWritableReactiveTable table, int id, string stringVal, decimal decimalVal)
         {
             var row1 = table.AddRow();

@@ -45,9 +45,9 @@ namespace ReactiveTables.Framework.Utils
                             info.AppendLine(string.Format("{0} : {1:N}", counter.CounterName, counter.NextValue()));
 //                            Console.WriteLine("\t" + counter.CounterName);
                         }
-                        catch (Exception e)
+                        catch (Exception ex)
                         {
-//                            Console.WriteLine(e);
+//                            Console.WriteLine(xe);
                         }
                     }
                 }

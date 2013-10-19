@@ -117,8 +117,14 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.Controls.v4.5, Version=4.5.13165.13180, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL" />
-    <Reference Include="Xceed.Wpf.DataGrid.v4.5, Version=4.5.13165.13180, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL" />
+    <Reference Include="Xceed.Wpf.Controls.v5.0, Version=5.0.13327.15450, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Xceed\Xceed DataGrid for WPF Professional Edition v5.0\Bin\Xceed.Wpf.Controls.v5.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid.v5.0, Version=5.0.13327.15450, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Xceed\Xceed DataGrid for WPF Professional Edition v5.0\Bin\Xceed.Wpf.DataGrid.v5.0.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

@@ -37,7 +37,6 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly FieldRowManager _rowManager = new FieldRowManager();
         private readonly IWritableReactiveTable _targetTable;
         private readonly IThreadMarshaller _marshaller;
-        private readonly Timer _timer;
         private readonly object _shared = new object();
         private readonly System.Timers.Timer _timer1;
 
@@ -70,7 +69,6 @@ namespace ReactiveTables.Framework.Synchronisation
         {
             _targetTable = targetTable;
             _marshaller = marshaller;
-//            _timer = new Timer(SynchroniseChanges, null, delay, delay);
             _timer1 = new System.Timers.Timer(delay.TotalMilliseconds);
             _timer1.Elapsed += (sender, args) => SynchroniseChanges(null);
             _timer1.AutoReset = false;
@@ -247,7 +245,6 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void Dispose()
         {
-            if (_timer != null) _timer.Dispose();
             if (_timer1 != null) _timer1.Dispose();
         }
     }

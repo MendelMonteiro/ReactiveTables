@@ -37,7 +37,7 @@ namespace ReactiveTables.Framework.Columns
     public interface IReactiveColumn<T> : IReactiveColumn
     {
         void SetValue(int rowIndex, T value);
-        T GetValue(int index);
+        new T GetValue(int index);
         int Find(T value);
     }
 

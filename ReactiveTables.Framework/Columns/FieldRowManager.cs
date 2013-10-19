@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ReactiveTables.Framework.Columns
@@ -43,6 +44,7 @@ namespace ReactiveTables.Framework.Columns
         public void DeleteRow(int rowIndex)
         {
             RowCount--;
+            Debug.Assert(!_deletedRows.Contains(rowIndex));
             _deletedRows.Enqueue(rowIndex);
         }
 
@@ -124,6 +126,12 @@ namespace ReactiveTables.Framework.Columns
                     break;
             }
             return rowIndex - deletedCount;
+        }
+
+        public void Reset()
+        {
+            _deletedRows.Clear();
+            RowCount = 0;
         }
     }
 }

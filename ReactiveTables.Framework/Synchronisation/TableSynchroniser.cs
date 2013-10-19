@@ -28,7 +28,7 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly IWritableReactiveTable _targetTable;
         private readonly IThreadMarshaller _threadMarshaller;
         private readonly IDisposable _subscription;
-        private readonly IDisposable _columnSubscription;
+//        private readonly IDisposable _columnSubscription;
 
         public TableSynchroniser(IReactiveTable sourceTable, IWritableReactiveTable targetTable, IThreadMarshaller threadMarshaller)
         {
@@ -73,7 +73,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void Dispose()
         {
-            _columnSubscription.Dispose();
+//            _columnSubscription.Dispose();
             _subscription.Dispose();
         }
     }

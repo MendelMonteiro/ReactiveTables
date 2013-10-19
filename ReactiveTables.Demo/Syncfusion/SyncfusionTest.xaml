@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Syncfusion="clr-namespace:ReactiveTables.Demo.Syncfusion"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
-        Title="Syncfusion Test" Height="300" Width="300"
+        Title="Syncfusion Test" Height="600" Width="800"
+        WindowState="Maximized"
         DataContext="{Binding Path=SyncfusionTestViewModel, Source={StaticResource ViewModelLocator}}">
     <Grid>
         <Grid.RowDefinitions>
@@ -18,7 +19,7 @@
             <ScrollViewer CanContentScroll="True"
                           HorizontalScrollBarVisibility="Visible"
                           VerticalScrollBarVisibility="Visible">
-                <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="7"/>
+                <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="7" />
 
             </ScrollViewer>
         </Border>

@@ -108,22 +108,23 @@ namespace ReactiveTables.Framework.Filters
         /// </summary>
         public void PredicateChanged()
         {
-            _sourceTable.ReplayRows(new AnonymousObserver<TableUpdate>(
-                                        update =>
-                                            {
-                                                var sourceRowIndex = update.RowIndex;
-                                                int filterRowIndex;
-                                                var isMapped = _sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRowIndex);
-                                                var isVisible = _predicate.RowIsVisible(_sourceTable, sourceRowIndex);
-                                                if (isVisible && !isMapped)
-                                                {
-                                                    AddVisibleRow(sourceRowIndex);
-                                                }
-                                                else if (!isVisible && isMapped)
-                                                {
-                                                    RemoveNotVisibleRow(sourceRowIndex);
-                                                }
-                                            }));
+            _sourceTable.ReplayRows(
+                new AnonymousObserver<TableUpdate>(
+                    update =>
+                        {
+                            var sourceRowIndex = update.RowIndex;
+                            int filterRowIndex;
+                            var isMapped = _sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRowIndex);
+                            var isVisible = _predicate.RowIsVisible(_sourceTable, sourceRowIndex);
+                            if (isVisible && !isMapped)
+                            {
+                                AddVisibleRow(sourceRowIndex);
+                            }
+                            else if (!isVisible && isMapped)
+                            {
+                                RemoveNotVisibleRow(sourceRowIndex);
+                            }
+                        }));
         }
 
         private void OnAdd(int filterRow)
@@ -160,7 +161,7 @@ namespace ReactiveTables.Framework.Filters
             {
                 _sourceRowToFilterRow.Remove(rowIndex);
                 _filterRowToSourceRow.Remove(filterRow);
-                _rowManager.DeleteRow(rowIndex);
+                _rowManager.DeleteRow(filterRow);
             }
             return filterRow;
         }

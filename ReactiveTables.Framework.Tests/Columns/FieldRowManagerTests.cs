@@ -49,6 +49,18 @@ namespace ReactiveTables.Framework.Tests.Columns
         }
 
         [Test]
+        public void TestReset()
+        {
+            FieldRowManager rowManager = new FieldRowManager();
+            int rowIndex = rowManager.AddRow();
+            rowManager.Reset();
+            Assert.AreEqual(0, rowManager.RowCount);
+
+            rowIndex = rowManager.AddRow();
+            Assert.AreEqual(0, rowIndex);
+        }
+
+        [Test]
         public void TestGetRowAt()
         {
             var rowManager = new FieldRowManager();
