@@ -15,12 +15,13 @@
 
 using System;
 using System.Reactive.Subjects;
+using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
-    public class SyncfusionViewModelBase : ISyncfusionViewModel, IDisposable
+    class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
     {
         private IReactiveTable _table;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();

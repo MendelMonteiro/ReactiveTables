@@ -23,12 +23,12 @@ using Xceed.Wpf.DataGrid;
 
 namespace ReactiveTables.Demo
 {
-    public struct AccountHumansSelector : IReactivePropertyNotifiedConsumer, INotifyPropertyChanged
+    public struct AccountPeopleSelector : IReactivePropertyNotifiedConsumer, INotifyPropertyChanged
     {
         private readonly IReactiveTable _table;
         private readonly int _rowId;
 
-        public AccountHumansSelector(IReactiveTable table, int rowId) : this()
+        public AccountPeopleSelector(IReactiveTable table, int rowId) : this()
         {
             _table = table;
             _rowId = rowId;
@@ -37,7 +37,7 @@ namespace ReactiveTables.Demo
 
         public int Id
         {
-            get { return _table.GetValue<int>(HumanColumns.IdColumn, _rowId); }
+            get { return _table.GetValue<int>(PersonColumns.IdColumn, _rowId); }
         }
 
         public decimal AccountBalance
@@ -47,7 +47,7 @@ namespace ReactiveTables.Demo
 
         public string Name
         {
-            get { return _table.GetValue<string>(HumanColumns.NameColumn, _rowId); }
+            get { return _table.GetValue<string>(PersonColumns.NameColumn, _rowId); }
         }
 
         public void OnPropertyChanged(string propertyName)
@@ -72,7 +72,7 @@ namespace ReactiveTables.Demo
 
         public XceedTestViewModel(IAccountBalanceDataService dataService)
         {
-            Accounts = dataService.AccountHumans;
+            Accounts = dataService.AccountPeople;
 
             _objects = new List<TestViewModel>();
             for (int i = 0; i < 200; i++)
@@ -80,7 +80,7 @@ namespace ReactiveTables.Demo
                 _objects.Add(new TestViewModel {Id = i, Name = "test", AccountBalance = 1000*i});
             }
 
-            ViewSource = new DataGridVirtualizingCollectionView(typeof(AccountHumansSelector), false, 50, 1000);
+            ViewSource = new DataGridVirtualizingCollectionView(typeof(AccountPeopleSelector), false, 50, 1000);
             ViewSource.QueryItems += ViewSourceOnQueryItems;
             ViewSource.QueryItemCount += ViewSourceOnQueryItemCount;
 
@@ -106,7 +106,7 @@ namespace ReactiveTables.Demo
             for (int i = startIndex; i < startIndex + requestedItemCount; i++)
             {
                 var rowId = Accounts.GetRowAt(i);
-                var selector = new AccountHumansSelector(Accounts, rowId);
+                var selector = new AccountPeopleSelector(Accounts, rowId);
                 updateObjects[index++] = selector;
             }
             queryItemsEventArgs.AsyncQueryInfo.EndQuery(updateObjects);

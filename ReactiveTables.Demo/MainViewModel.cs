@@ -27,28 +27,28 @@ namespace ReactiveTables.Demo
     {
         private readonly IAccountBalanceDataService _dataService;
         private decimal _balanceBelowFilter;
+        private readonly FilteredTable _accountFilter;
 
         public MainViewModel(IAccountBalanceDataService dataService)
         {
             _dataService = dataService;
 
-            Humans = new HumansViewModel(_dataService.Humans);
+            People = new PeopleViewModel(_dataService.People);
             Accounts = new AccountsViewModel(_dataService.Accounts);
 
-            FilteredTable accountFilter = new FilteredTable(
-                _dataService.AccountHumans,
+            _accountFilter = (FilteredTable) _dataService.AccountPeople.Filter(
                 new DelegatePredicate1<decimal>(AccountColumns.AccountBalance, b => b > BalanceBelowFilter));
-            HumanAccounts = new HumanAccountsViewModel(accountFilter, (IWritableReactiveTable)_dataService.Accounts);
-            //            HumansBindingList = new ReactiveBindingList(App.Humans);
+            PersonAccounts = new PersonAccountsViewModel(_accountFilter, (IWritableReactiveTable)_dataService.Accounts);
+            //            PeopleBindingList = new ReactiveBindingList(App.People);
 
             StartData = new DelegateCommand(() => _dataService.Start());
             StopData = new DelegateCommand(() => _dataService.Stop());
         }
 
         public AccountsViewModel Accounts { get; private set; }
-        public HumansViewModel Humans { get; private set; }
-        public HumanAccountsViewModel HumanAccounts { get; private set; }
-        public ReactiveBindingList HumansBindingList { get; set; }
+        public PeopleViewModel People { get; private set; }
+        public PersonAccountsViewModel PersonAccounts { get; private set; }
+        public ReactiveBindingList PeopleBindingList { get; set; }
 
         public ICommand StopData { get; private set; }
         public ICommand StartData { get; private set; }
@@ -56,14 +56,18 @@ namespace ReactiveTables.Demo
         public decimal BalanceBelowFilter
         {
             get { return _balanceBelowFilter; }
-            set { SetProperty(ref _balanceBelowFilter, value); }
+            set
+            {
+                SetProperty(ref _balanceBelowFilter, value);
+                _accountFilter.PredicateChanged();
+            }
         }
 
         public void Dispose()
         {
-            Humans.Dispose();
+            People.Dispose();
             Accounts.Dispose();
-            HumanAccounts.Dispose();
+            PersonAccounts.Dispose();
         }
     }
 }

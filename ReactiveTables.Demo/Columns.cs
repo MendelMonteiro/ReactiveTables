@@ -15,22 +15,22 @@ along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace ReactiveTables.Demo
 {
-    internal static class HumanColumns
+    internal static class PersonColumns
     {
-        public const string IdColumn = "Human.HumanId";
-        public const string NameColumn = "Human.Name";
-        public const string IdNameColumn = "Human.IdName";
+        public const string IdColumn = "Person.PersonId";
+        public const string NameColumn = "Person.Name";
+        public const string IdNameColumn = "Person.IdName";
     }
 
     public static class AccountColumns
     {
         public const string IdColumn = "Account.AccountId";
-        public const string HumanId = "Account.HumanId";
+        public const string PersonId = "Account.PersonId";
         public const string AccountBalance = "Account.AccountBalance";
     }
 
-    public static class HumanAccountColumns
+    public static class PersonAccountColumns
     {
-        public const string AccountDetails = "HumanAccount.AccountDetails";
+        public const string AccountDetails = "PersonAccount.AccountDetails";
     }
 }

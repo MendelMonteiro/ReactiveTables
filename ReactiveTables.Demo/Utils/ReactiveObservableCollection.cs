@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using ReactiveTables.Framework;
 
-namespace ReactiveTables.Demo
+namespace ReactiveTables.Demo.Utils
 {
     public class ReactiveObservableCollection : ICollection, INotifyCollectionChanged, INotifyPropertyChanged
     {
@@ -63,39 +62,5 @@ namespace ReactiveTables.Demo
         public int Count { get { return _table.RowCount; } }
         public object SyncRoot { get; private set; }
         public bool IsSynchronized { get; private set; }
-    }
-
-    public class ReactiveTableEnumerator : IEnumerator<int>
-    {
-        private readonly ReactiveTable _table;
-        private readonly IEnumerator<int> _rows;
-
-        public ReactiveTableEnumerator(ReactiveTable table)
-        {
-            _table = table;
-            _rows = _table.GetRows().GetEnumerator();
-        }
-
-        public bool MoveNext()
-        {
-            return _rows.MoveNext();
-        }
-
-        public void Reset()
-        {
-            _rows.Reset();
-        }
-
-        public int Current { get; private set; }
-
-        object IEnumerator.Current
-        {
-            get { return _rows.Current; }
-        }
-
-        public void Dispose()
-        {
-            _rows.Dispose();
-        }
     }
 }

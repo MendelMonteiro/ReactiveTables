@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Joins;
 
@@ -36,29 +37,40 @@ namespace ReactiveTables.Framework.Filters
 
         private void OnNext(TableUpdate tableUpdate)
         {
+            // Row is being deleted
+            var sourceRowIndex = tableUpdate.RowIndex;
             if (tableUpdate.Action == TableUpdate.TableUpdateAction.Delete)
             {
-                TryRemoveMapping(tableUpdate.RowIndex);
+                RemoveNotVisibleRow(sourceRowIndex);
                 return;
             }
 
             bool shouldCheck = tableUpdate.Action == TableUpdate.TableUpdateAction.Add ||
                                _predicate.Columns.Contains(tableUpdate.Column.ColumnId);
 
-            if (!shouldCheck) return;
+            if (!shouldCheck)
+            {
+                // If the row exists but we're updating a different column then propagate the update.
+                int filterRowIndex;
+                if (_sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRowIndex))
+                {
+                    OnUpdate(filterRowIndex, tableUpdate.Columns);
+                }
+                return;
+            }
 
-            var rowIsVisible = _predicate.RowIsVisible(_sourceTable, tableUpdate.RowIndex);
+            var rowIsVisible = _predicate.RowIsVisible(_sourceTable, sourceRowIndex);
             int filterRow;
             // We already have this row mapped
-            if (_sourceRowToFilterRow.TryGetValue(tableUpdate.RowIndex, out filterRow))
+            var isMapped = _sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRow);
+            if (isMapped)
             {
                 // Already exists but is no longer visible
                 if (!rowIsVisible)
                 {
-                    TryRemoveMapping(tableUpdate.RowIndex);
-                    OnDelete(filterRow);
+                    RemoveNotVisibleRow(sourceRowIndex);
                 }
-                // otherwise do we need to propagate the column update
+                    // otherwise do we need to propagate the column update
                 else
                 {
                     OnUpdate(filterRow, tableUpdate.Columns);
@@ -70,13 +82,48 @@ namespace ReactiveTables.Framework.Filters
                 // Has just appeared
                 if (rowIsVisible)
                 {
-                    int addRow = _rowManager.AddRow();
-                    _sourceRowToFilterRow.Add(tableUpdate.RowIndex, addRow);
-                    _filterRowToSourceRow.Add(addRow, tableUpdate.RowIndex);
-                    OnAdd(addRow);
+                    AddVisibleRow(sourceRowIndex);
                 }
                 // otherwise do nothing
             }
+        }
+
+        private void RemoveNotVisibleRow(int sourceRowIndex)
+        {
+            var filterRow = TryRemoveMapping(sourceRowIndex);
+            if (filterRow >= 0) OnDelete(filterRow);
+        }
+
+        private void AddVisibleRow(int sourceRowIndex)
+        {
+            int addRow = _rowManager.AddRow();
+            _sourceRowToFilterRow.Add(sourceRowIndex, addRow);
+            _filterRowToSourceRow.Add(addRow, sourceRowIndex);
+            OnAdd(addRow);
+        }
+
+        /// <summary>
+        /// Let the filtered table know that the values used in the predicate have changed and
+        /// the filter needs to be re-applied.
+        /// </summary>
+        public void PredicateChanged()
+        {
+            _sourceTable.ReplayRows(new AnonymousObserver<TableUpdate>(
+                                        update =>
+                                            {
+                                                var sourceRowIndex = update.RowIndex;
+                                                int filterRowIndex;
+                                                var isMapped = _sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRowIndex);
+                                                var isVisible = _predicate.RowIsVisible(_sourceTable, sourceRowIndex);
+                                                if (isVisible && !isMapped)
+                                                {
+                                                    AddVisibleRow(sourceRowIndex);
+                                                }
+                                                else if (!isVisible && isMapped)
+                                                {
+                                                    RemoveNotVisibleRow(sourceRowIndex);
+                                                }
+                                            }));
         }
 
         private void OnAdd(int filterRow)
@@ -106,14 +153,16 @@ namespace ReactiveTables.Framework.Filters
             }
         }
 
-        private void TryRemoveMapping(int rowIndex)
+        private int TryRemoveMapping(int rowIndex)
         {
-            int filterRow;
+            int filterRow = -1;
             if (_sourceRowToFilterRow.TryGetValue(rowIndex, out filterRow))
             {
                 _sourceRowToFilterRow.Remove(rowIndex);
                 _filterRowToSourceRow.Remove(filterRow);
+                _rowManager.DeleteRow(rowIndex);
             }
+            return filterRow;
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)

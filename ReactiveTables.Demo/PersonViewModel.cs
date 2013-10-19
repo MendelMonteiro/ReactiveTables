@@ -19,40 +19,40 @@ using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class HumanViewModel : ReactiveViewModelBase, IDisposable
+    public class PersonViewModel : ReactiveViewModelBase, IDisposable
     {
-        private readonly IReactiveTable _humans;
+        private readonly IReactiveTable _people;
         private readonly int _rowIndex;
 
-        public HumanViewModel(IReactiveTable humans, int rowIndex)
+        public PersonViewModel(IReactiveTable people, int rowIndex)
         {
             _rowIndex = rowIndex;
-            _humans = humans;
+            _people = people;
 //            Change = new DelegateCommand(() => Name += "was changed");
-            _humans.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
+            _people.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
-        public int HumanId
+        public int PersonId
         {
-            get { return _humans.GetValue<int>(HumanColumns.IdColumn, _rowIndex); }
+            get { return _people.GetValue<int>(PersonColumns.IdColumn, _rowIndex); }
         }
 
         public string Name
         {
-            get { return _humans.GetValue<string>(HumanColumns.NameColumn, _rowIndex); }
-//            set { _humans.SetValue(HumanColumns.NameColumn, _rowIndex, value); }
+            get { return _people.GetValue<string>(PersonColumns.NameColumn, _rowIndex); }
+//            set { _People.SetValue(PersonColumns.NameColumn, _rowIndex, value); }
         }
 
 //        public DelegateCommand Change { get; private set; }
 
         public string IdName
         {
-            get { return _humans.GetValue<string>(HumanColumns.IdNameColumn, _rowIndex); }
+            get { return _people.GetValue<string>(PersonColumns.IdNameColumn, _rowIndex); }
         }
 
         public void Dispose()
         {
-            _humans.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);
+            _people.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);
         }
     }
 }

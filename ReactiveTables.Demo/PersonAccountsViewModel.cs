@@ -23,60 +23,60 @@ using System.Linq;
 
 namespace ReactiveTables.Demo
 {
-    public class HumanAccountsViewModel : ReactiveViewModelBase, IDisposable
+    public class PersonAccountsViewModel : ReactiveViewModelBase, IDisposable
     {
-        private readonly IReactiveTable _humanAccounts;
+        private readonly IReactiveTable _personAccounts;
         private int _currentRowIndex;
         private readonly IDisposable _subscription;
 
-        public HumanAccountsViewModel(IReactiveTable humanAccounts, IWritableReactiveTable accounts)
+        public PersonAccountsViewModel(IReactiveTable personAccounts, IWritableReactiveTable accounts)
         {
-            _humanAccounts = humanAccounts;
+            _personAccounts = personAccounts;
 
-            HumanAccounts = new ObservableCollection<HumanAccountViewModel>();
-            _subscription = _humanAccounts.ReplayAndSubscribe(OnNext);
+            PersonAccounts = new IndexedObservableCollection<PersonAccountViewModel, int>(h=>h.RowIndex);
+            _subscription = _personAccounts.ReplayAndSubscribe(OnNext);
 
             Change =
                 new DelegateCommand(
                     () => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
 
-            _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
+            _personAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
         }
 
         private void OnNext(TableUpdate update)
         {
             if (update.Action == TableUpdate.TableUpdateAction.Add)
             {
-                HumanAccounts.Add(new HumanAccountViewModel(_humanAccounts, update.RowIndex));
+                PersonAccounts.Add(new PersonAccountViewModel(_personAccounts, update.RowIndex));
             }
             else if (update.Action == TableUpdate.TableUpdateAction.Delete)
             {
-                HumanAccounts.RemoveAt(HumanAccounts.TakeWhile(h => h.RowIndex != update.RowIndex).Count());
+                PersonAccounts.RemoveAt(PersonAccounts.GetIndexForKey(update.RowIndex));
             }
         }
 
-        public ObservableCollection<HumanAccountViewModel> HumanAccounts { get; private set; }
+        public IndexedObservableCollection<PersonAccountViewModel, int> PersonAccounts { get; private set; }
 
         public int CurrentRowIndex
         {
             get { return _currentRowIndex; }
             private set
             {
-                _humanAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
+                _personAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
                 _currentRowIndex = value;
-                _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _currentRowIndex);
+                _personAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _currentRowIndex);
                 OnPropertyChanged("AccountDetails");
             }
         }
 
         public string AccountDetails
         {
-            get { return _humanAccounts.GetValue<string>(HumanAccountColumns.AccountDetails, CurrentRowIndex); }
+            get { return _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, CurrentRowIndex); }
         }
 
         public IReactiveTable Table
         {
-            get { return _humanAccounts; }
+            get { return _personAccounts; }
         }
 
         public DelegateCommand Change { get; private set; }
@@ -84,10 +84,10 @@ namespace ReactiveTables.Demo
         public void Dispose()
         {
             _subscription.Dispose();
-            _humanAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
-            foreach (var humanAccountViewModel in HumanAccounts)
+            _personAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
+            foreach (var PersonAccountViewModel in PersonAccounts)
             {
-                humanAccountViewModel.Dispose();
+                PersonAccountViewModel.Dispose();
             }
         }
     }

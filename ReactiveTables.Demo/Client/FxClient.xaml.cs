@@ -29,7 +29,7 @@ namespace ReactiveTables.Demo.Client
 
         protected override void OnClosed(System.EventArgs e)
         {
-            var viewModel = (FxClientSyncfusionViewModel) DataContext;
+            var viewModel = (FxClientViewModel) DataContext;
             viewModel.Dispose();
             base.OnClosed(e);
         }

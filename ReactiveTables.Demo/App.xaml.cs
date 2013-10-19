@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Windows;
 using Ninject;
 using Ninject.Modules;
+using ReactiveTables.Demo.Client;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Utils;
 using log4net;
@@ -40,9 +41,11 @@ namespace ReactiveTables.Demo
             _kernel = new StandardKernel();
             _kernel.Bind<IAccountBalanceDataService>()
                   .To<AccountBalanceDataService>()
-                  .WithConstructorArgument("dispatcher", Dispatcher);
+                  .WithConstructorArgument("dispatcher", Dispatcher)
+                  .WithConstructorArgument("maxEntries", 1024);
 
             _kernel.Bind<MainViewModel>().ToSelf();
+            _kernel.Bind<IFxDataService>().To<FxDataService>();
             var locator = (ViewModelLocator) Resources["ViewModelLocator"];
             locator.Kernel = _kernel;
         }

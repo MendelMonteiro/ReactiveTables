@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
-using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 
 namespace ReactiveTables.Framework.Tests.Filters
@@ -12,12 +11,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         public void TestNullFilter()
         {
             var rawTable = TestTableHelper.CreateReactiveTable();
-            var filteredTable = (IReactiveTable)rawTable.Filter(new TestPredicate(new List<string>
-                                                                      {
-                                                                          TestTableColumns.IdColumn
-                                                                      },
-                                                                  true
-                                                    ));
+            var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, true));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
@@ -39,12 +33,7 @@ namespace ReactiveTables.Framework.Tests.Filters
         public void TestExclusionFilter()
         {
             var rawTable = TestTableHelper.CreateReactiveTable();
-            var filteredTable = rawTable.Filter(new TestPredicate(new List<string>
-                                                                      {
-                                                                          TestTableColumns.IdColumn
-                                                                      },
-                                                                  false
-                                                    ));
+            var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, false));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
@@ -118,12 +107,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             AddRow(rawTable, 2, "Blah2", 123.123m);
             Assert.AreEqual(2, rawTable.RowCount);
 
-            var filteredTable = rawTable.Filter(new TestPredicate(new List<string>
-                                                                      {
-                                                                          TestTableColumns.IdColumn
-                                                                      },
-                                                                  false
-                                                    ));
+            var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, false));
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
@@ -131,12 +115,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             Assert.AreEqual(0, filteredTable.RowCount);
             Assert.AreEqual(0, updateHandler.CurrentRowCount);
 
-            var filteredTable2 = rawTable.Filter(new TestPredicate(new List<string>
-                                                                      {
-                                                                          TestTableColumns.IdColumn
-                                                                      },
-                                                                  true
-                                                    ));
+            var filteredTable2 = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, true));
 
             RowUpdateHandler updateHandler2 = new RowUpdateHandler();
             filteredTable2.Subscribe(updateHandler2);
@@ -149,14 +128,284 @@ namespace ReactiveTables.Framework.Tests.Filters
         [Test]
         public void TestFilterJoinedTable()
         {
+            IWritableReactiveTable table1, table2;
+            var rawTable = TestTableHelper.CreateJoinedReactiveTable(out table1, out table2);
+            bool[] visible = { true };
+            var filteredTable = (FilteredTable)rawTable.Filter(
+                new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            filteredTable.Subscribe(updateHandler);
+
+            AddRow(table1, 1, "Blah1", 123.123m);
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(1, filteredTable.RowCount);
+            Assert.AreEqual(1, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah1", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow2(table2, 11, 1, "Other1", 321.21m);
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(1, filteredTable.RowCount);
+            Assert.AreEqual(1, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Other1", filteredTable.GetValue<string>(TestTableColumns.StringColumn2, updateHandler.LastRowUpdated));
+            
+            AddRow(table1, 2, "Blah2", 123.123m);
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah2", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow2(table2, 12, 2, "Other2", 321.21m);
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Other2", filteredTable.GetValue<string>(TestTableColumns.StringColumn2, updateHandler.LastRowUpdated));
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            AddRow2(table2, 13, 3, "Other3", 321.21m);
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            AddRow(table1, 3, "Blah3", 123.123m);
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(3, filteredTable.RowCount);
+            Assert.AreEqual(3, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah3", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+            Assert.AreEqual("Other3", filteredTable.GetValue<string>(TestTableColumns.StringColumn2, updateHandler.LastRowUpdated));
+
+            AddRow(table1, 4, "Blah4", 123.123m);
+            Assert.AreEqual(4, rawTable.RowCount);
+            Assert.AreEqual(4, filteredTable.RowCount);
+            Assert.AreEqual(4, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah4", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            AddRow2(table2, 14, 4, "Other4", 321.21m);
+            Assert.AreEqual(4, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            AddRow2(table2, 15, 5, "Other5", 321.21m);
+            Assert.AreEqual(5, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+            
+            AddRow(table1, 5, "Blah5", 123.123m);
+            Assert.AreEqual(5, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(5, rawTable.RowCount);
+            Assert.AreEqual(5, filteredTable.RowCount);
+            Assert.AreEqual(5, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah5", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+            Assert.AreEqual("Other5", filteredTable.GetValue<string>(TestTableColumns.StringColumn2, updateHandler.LastRowUpdated));
+
+            AddRow(table1, 6, "Blah6", 123.123m);
+            Assert.AreEqual(6, rawTable.RowCount);
+            Assert.AreEqual(6, filteredTable.RowCount);
+            Assert.AreEqual(6, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah6", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
         }
 
-        private static int AddRow(ReactiveTable table, int id, string stringVal, decimal decimalVal)
+        [Test]
+        public void TestChangingFilterEmptyTable()
+        {
+            var rawTable = TestTableHelper.CreateReactiveTable();
+            bool[] visible = {true};
+            var filteredTable = (FilteredTable) rawTable.Filter(
+                new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            filteredTable.Subscribe(updateHandler);
+
+            Assert.AreEqual(0, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(0, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            AddRow(rawTable, 1, "Blah1", 123.123m);
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(1, filteredTable.RowCount);
+            Assert.AreEqual(1, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah1", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow(rawTable, 2, "Blah2", 123.123m);
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah2", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+        }
+
+        [Test]
+        public void TestChangingFilterFilledTable()
+        {
+            var rawTable = TestTableHelper.CreateReactiveTable();
+            bool[] visible = { true };
+            var filteredTable = (FilteredTable)rawTable.Filter(
+                new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            filteredTable.Subscribe(updateHandler);
+
+            AddRow(rawTable, 1, "Blah1", 123.123m);
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(1, filteredTable.RowCount);
+            Assert.AreEqual(1, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah1", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow(rawTable, 2, "Blah2", 123.123m);
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah2", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+        }
+
+        [Test]
+        public void TestChangingFilterAndAddingRows()
+        {
+            var rawTable = TestTableHelper.CreateReactiveTable();
+            bool[] visible = { true };
+            var filteredTable = (FilteredTable)rawTable.Filter(
+                new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            filteredTable.Subscribe(updateHandler);
+
+            AddRow(rawTable, 1, "Blah1", 123.123m);
+            Assert.AreEqual(1, rawTable.RowCount);
+            Assert.AreEqual(1, filteredTable.RowCount);
+            Assert.AreEqual(1, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah1", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow(rawTable, 2, "Blah2", 123.123m);
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(2, filteredTable.RowCount);
+            Assert.AreEqual(2, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah2", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(2, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            AddRow(rawTable, 3, "Blah3", 123.123m);
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(3, rawTable.RowCount);
+            Assert.AreEqual(3, filteredTable.RowCount);
+            Assert.AreEqual(3, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah3", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow(rawTable, 4, "Blah4", 123.123m);
+            Assert.AreEqual(4, rawTable.RowCount);
+            Assert.AreEqual(4, filteredTable.RowCount);
+            Assert.AreEqual(4, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah4", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            visible[0] = false;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(4, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            AddRow(rawTable, 5, "Blah5", 123.123m);
+            Assert.AreEqual(5, rawTable.RowCount);
+            Assert.AreEqual(0, filteredTable.RowCount);
+            Assert.AreEqual(0, updateHandler.CurrentRowCount);
+
+            visible[0] = true;
+            filteredTable.PredicateChanged();
+
+            Assert.AreEqual(5, rawTable.RowCount);
+            Assert.AreEqual(5, filteredTable.RowCount);
+            Assert.AreEqual(5, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah5", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+
+            AddRow(rawTable, 6, "Blah6", 123.123m);
+            Assert.AreEqual(6, rawTable.RowCount);
+            Assert.AreEqual(6, filteredTable.RowCount);
+            Assert.AreEqual(6, updateHandler.CurrentRowCount);
+            Assert.AreEqual("Blah6", filteredTable.GetValue<string>(TestTableColumns.StringColumn, updateHandler.LastRowUpdated));
+        }
+
+        private static int AddRow(IWritableReactiveTable table, int id, string stringVal, decimal decimalVal)
         {
             var row1 = table.AddRow();
             table.SetValue(TestTableColumns.IdColumn, row1, id);
             table.SetValue(TestTableColumns.StringColumn, row1, stringVal);
             table.SetValue(TestTableColumns.DecimalColumn, row1, decimalVal);
+            return row1;
+        }
+
+        private static int AddRow2(IWritableReactiveTable table, int id, int otherId, string stringVal, decimal decimalVal)
+        {
+            var row1 = table.AddRow();
+            table.SetValue(TestTableColumns.IdColumn2, row1, id);
+            table.SetValue(TestTableColumns.OtherIdColumn2, row1, otherId);
+            table.SetValue(TestTableColumns.StringColumn2, row1, stringVal);
+            table.SetValue(TestTableColumns.DecimalColumn2, row1, decimalVal);
             return row1;
         }
     }

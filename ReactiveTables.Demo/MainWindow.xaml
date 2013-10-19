@@ -30,7 +30,7 @@
             <ScrollViewer>
                 <StackPanel>
                     <Label Content="People" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding Humans.Humans}" VirtualizingPanel.IsVirtualizing="True"
+                    <DataGrid ItemsSource="{Binding People.People}" VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
                           VirtualizingPanel.CacheLength="2">
                     </DataGrid>
@@ -48,7 +48,7 @@
             <ScrollViewer>
                 <StackPanel>
                     <Label Content="Account details joined" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding HumanAccounts.HumanAccounts}" VirtualizingPanel.IsVirtualizing="True"
+                    <DataGrid ItemsSource="{Binding PersonAccounts.PersonAccounts}" VirtualizingPanel.IsVirtualizing="True"
             			VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
             			VirtualizingPanel.CacheLength="2"/>
                 </StackPanel>

@@ -22,34 +22,34 @@ using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class HumansViewModel : ReactiveViewModelBase, IDisposable
+    public class PeopleViewModel : ReactiveViewModelBase, IDisposable
     {
-        private readonly IReactiveTable _humans;
+        private readonly IReactiveTable _people;
         private readonly IDisposable _subscription;
 
-        public HumansViewModel(IReactiveTable humans)
+        public PeopleViewModel(IReactiveTable people)
         {
-            _humans = humans;
-            Humans = new ObservableCollection<HumanViewModel>();
+            _people = people;
+            People = new ObservableCollection<PersonViewModel>();
 
             _subscription =
-                _humans.ReplayAndSubscribe(update => { if (update.IsRowUpdate()) Humans.Add(new HumanViewModel(_humans, update.RowIndex)); });
+                _people.ReplayAndSubscribe(update => { if (update.IsRowUpdate()) People.Add(new PersonViewModel(_people, update.RowIndex)); });
 
-            CurrentHuman = Humans.LastOrDefault();
+            CurrentPerson = People.LastOrDefault();
         }
         
-        public ObservableCollection<HumanViewModel> Humans { get; private set; }
+        public ObservableCollection<PersonViewModel> People { get; private set; }
 
-        public HumanViewModel CurrentHuman { get; private set; }
+        public PersonViewModel CurrentPerson { get; private set; }
 
         public DelegateCommand Add { get; private set; }
 
         public void Dispose()
         {
             _subscription.Dispose();
-            foreach (var humanViewModel in Humans)
+            foreach (var PersonViewModel in People)
             {
-                humanViewModel.Dispose();
+                PersonViewModel.Dispose();
             }
         }
     }

@@ -30,31 +30,32 @@ namespace ReactiveTables.Demo.Services
 {
     internal interface IAccountBalanceDataService
     {
-        IReactiveTable Humans { get; set; }
+        IReactiveTable People { get; set; }
         IReactiveTable Accounts { get; }
-        IReactiveTable AccountHumans { get; }
+        IReactiveTable AccountPeople { get; }
         void Start();
         void Stop();
     }
 
     internal class AccountBalanceDataService : IAccountBalanceDataService
     {
+        private readonly int _maxEntries;
         private static readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(200);
         private const int BatchSize = 5;
         private const int DataDelay = 0;
         private const int GuiDisplayDelay = 0;
-        private const int HumanDataPauseDelay = 200;
+        private const int PersonDataPauseDelay = 200;
         private const int AccountDataPauseDelay = 200;
-        private const int HumanIdOffset = 1000;
+        private const int PersonIdOffset = 1000;
         private const int AccountIdOffset = 10000;
 
         private readonly ManualResetEventSlim _running = new ManualResetEventSlim(true);
 
-        public IReactiveTable Humans { get; set; }
+        public IReactiveTable People { get; set; }
         public IReactiveTable Accounts { get; private set; }
-        public IReactiveTable AccountHumans { get; private set; }
+        public IReactiveTable AccountPeople { get; private set; }
 
         public void Start()
         {
@@ -66,51 +67,52 @@ namespace ReactiveTables.Demo.Services
             _running.Reset();
         }
 
-        public AccountBalanceDataService(Dispatcher dispatcher)
+        public AccountBalanceDataService(Dispatcher dispatcher, int maxEntries = int.MaxValue)
         {
-            Humans = new ReactiveTable();
-            List<IReactiveColumn> baseHumanColumns = new List<IReactiveColumn>
+            _maxEntries = maxEntries;
+            People = new ReactiveTable();
+            List<IReactiveColumn> basePersonColumns = new List<IReactiveColumn>
                                                          {
-                                                             new ReactiveColumn<int>(HumanColumns.IdColumn),
-                                                             new ReactiveColumn<string>(HumanColumns.NameColumn)
+                                                             new ReactiveColumn<int>(PersonColumns.IdColumn),
+                                                             new ReactiveColumn<string>(PersonColumns.NameColumn)
                                                          };
 
-            IWritableReactiveTable humansWire = SetupHumanTable((IWritableReactiveTable)Humans, baseHumanColumns, dispatcher);
+            IWritableReactiveTable PeopleWire = SetupPersonTable((IWritableReactiveTable)People, basePersonColumns, dispatcher);
 
             List<IReactiveColumn> baseAccountColumns = new List<IReactiveColumn>
                                                            {
                                                                new ReactiveColumn<int>(AccountColumns.IdColumn),
-                                                               new ReactiveColumn<int>(AccountColumns.HumanId),
+                                                               new ReactiveColumn<int>(AccountColumns.PersonId),
                                                                new ReactiveColumn<decimal>(AccountColumns.AccountBalance)
                                                            };
             Accounts = new ReactiveTable();
             IWritableReactiveTable accountsWire = SetupAccountTable((IWritableReactiveTable)Accounts, baseAccountColumns, dispatcher);
 
-            AccountHumans = SetupAccountHumansTable(Accounts, Humans);
+            AccountPeople = SetupAccountPeopleTable(Accounts, People);
 
-            AddTestHumans(humansWire);
+            AddTestPeople(PeopleWire);
             AddTestAccounts(accountsWire);
 
-            Thread humanDataThread = new Thread(StreamHumanData);
-            humanDataThread.IsBackground = true;
-            humanDataThread.Start(new StreamingState{Table = humansWire, Running = _running});
+            Thread PersonDataThread = new Thread(StreamPersonData);
+            PersonDataThread.IsBackground = true;
+            PersonDataThread.Start(new StreamingState{Table = PeopleWire, Running = _running, MaxEntries = _maxEntries});
 
             Thread accountDataThread = new Thread(StreamAccountData);
             accountDataThread.IsBackground = true;
-            accountDataThread.Start(new StreamingState{Table = accountsWire, Running = _running});
+            accountDataThread.Start(new StreamingState { Table = accountsWire, Running = _running, MaxEntries = _maxEntries });
 
             Thread.Sleep(GuiDisplayDelay);
         }
 
-        private IReactiveTable SetupAccountHumansTable(IReactiveTable accounts, IReactiveTable humans)
+        private IReactiveTable SetupAccountPeopleTable(IReactiveTable accounts, IReactiveTable People)
         {
-            IReactiveTable joinedTable = humans.Join(accounts, new Join<int>(
-                                                                   humans, HumanColumns.IdColumn,
-                                                                   accounts, AccountColumns.HumanId));
+            IReactiveTable joinedTable = People.Join(accounts, new Join<int>(
+                                                                   People, PersonColumns.IdColumn,
+                                                                   accounts, AccountColumns.PersonId));
 
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
-                                      HumanAccountColumns.AccountDetails,
-                                      (IReactiveColumn<string>)humans.Columns[HumanColumns.NameColumn],
+                                      PersonAccountColumns.AccountDetails,
+                                      (IReactiveColumn<string>)People.Columns[PersonColumns.NameColumn],
                                       (IReactiveColumn<decimal>)accounts.Columns[AccountColumns.AccountBalance],
                                       (name, balance) => string.Format("{0} has {1} in their account.", name, balance)));
 
@@ -138,67 +140,67 @@ namespace ReactiveTables.Demo.Services
             AddAccount(accounts, 3, 2, 10000m);
         }
 
-        private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int humanId, decimal balance)
+        private static void AddAccount(IWritableReactiveTable accountsWire, int accountId, int PersonId, decimal balance)
         {
             int rowId = accountsWire.AddRow();
             accountsWire.SetValue(AccountColumns.IdColumn, rowId, AccountIdOffset + accountId);
-            accountsWire.SetValue(AccountColumns.HumanId, rowId, HumanIdOffset + humanId);
+            accountsWire.SetValue(AccountColumns.PersonId, rowId, PersonIdOffset + PersonId);
             accountsWire.SetValue(AccountColumns.AccountBalance, rowId, balance);
         }
 
-        private IWritableReactiveTable SetupHumanTable(IWritableReactiveTable humans,
+        private IWritableReactiveTable SetupPersonTable(IWritableReactiveTable People,
                                                        List<IReactiveColumn> baseColumns,
                                                        Dispatcher dispatcher)
         {
-            baseColumns.ForEach(col => humans.AddColumn(col));
+            baseColumns.ForEach(col => People.AddColumn(col));
 
             // Wire up the two tables before the dynamic columns
-            var humansWire = new ReactiveBatchedPassThroughTable(humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
-            //            var humansWire = new ReactiveTable(humans);
-            //            new BatchedTableSynchroniser(humansWire, humans, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+            var PeopleWire = new ReactiveBatchedPassThroughTable(People, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
+            //            var PeopleWire = new ReactiveTable(People);
+            //            new BatchedTableSynchroniser(PeopleWire, People, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
 
-            humans.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
-                                 HumanColumns.IdNameColumn,
+            People.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
+                                 PersonColumns.IdNameColumn,
                                  (IReactiveColumn<int>)baseColumns[0],
                                  (IReactiveColumn<string>)baseColumns[1],
                                  (idVal, nameVal) => idVal + nameVal));
 
-            return humansWire;
+            return PeopleWire;
         }
 
-        private static void AddTestHumans(IWritableReactiveTable humans)
+        private static void AddTestPeople(IWritableReactiveTable People)
         {
-            AddHuman(humans, 1, "Mendel");
-            AddHuman(humans, 2, "Marie");
+            AddPerson(People, 1, "Mendel");
+            AddPerson(People, 2, "Marie");
         }
 
-        private static void AddHuman(IWritableReactiveTable humans, int id, string name)
+        private static void AddPerson(IWritableReactiveTable People, int id, string name)
         {
-            int rowIndex = humans.AddRow();
-            humans.SetValue(HumanColumns.IdColumn, rowIndex, HumanIdOffset + id);
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, name);
+            int rowIndex = People.AddRow();
+            People.SetValue(PersonColumns.IdColumn, rowIndex, PersonIdOffset + id);
+            People.SetValue(PersonColumns.NameColumn, rowIndex, name);
         }
 
         /// <summary>
         /// Mimic a data stream coming from an asynchronous source.
         /// </summary>
         /// <param name="o"></param>
-        private static void StreamHumanData(object o)
+        private static void StreamPersonData(object o)
         {
             var state = (StreamingState)o;
             var running = state.Running;
-            IWritableReactiveTable humans = state.Table;
+            IWritableReactiveTable People = state.Table;
             Thread.Sleep(DataDelay);
             var id = 3;
-            while (true)
+            while (id < state.MaxEntries)
             {
                 running.Wait();
-                Thread.Sleep(HumanDataPauseDelay);
+                Thread.Sleep(PersonDataPauseDelay);
                 for (int i = 0; i < BatchSize; i++)
                 {
-                    AddHuman(humans, id, "Human #" + id);
+                    AddPerson(People, id, "Person #" + id);
 
-                    // UpdateRandomHuman(humans, id, random);
+                    // UpdateRandomPerson(People, id, random);
                     id++;
                 }
             }
@@ -212,7 +214,7 @@ namespace ReactiveTables.Demo.Services
             IWritableReactiveTable accounts = state.Table;
             Thread.Sleep(DataDelay);
             var id = 3;
-            while (true)
+            while (id < state.MaxEntries)
             {
                 running.Wait();
                 Thread.Sleep(AccountDataPauseDelay);
@@ -227,13 +229,13 @@ namespace ReactiveTables.Demo.Services
             }
         }
         
-        private static void UpdateRandomHuman(IWritableReactiveTable humans, int maxId, Random random)
+        private static void UpdateRandomPerson(IWritableReactiveTable People, int maxId, Random random)
         {
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
-            //            var currentValue = humans.GetValue<string>(HumanColumns.NameColumn, rowIndex);
-            humans.SetValue(HumanColumns.NameColumn, rowIndex, new string('*', random.Next(0, BatchSize)));
-            //            humans.SetValue(HumanColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
+            //            var currentValue = People.GetValue<string>(PersonColumns.NameColumn, rowIndex);
+            People.SetValue(PersonColumns.NameColumn, rowIndex, new string('*', random.Next(0, BatchSize)));
+            //            People.SetValue(PersonColumns.NameColumn, rowIndex, "Modified at " + DateTime.Now);
         }
 
         private static void UpdateRandomAccount(IWritableReactiveTable accounts, int maxId, Random random)
@@ -250,6 +252,7 @@ namespace ReactiveTables.Demo.Services
         {
             public IWritableReactiveTable Table { get; set; }
             public ManualResetEventSlim Running { get; set; }
+            public int MaxEntries { get; set; }
         }
     }
 }

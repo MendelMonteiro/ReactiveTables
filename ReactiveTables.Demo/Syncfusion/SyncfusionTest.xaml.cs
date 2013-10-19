@@ -28,13 +28,13 @@ namespace ReactiveTables.Demo.Syncfusion
 
             Grid.AddColumn<int>(AccountColumns.IdColumn);
             Grid.AddColumn<decimal>(AccountColumns.AccountBalance);
-            Grid.AddColumn<int>(AccountColumns.HumanId);
+            Grid.AddColumn<int>(AccountColumns.PersonId);
 
-            Grid.AddColumn<int>(HumanColumns.IdColumn);
-            Grid.AddColumn<string>(HumanColumns.IdNameColumn);
-            Grid.AddColumn<string>(HumanColumns.NameColumn);
+            Grid.AddColumn<int>(PersonColumns.IdColumn);
+            Grid.AddColumn<string>(PersonColumns.IdNameColumn);
+            Grid.AddColumn<string>(PersonColumns.NameColumn);
 
-            Grid.AddColumn<string>(HumanAccountColumns.AccountDetails);
+            Grid.AddColumn<string>(PersonAccountColumns.AccountDetails);
         }
 
         protected override void OnClosed(System.EventArgs e)

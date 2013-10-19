@@ -20,6 +20,10 @@ namespace ReactiveTables.Framework.Tests
         public const string IdColumn = "TestTable.IdColumn";
         public const string StringColumn = "TestTable.StringColumn";
         public const string DecimalColumn = "TestTable.DecimalColumn";
+        public const string IdColumn2 = "TestTable2.IdColumn";
+        public const string OtherIdColumn2 = "TestTable2.OtherIdColumn";
+        public const string StringColumn2 = "TestTable2.StringColumn";
+        public const string DecimalColumn2 = "TestTable2.DecimalColumn";
         public const string BoolColumn = "TestTable.BoolColumn";
         public const string DoubleColumn = "TestTable.DoubleColumn";
         public const string ShortColumn = "TestTable.ShortColumn";

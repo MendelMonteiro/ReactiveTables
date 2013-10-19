@@ -19,42 +19,42 @@ using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class HumanAccountViewModel : ReactiveViewModelBase, IDisposable
+    public class PersonAccountViewModel : ReactiveViewModelBase, IDisposable
     {
-        private readonly IReactiveTable _humanAccounts;
+        private readonly IReactiveTable _personAccounts;
         private readonly int _rowIndex;
 
-        public HumanAccountViewModel(IReactiveTable humanAccounts, int rowIndex)
+        public PersonAccountViewModel(IReactiveTable personAccounts, int rowIndex)
         {
             _rowIndex = rowIndex;
-            _humanAccounts = humanAccounts;
+            _personAccounts = personAccounts;
 
-            _humanAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
+            _personAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
         }
 
         public int AccountId
         {
-            get { return _humanAccounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }
+            get { return _personAccounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }
         }
 
-        public int HumanId
+        public int PersonId
         {
-            get { return _humanAccounts.GetValue<int>(HumanColumns.IdColumn, _rowIndex); }
+            get { return _personAccounts.GetValue<int>(PersonColumns.IdColumn, _rowIndex); }
         }
 
         public decimal AccountBalance
         {
-            get { return _humanAccounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex); }
+            get { return _personAccounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex); }
         }
 
         public string Name
         {
-            get { return _humanAccounts.GetValue<string>(HumanColumns.NameColumn, _rowIndex); }
+            get { return _personAccounts.GetValue<string>(PersonColumns.NameColumn, _rowIndex); }
         }
 
         public string AccountDetails
         {
-            get { return _humanAccounts.GetValue<string>(HumanAccountColumns.AccountDetails, _rowIndex); }
+            get { return _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, _rowIndex); }
         }
 
         public int RowIndex
@@ -64,7 +64,7 @@ namespace ReactiveTables.Demo
 
         public void Dispose()
         {
-            _humanAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);
+            _personAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);
         }
     }
 }

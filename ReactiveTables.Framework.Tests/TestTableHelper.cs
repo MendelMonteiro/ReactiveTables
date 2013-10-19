@@ -16,6 +16,7 @@
 using System;
 using NUnit.Framework;
 using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework.Tests
 {
@@ -27,6 +28,16 @@ namespace ReactiveTables.Framework.Tests
             table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn));
             table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn));
             table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn));
+            return table;
+        }
+
+        public static ReactiveTable CreateReactiveTable2()
+        {
+            ReactiveTable table = new ReactiveTable();
+            table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn2));
+            table.AddColumn(new ReactiveColumn<int>(TestTableColumns.OtherIdColumn2));
+            table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn2));
+            table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn2));
             return table;
         }
 
@@ -84,6 +95,14 @@ namespace ReactiveTables.Framework.Tests
         {
             setTable.SetValue(columnId, setRowId, value);
             Assert.AreEqual(default(T), getTable.GetValue<T>(columnId, getRowId));
+        }
+
+        public static IReactiveTable CreateJoinedReactiveTable(out IWritableReactiveTable table1, out IWritableReactiveTable table2)
+        {
+            table1 = CreateReactiveTable();
+            table2 = CreateReactiveTable2();
+
+            return table1.Join(table2, new Join<int>(table1, TestTableColumns.IdColumn, table2, TestTableColumns.OtherIdColumn2));
         }
     }
 }

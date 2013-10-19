@@ -85,8 +85,8 @@
       <HintPath>..\packages\Ninject.3.0.1.10\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="ReachFramework" />
-    <Reference Include="Syncfusion.Grid.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
-    <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.2045.0.25, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
+    <Reference Include="Syncfusion.Grid.Wpf, Version=11.3045.0.30, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
+    <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.3045.0.30, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
@@ -141,12 +141,10 @@
     <Compile Include="Services\AccountBalanceDataService.cs" />
     <Compile Include="Services\FxDataService.cs" />
     <Compile Include="Client\FxRateViewModel.cs" />
-    <Compile Include="HumanAccountsViewModel.cs" />
-    <Compile Include="HumanAccountViewModel.cs" />
-    <Compile Include="HumansViewModel.cs" />
+    <Compile Include="PersonAccountsViewModel.cs" />
+    <Compile Include="PersonAccountViewModel.cs" />
+    <Compile Include="PeopleViewModel.cs" />
     <Compile Include="MainViewModel.cs" />
-    <Compile Include="ReactiveBindingList.cs" />
-    <Compile Include="ReactiveObservableCollection.cs" />
     <Compile Include="Services\ViewModelLocator.cs" />
     <Compile Include="Syncfusion\SyncfusionTest.xaml.cs">
       <DependentUpon>SyncfusionTest.xaml</DependentUpon>
@@ -159,10 +157,15 @@
       <DependentUpon>TestLauncher.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\BaseViewModel.cs" />
+    <Compile Include="Utils\BatchingObservableCollection.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Columns.cs" />
     <Compile Include="NormalViewModel.cs" />
-    <Compile Include="HumanViewModel.cs" />
+    <Compile Include="PersonViewModel.cs" />
+    <Compile Include="Utils\IndexedObservableCollection.cs" />
+    <Compile Include="Utils\ReactiveBindingList.cs" />
+    <Compile Include="Utils\ReactiveObservableCollection.cs" />
+    <Compile Include="Utils\ReactiveTableEnumerator.cs" />
     <Compile Include="XceedTest.xaml.cs">
       <DependentUpon>XceedTest.xaml</DependentUpon>
     </Compile>

@@ -6,11 +6,21 @@
         Title="Syncfusion Test" Height="300" Width="300"
         DataContext="{Binding Path=SyncfusionTestViewModel, Source={StaticResource ViewModelLocator}}">
     <Grid>
-        <ScrollViewer CanContentScroll="True"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto">
-            <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="7"/>
-            
-        </ScrollViewer>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock  Margin="10">Filter balances below</TextBlock>
+            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10"></TextBox>
+        </StackPanel>
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black">
+            <ScrollViewer CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Visible"
+                          VerticalScrollBarVisibility="Visible">
+                <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="7"/>
+
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Window>

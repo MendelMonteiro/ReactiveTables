@@ -38,9 +38,9 @@ namespace ReactiveTables.Demo
             get { return _accounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }
         }
 
-        public int HumanId
+        public int PersonId
         {
-            get { return _accounts.GetValue<int>(AccountColumns.HumanId, _rowIndex); }
+            get { return _accounts.GetValue<int>(AccountColumns.PersonId, _rowIndex); }
         }
 
         public decimal AccountBalance

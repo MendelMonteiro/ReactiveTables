@@ -79,9 +79,9 @@ namespace ReactiveTables.Demo.Client
             get { return _table.GetValue<DateTime>(FxTableDefinitions.FxRates.Time, _rowId); }
         }
 
-        public String LongTime
+        public double LongTime
         {
-            get { return _table.GetValue<string>(FxDataService.CalculateColumns.FxRates.LongTime, _rowId); }
+            get { return _table.GetValue<double>(FxDataService.CalculateColumns.FxRates.LongTime, _rowId); }
         }
 
         public void Dispose()
