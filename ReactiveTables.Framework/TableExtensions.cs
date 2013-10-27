@@ -33,7 +33,7 @@ namespace ReactiveTables.Framework
 
         public static IDisposable ReplayAndSubscribe(this IReactiveTable table, Action<TableUpdate> onNext)
         {
-            Subject<TableUpdate> rowObserver = new Subject<TableUpdate>();
+            var rowObserver = new Subject<TableUpdate>();
             var subscription = rowObserver.Subscribe(onNext);
             table.ReplayRows(rowObserver);
             table.Subscribe(rowObserver);

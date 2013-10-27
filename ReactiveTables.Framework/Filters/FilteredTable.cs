@@ -12,7 +12,7 @@ namespace ReactiveTables.Framework.Filters
     /// A current limitation is that if the predicate changes in-flight the subscribers will not be notified
     /// of the changes that the change in predicate brings about.
     /// </summary>
-    public class FilteredTable : IReactiveTable, IDisposable
+    public class FilteredTable : IReactiveTable, IDisposable, ISubscribable<IObserver<TableUpdate>>
     {
         private readonly IReactiveTable _sourceTable;
         private readonly IReactivePredicate _predicate;
@@ -169,7 +169,7 @@ namespace ReactiveTables.Framework.Filters
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             _observers.Add(observer);
-            return new SubscriptionToken<IReactiveTable, IObserver<TableUpdate>>(this, observer);
+            return new SubscriptionToken<FilteredTable, IObserver<TableUpdate>>(this, observer);
         }
 
         public void Unsubscribe(IObserver<TableUpdate> observer)

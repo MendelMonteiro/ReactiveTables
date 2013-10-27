@@ -93,6 +93,7 @@
     <Compile Include="Filters\IReactivePredicate.cs" />
     <Compile Include="IReactiveTable.cs" />
     <Compile Include="Joins\JoinedTable.cs" />
+    <Compile Include="Sorting\SortedTable.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />

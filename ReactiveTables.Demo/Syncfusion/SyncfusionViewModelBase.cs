@@ -17,20 +17,26 @@ using System;
 using System.Reactive.Subjects;
 using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Sorting;
 using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
     class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
     {
-        private IReactiveTable _table;
+        protected IReactiveTable Table;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
-        private IDisposable _token;
+        protected IDisposable Token;
 
         protected void SetTable(IReactiveTable table)
         {
-            _table = table;
-            _token = table.Subscribe(OnNext);
+            Table = table;
+            Token = table.Subscribe(OnNext);
+            var sortedTable = table as IReactiveSortedTable;
+            if (sortedTable != null)
+            {
+                RowPositionsUpdated = sortedTable.RowPositionsUpdated;
+            }
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
@@ -43,53 +49,43 @@ namespace ReactiveTables.Demo.Syncfusion
             _subject.OnNext(tableUpdate);
         }
 
-        public T GetValue<T>(int rowIndex, int columnIndex)
+        public virtual T GetValue<T>(int rowIndex, int columnIndex)
         {
-            var row = _table.GetRowAt(rowIndex);
+            var row = Table.GetRowAt(rowIndex);
             if (row >= 0 && columnIndex >= 0)
             {
-                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
-                return _table.GetValue<T>(reactiveColumn.ColumnId, row);
+                var reactiveColumn = Table.GetColumnByIndex(columnIndex);
+                return Table.GetValue<T>(reactiveColumn.ColumnId, row);
             }
             return default(T);
         }
 
-        public object GetValue(int rowIndex, int columnIndex)
+        public virtual int GetRowPosition(int rowIndex)
         {
-            var row = _table.GetRowAt(rowIndex);
-            if (row >= 0 && columnIndex >= 0)
-            {
-                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
-                // Nasty - boxing!!
-                return _table.GetValue(reactiveColumn.ColumnId, row);
-            }
-
-            return null;
+            return Table.GetPositionOfRow(rowIndex);
         }
 
-        public int GetRowPosition(int rowIndex)
-        {
-            return _table.GetPositionOfRow(rowIndex);
-        }
-
-        public int GetColPosition(string columnId)
+        public virtual int GetColPosition(string columnId)
         {
             // TODO: Nasty - should keep a list of columns that are actually used by the grid and a map of their indeces
-            return _table.Columns.Keys.IndexOf(columnId);
+            return Table.Columns.Keys.IndexOf(columnId);
         }
 
-        public string GetColumnId(int columnIndex)
+        public virtual string GetColumnId(int columnIndex)
         {
-            var reactiveColumn = _table.GetColumnByIndex(columnIndex);
+            var reactiveColumn = Table.GetColumnByIndex(columnIndex);
             return reactiveColumn.ColumnId;
         }
 
+        public IObservable<bool> RowPositionsUpdated { get; private set; }
+
         public void Dispose()
         {
-            if (_token != null) _token.Dispose();
+            if (Token != null) Token.Dispose();
+            if (_subject != null) _subject.Dispose();
         }
 
         // TODO: Handle columns added after the ViewModel is created.
-        public int ColumnCount { get { return _table.Columns.Count; } }
+        public int ColumnCount { get { return Table.Columns.Count; } }
     }
 }

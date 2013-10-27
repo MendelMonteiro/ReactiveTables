@@ -45,7 +45,7 @@ namespace ReactiveTables.Framework
             _action = action;
             _rowIndex = rowIndex;
             _column = column;
-            _columns = new[] {column};
+            _columns = column != null ? new[] {column} : null;
         }
 
         public TableUpdate(TableUpdateAction action, int rowIndex, IList<IReactiveColumn> columns)

@@ -27,7 +27,7 @@ namespace ReactiveTables.Framework.Joins
     /// <summary>
     /// Joins the output of two tables using the given <see cref="IReactiveTableJoiner"/>.
     /// </summary>
-    public class JoinedTable : IReactiveTable, IDisposable
+    public class JoinedTable : IReactiveTable, IDisposable, ISubscribable<IObserver<TableUpdate>>
     {
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;

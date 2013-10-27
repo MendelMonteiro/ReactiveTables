@@ -63,7 +63,7 @@ namespace ReactiveTables.Framework
     /// <summary>
     /// The main writable/readable table.
     /// </summary>
-    public class ReactiveTable : IWritableReactiveTable
+    public class ReactiveTable : IWritableReactiveTable, ISubscribable<IObserver<TableUpdate>>
     {
         private readonly IndexedDictionary<string, IReactiveColumn> _columns = new IndexedDictionary<string, IReactiveColumn>();
         private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();

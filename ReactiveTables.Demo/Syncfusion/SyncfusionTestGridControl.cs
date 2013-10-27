@@ -34,19 +34,33 @@ namespace ReactiveTables.Demo.Syncfusion
 
         private static void ViewModelChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
         {
-            SyncfusionTestGridControl grid = (SyncfusionTestGridControl) dependencyObject;
+            var grid = (SyncfusionTestGridControl) dependencyObject;
             if (grid.CurrentToken != null) grid.CurrentToken.Dispose();
             var viewModel = (ISyncfusionViewModel) args.NewValue;
+            if (viewModel.RowPositionsUpdated != null)
+            {
+                grid.RowPositionToken = viewModel.RowPositionsUpdated.Subscribe(grid.RowPositionsUpdated);
+            }
             grid.CurrentToken = viewModel.Subscribe(grid.OnNext);
+        }
+
+        private IDisposable RowPositionToken { get; set; }
+
+        private void RowPositionsUpdated(bool b)
+        {
+            // Invalidate the whole grid when it's being re-sorted
+            Model.InvalidateCell(_tableRangeInfo);
         }
 
         public static readonly DependencyProperty ColumnCountProperty =
             DependencyProperty.Register("ColumnCount", typeof (int), typeof (SyncfusionTestGridControl),
                                         new PropertyMetadata(default(int), ColumnCountChanged));
 
+        private readonly GridRangeInfo _tableRangeInfo = GridRangeInfo.Table();
+
         private static void ColumnCountChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
         {
-            SyncfusionTestGridControl grid = (SyncfusionTestGridControl) dependencyObject;
+            var grid = (SyncfusionTestGridControl) dependencyObject;
             grid.Model.ColumnCount = (int) args.NewValue + grid.Model.HeaderColumns;
         }
 
@@ -64,12 +78,16 @@ namespace ReactiveTables.Demo.Syncfusion
             }
             else
             {
-                var rowIndex = ViewModel.GetRowPosition(tableUpdate.RowIndex) + Model.HeaderRows;
+                // Get the col position first as it's much cheaper than row position.
                 var colIndex = ViewModel.GetColPosition(tableUpdate.Column.ColumnId) + Model.HeaderColumns;
                 // TODO: handle updates to multiple columns (i.e. CellSpanInfo)
-                if (IsRowVisible(rowIndex) && IsColumnVisible(colIndex))
+                if (IsColumnVisible(colIndex))
                 {
-                    Model.InvalidateCell(new RowColumnIndex(rowIndex, colIndex));
+                    var rowIndex = ViewModel.GetRowPosition(tableUpdate.RowIndex) + Model.HeaderRows;
+                    if (IsRowVisible(rowIndex))
+                    {
+                        Model.InvalidateCell(new RowColumnIndex(rowIndex, colIndex));
+                    }
                 }
             }
         }
@@ -101,6 +119,7 @@ namespace ReactiveTables.Demo.Syncfusion
             if (disposing)
             {
                 if (CurrentToken != null) CurrentToken.Dispose();
+                if (RowPositionToken != null) RowPositionToken.Dispose();
             }
             base.Dispose(disposing);
         }

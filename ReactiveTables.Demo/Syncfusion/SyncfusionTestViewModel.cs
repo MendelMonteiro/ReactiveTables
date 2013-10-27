@@ -13,8 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Filters;
+using ReactiveTables.Framework.Sorting;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
@@ -22,14 +25,26 @@ namespace ReactiveTables.Demo.Syncfusion
     {
         private decimal _balanceBelowFilter;
         private readonly FilteredTable _accountFilter;
+        private readonly SortedTable<decimal> _balanceSort;
+        private string _sortByColumn;
 
         public SyncfusionTestViewModel(IAccountBalanceDataService dataService)
         {
             var table = dataService.AccountPeople;
             _accountFilter = (FilteredTable)table.Filter(
                 new DelegatePredicate1<decimal>(AccountColumns.AccountBalance, b => b > BalanceBelowFilter));
-            SetTable(_accountFilter);
+            _balanceSort = new SortedTable<decimal>(_accountFilter, AccountColumns.AccountBalance, Comparer<decimal>.Default);
+            SetTable(_balanceSort);
+
+            Columns = new ObservableCollection<string>(new[] {
+                                                               AccountColumns.AccountBalance,
+                                                               PersonColumns.IdNameColumn,
+                                                               PersonColumns.NameColumn,
+                                                               PersonAccountColumns.AccountDetails
+                                                           });
         }
+
+        public ObservableCollection<string> Columns { get; private set; }
 
         public decimal BalanceBelowFilter
         {
@@ -37,6 +52,19 @@ namespace ReactiveTables.Demo.Syncfusion
             set { 
                 SetProperty(ref _balanceBelowFilter, value);
                 _accountFilter.PredicateChanged();
+            }
+        }
+
+        public string SortByColumn
+        {
+            get { return _sortByColumn; }
+            set
+            {
+                if (_sortByColumn != value)
+                {
+                    _sortByColumn = value;
+//                    _balanceSort.SetSort(_sortByColumn, Comparer<>);
+                }
             }
         }
     }

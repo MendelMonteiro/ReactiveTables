@@ -221,7 +221,7 @@ namespace ReactiveTables.Demo.Services
 
                 for (int i = 0; i < BatchSize; i++)
                 {
-                    AddAccount(accounts, id, id, 66666m);
+                    AddAccount(accounts, id, id, random.Next(1000, 10000000));
 
                     // UpdateRandomAccount(accounts, id, random);
                     id++;

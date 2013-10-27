@@ -8,7 +8,7 @@ namespace ReactiveTables.Framework
     /// <summary>
     /// The main interface for a read-only table.  See <see cref="IWritableReactiveTable"/> for the writable version.
     /// </summary>
-    public interface IReactiveTable : IObservable<TableUpdate>, ISubscribable<IObserver<TableUpdate>>
+    public interface IReactiveTable : IObservable<TableUpdate>
     {
         /// <summary>
         /// Add a column to the table
