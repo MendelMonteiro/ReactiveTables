@@ -11,10 +11,11 @@ namespace ReactiveTables.Framework.Tests.Sorting
         public void TestFilledTable()
         {
             var sourceTable = TestTableHelper.CreateReactiveTable();
-            const int count = 1000;
+            const int count = 100;
             AddValuesInReverseOrder(count, sourceTable);
 
-            var table = new SortedTable<string>(sourceTable, TestTableColumns.StringColumn, Comparer<string>.Default);
+            var table = new SortedTable(sourceTable);
+            table.SortBy(TestTableColumns.StringColumn, Comparer<string>.Default);
             CheckValuesAreSorted(count, table);
         }
 
@@ -22,9 +23,10 @@ namespace ReactiveTables.Framework.Tests.Sorting
         public void TestFillingTable()
         {
             var sourceTable = TestTableHelper.CreateReactiveTable();
-            const int count = 1000;
+            const int count = 100;
 
-            var table = new SortedTable<string>(sourceTable, TestTableColumns.StringColumn, Comparer<string>.Default);
+            var table = new SortedTable(sourceTable);
+            table.SortBy(TestTableColumns.StringColumn, Comparer<string>.Default);
 
             AddValuesInReverseOrder(count, sourceTable);
             CheckValuesAreSorted(count, table);
@@ -34,11 +36,12 @@ namespace ReactiveTables.Framework.Tests.Sorting
         public void TestAddingToFilledTable()
         {
             var sourceTable = TestTableHelper.CreateReactiveTable();
-            const int count = 1000;
+            const int count = 100;
 
             AddValuesInReverseOrder(count, sourceTable);
 
-            var table = new SortedTable<string>(sourceTable, TestTableColumns.StringColumn, Comparer<string>.Default);
+            var table = new SortedTable(sourceTable);
+            table.SortBy(TestTableColumns.StringColumn, Comparer<string>.Default);
             CheckValuesAreSorted(count, table);
 
             AddValuesInReverseOrder(count, sourceTable, count);
@@ -49,10 +52,11 @@ namespace ReactiveTables.Framework.Tests.Sorting
         public void TestUpdatingSortKey()
         {
             var sourceTable = TestTableHelper.CreateReactiveTable();
-            const int count = 1000;
+            const int count = 100;
             AddValuesInReverseOrder(count, sourceTable);
 
-            var table = new SortedTable<string>(sourceTable, TestTableColumns.StringColumn, Comparer<string>.Default);
+            var table = new SortedTable(sourceTable);
+            table.SortBy(TestTableColumns.StringColumn, Comparer<string>.Default);
             CheckValuesAreSorted(count, table);
 
             int rowId = 5;
@@ -78,7 +82,7 @@ namespace ReactiveTables.Framework.Tests.Sorting
             }
         }
 
-        private static void CheckValuesAreSorted(int count, SortedTable<string> table)
+        private static void CheckValuesAreSorted(int count, SortedTable table)
         {
             Assert.AreEqual(count, table.RowCount);
             for (int i = 0; i < table.RowCount; i++)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
@@ -24,37 +25,22 @@ namespace ReactiveTables.Framework.Sorting
     /// 3. Row at position X scrolls into view
     ///     - Go get the row id at the given position
     /// </summary>
-    public class SortedTable<T> : IReactiveTable, IReactiveSortedTable, IDisposable where T : IComparable<T>
+    public class SortedTable : IReactiveTable, IReactiveSortedTable, IDisposable 
     {
-        /// <summary>
-        /// Used to keep the values present before an update to the key
-        /// </summary>
-        private readonly Dictionary<int, T> _rowIdsToValues; 
-        /// <summary>
-        /// List of all the keys which is kept sorted
-        /// </summary>
-        private readonly List<KeyValuePair<T, int>> _keysToRows;
-
         /// <summary>
         /// Used to notify outside observers
         /// </summary>
         private readonly Subject<TableUpdate> _subject;
 
         private readonly IReactiveTable _sourceTable;
-        private readonly string _sortColumnId;
-        private readonly IComparer<T> _comparer;
-        private readonly IDisposable _token;
-        private readonly KeyComparer<T> _keyComparer;
+        private ISorter _sorter;
+        private IDisposable _token;
         private readonly Subject<bool> _rowPosUpdatedSubject;
 
-        public SortedTable(IReactiveTable sourceTable, string sortColumnId, IComparer<T> comparer)
+        public SortedTable(IReactiveTable sourceTable)
         {
             _sourceTable = sourceTable;
-            _sortColumnId = sortColumnId;
-            _comparer = comparer;
-            _keyComparer = new KeyComparer<T>(_comparer);
-            _keysToRows = new List<KeyValuePair<T, int>>(_sourceTable.RowCount);
-            _rowIdsToValues = new Dictionary<int, T>(_sourceTable.RowCount);
+            _sorter = new DefaultSorter(sourceTable);
 
             _subject = new Subject<TableUpdate>();
             _rowPosUpdatedSubject = new Subject<bool>();
@@ -63,12 +49,185 @@ namespace ReactiveTables.Framework.Sorting
             _token = _sourceTable.ReplayAndSubscribe(OnNext);
         }
 
+        public void SortBy<T>(string columnId) where T : IComparable<T>
+        {
+            SortBy<T>(columnId, Comparer<T>.Default);
+        }
+
+        public void SortBy<T>(string columnId, IComparer<T> comparer) where T : IComparable<T>
+        {
+            _sorter = new Sorter<T>(_sourceTable, columnId, comparer);
+            if (_token != null) _token.Dispose();
+            _token = _sourceTable.ReplayAndSubscribe(OnNext);
+        }
+
         private void OnNext(TableUpdate update)
+        {
+            bool needToResort;
+            var sortedRowId = _sorter.OnNext(update, out needToResort);
+
+            // Propagate the update
+            _subject.OnNext(new TableUpdate(update.Action, sortedRowId, update.Columns));
+
+            if (needToResort)
+            {
+                _rowPosUpdatedSubject.OnNext(true);
+            }
+        }
+
+
+        public IDisposable Subscribe(IObserver<TableUpdate> observer)
+        {
+            return _subject.Subscribe(observer);
+        }
+
+        public IReactiveColumn AddColumn(IReactiveColumn column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetValue<T>(string columnId, int rowIndex)
+        {
+            var sourceRowId = _sorter.GetRowAt(rowIndex);
+            return _sourceTable.GetValue<T>(columnId, sourceRowId);
+        }
+
+        public object GetValue(string columnId, int rowIndex)
+        {
+            var sourceRowId = _sorter.GetRowAt(rowIndex);
+            return _sourceTable.GetValue(columnId, sourceRowId);
+        }
+
+        public int RowCount { get { return _sorter.RowCount; } }
+
+        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+
+        public IReactiveColumn GetColumnByIndex(int index)
+        {
+            return _sourceTable.GetColumnByIndex(index);
+        }
+
+        public PropertyChangedNotifier ChangeNotifier { get; private set; }
+
+        public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            return new JoinedTable(this, otherTable, joiner);
+        }
+
+        public IReactiveTable Filter(IReactivePredicate predicate)
+        {
+            return new FilteredTable(this, predicate);
+        }
+
+        public void ReplayRows(IObserver<TableUpdate> observer)
+        {
+            var rowAdds = new List<TableUpdate>(_sorter.RowCount);
+            rowAdds.AddRange(_sorter.GetAllRows().Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+            foreach (var rowAdd in rowAdds)
+            {
+                observer.OnNext(rowAdd);
+            }
+        }
+
+        public int GetRowAt(int position)
+        {
+            if (position > 0 && position < _sorter.RowCount)
+            {
+                return position;
+            }
+            return -1;
+        }
+
+        public int GetPositionOfRow(int rowIndex)
+        {
+            return rowIndex;
+        }
+
+        public void Dispose()
+        {
+            if (_token != null) _token.Dispose();
+            if (_subject != null) _subject.Dispose();
+            if (_rowPosUpdatedSubject != null) _rowPosUpdatedSubject.Dispose();
+        }
+
+        public IObservable<bool> RowPositionsUpdated { get; private set; }
+    }
+
+    class DefaultSorter: ISorter
+    {
+        private readonly IReactiveTable _sourceTable;
+        public DefaultSorter(IReactiveTable sourceTable)
+        {
+            _sourceTable = sourceTable;
+        }
+
+        public int OnNext(TableUpdate update, out bool needToResort)
+        {
+            needToResort = false;
+            return 1;
+        }
+
+        public int GetRowAt(int position)
+        {
+            return _sourceTable.GetRowAt(position);
+        }
+
+        public int RowCount { get { return _sourceTable.RowCount; } }
+
+        public IEnumerable<int> GetAllRows()
+        {
+            throw new NotImplementedException();
+//                return _sourceTable.
+        }
+    }
+
+    internal class KeyComparer<T> : IComparer<KeyValuePair<T, int>>
+    {
+        private readonly IComparer<T> _comparer;
+
+        public KeyComparer(IComparer<T> comparer)
+        {
+            _comparer = comparer;
+        }
+
+        public int Compare(KeyValuePair<T, int> x, KeyValuePair<T, int> y)
+        {
+            return _comparer.Compare(x.Key, y.Key);
+        }
+    }
+
+    internal class Sorter<T> : ISorter where T : IComparable<T>
+    {
+        /// <summary>
+        /// Used to keep the values present before an update to the key
+        /// </summary>
+        private readonly Dictionary<int, T> _rowIdsToValues;
+        /// <summary>
+        /// List of all the keys which is kept sorted
+        /// </summary>
+        private readonly List<KeyValuePair<T, int>> _keysToRows;
+
+        private readonly IReactiveTable _sourceTable;
+        private readonly IComparer<T> _comparer;
+        private readonly string _sortColumnId;
+        private readonly KeyComparer<T> _keyComparer;
+
+        public Sorter(IReactiveTable sourceTable, string sortColumnId, IComparer<T> comparer)
+        {
+            _sourceTable = sourceTable;
+            _comparer = comparer;
+            _sortColumnId = sortColumnId;
+            _keyComparer = new KeyComparer<T>(_comparer);
+            _keysToRows = new List<KeyValuePair<T, int>>(sourceTable.RowCount);
+            _rowIdsToValues = new Dictionary<int, T>(sourceTable.RowCount);
+        }
+
+        public int OnNext(TableUpdate update, out bool needToResort)
         {
             var sortColValue = _sourceTable.GetValue<T>(_sortColumnId, update.RowIndex);
             var keyValuePair = new KeyValuePair<T, int>(sortColValue, update.RowIndex);
 
-            bool needToResort = false;
+            needToResort = false;
             int sortedRowId = -1;
             switch (update.Action)
             {
@@ -94,7 +253,7 @@ namespace ReactiveTables.Framework.Sorting
                             _rowIdsToValues[update.RowIndex] = sortColValue;
                             needToResort = true;
                         }
-                        // Other column - row can't change position
+                            // Other column - row can't change position
                         else
                         {
                             sortedRowId = _keysToRows.BinarySearch(keyValuePair, _keyComparer);
@@ -109,110 +268,33 @@ namespace ReactiveTables.Framework.Sorting
                 _keysToRows.Sort((pair1, pair2) => _comparer.Compare(pair1.Key, pair2.Key));
                 sortedRowId = _keysToRows.BinarySearch(keyValuePair, _keyComparer);
             }
-            // Find the now row id
+                // Find the now row id
             else if (sortedRowId < 0)
             {
                 sortedRowId = _keysToRows.BinarySearch(keyValuePair, _keyComparer);
             }
 
-            // Propagate the update
-            _subject.OnNext(new TableUpdate(update.Action, sortedRowId, update.Columns));
-
-            if (needToResort)
-            {
-                _rowPosUpdatedSubject.OnNext(true);
-            }
-        }
-
-        private class KeyComparer<T1> : IComparer<KeyValuePair<T, int>>
-        {
-            private readonly IComparer<T> _comparer;
-
-            public KeyComparer(IComparer<T> comparer)
-            {
-                _comparer = comparer;
-            }
-
-            public int Compare(KeyValuePair<T, int> x, KeyValuePair<T, int> y)
-            {
-                return _comparer.Compare(x.Key, y.Key);
-            }
-        }
-
-        public IDisposable Subscribe(IObserver<TableUpdate> observer)
-        {
-            return _subject.Subscribe(observer);
-        }
-
-        public IReactiveColumn AddColumn(IReactiveColumn column)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetValue<T>(string columnId, int rowIndex)
-        {
-            var sourceRowId = _keysToRows[rowIndex].Value;
-            return _sourceTable.GetValue<T>(columnId, sourceRowId);
-        }
-
-        public object GetValue(string columnId, int rowIndex)
-        {
-            var sourceRowId = _keysToRows[rowIndex].Value;
-            return _sourceTable.GetValue(columnId, sourceRowId);
-        }
-
-        public int RowCount { get { return _keysToRows.Count; } }
-
-        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
-
-        public IReactiveColumn GetColumnByIndex(int index)
-        {
-            return _sourceTable.GetColumnByIndex(index);
-        }
-
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
-
-        public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
-        {
-            return new JoinedTable(this, otherTable, joiner);
-        }
-
-        public IReactiveTable Filter(IReactivePredicate predicate)
-        {
-            return new FilteredTable(this, predicate);
-        }
-
-        public void ReplayRows(IObserver<TableUpdate> observer)
-        {
-            var rowAdds = new List<TableUpdate>(_keysToRows.Count);
-            rowAdds.AddRange(_keysToRows.Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row.Value)));
-            foreach (var rowAdd in rowAdds)
-            {
-                observer.OnNext(rowAdd);
-            }
+            return sortedRowId;
         }
 
         public int GetRowAt(int position)
         {
-            if (position > 0 && position < _keysToRows.Count)
-            {
-                return position;
-            }
-            return -1;
+            return _keysToRows[position].Value;
         }
 
-        public int GetPositionOfRow(int rowIndex)
+        public int RowCount { get { return _keysToRows.Count; } }
+
+        public IEnumerable<int> GetAllRows()
         {
-            return rowIndex;
+            return _keysToRows.Select(pair => pair.Value);
         }
+    }
 
-        public void Dispose()
-        {
-            if (_token != null) _token.Dispose();
-            if (_subject != null) _subject.Dispose();
-            if (_rowPosUpdatedSubject != null) _rowPosUpdatedSubject.Dispose();
-        }
-
-        public IObservable<bool> RowPositionsUpdated { get; private set; }
+    public interface ISorter
+    {
+        int OnNext(TableUpdate update, out bool needToResort);
+        int GetRowAt(int position);
+        int RowCount { get; }
+        IEnumerable<int> GetAllRows();
     }
 }

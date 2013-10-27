@@ -13,11 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Sorting;
+using System.Linq;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
@@ -25,23 +29,27 @@ namespace ReactiveTables.Demo.Syncfusion
     {
         private decimal _balanceBelowFilter;
         private readonly FilteredTable _accountFilter;
-        private readonly SortedTable<decimal> _balanceSort;
+        private readonly SortedTable _balanceSort;
         private string _sortByColumn;
+        private readonly Dictionary<string, Type> _columnTypes;
 
         public SyncfusionTestViewModel(IAccountBalanceDataService dataService)
         {
             var table = dataService.AccountPeople;
-            _accountFilter = (FilteredTable)table.Filter(
+            _accountFilter = (FilteredTable) table.Filter(
                 new DelegatePredicate1<decimal>(AccountColumns.AccountBalance, b => b > BalanceBelowFilter));
-            _balanceSort = new SortedTable<decimal>(_accountFilter, AccountColumns.AccountBalance, Comparer<decimal>.Default);
+            _balanceSort = new SortedTable(_accountFilter);
+            _balanceSort.SortBy(AccountColumns.AccountBalance, Comparer<decimal>.Default);
             SetTable(_balanceSort);
 
-            Columns = new ObservableCollection<string>(new[] {
-                                                               AccountColumns.AccountBalance,
-                                                               PersonColumns.IdNameColumn,
-                                                               PersonColumns.NameColumn,
-                                                               PersonAccountColumns.AccountDetails
-                                                           });
+            _columnTypes = new Dictionary<string, Type>
+                              {
+                                  {AccountColumns.AccountBalance, typeof(decimal)},
+                                  {PersonColumns.IdNameColumn, typeof(string)},
+                                  {PersonColumns.NameColumn, typeof(string)},
+                                  {PersonAccountColumns.AccountDetails, typeof(string)}
+                              };
+            Columns = new ObservableCollection<string>(_columnTypes.Keys);
         }
 
         public ObservableCollection<string> Columns { get; private set; }
@@ -63,7 +71,17 @@ namespace ReactiveTables.Demo.Syncfusion
                 if (_sortByColumn != value)
                 {
                     _sortByColumn = value;
-//                    _balanceSort.SetSort(_sortByColumn, Comparer<>);
+
+                    try
+                    {
+                        var method = typeof(SortedTable).GetMethods().First(info => info.Name == "SortBy");
+                        var generic = method.MakeGenericMethod(_columnTypes[_sortByColumn]);
+                        generic.Invoke(_balanceSort, new object[] {_sortByColumn});
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
                 }
             }
         }
