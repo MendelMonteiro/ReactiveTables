@@ -14,12 +14,9 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.UI;
-using System.Linq;
 
 namespace ReactiveTables.Demo
 {
@@ -36,8 +33,7 @@ namespace ReactiveTables.Demo
             PersonAccounts = new IndexedObservableCollection<PersonAccountViewModel, int>(h=>h.RowIndex);
             _subscription = _personAccounts.ReplayAndSubscribe(OnNext);
 
-            Change =
-                new DelegateCommand(
+            Change = new DelegateCommand(
                     () => accounts.SetValue(AccountColumns.AccountBalance, CurrentRowIndex, (decimal) DateTime.Now.Millisecond));
 
             _personAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, CurrentRowIndex);
@@ -85,9 +81,9 @@ namespace ReactiveTables.Demo
         {
             _subscription.Dispose();
             _personAccounts.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _currentRowIndex);
-            foreach (var PersonAccountViewModel in PersonAccounts)
+            foreach (var personAccountViewModel in PersonAccounts)
             {
-                PersonAccountViewModel.Dispose();
+                personAccountViewModel.Dispose();
             }
         }
     }

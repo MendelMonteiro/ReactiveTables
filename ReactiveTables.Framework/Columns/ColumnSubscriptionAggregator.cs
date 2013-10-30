@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 
 namespace ReactiveTables.Framework.Columns
 {
@@ -22,18 +23,20 @@ namespace ReactiveTables.Framework.Columns
     /// Transform multiple column subscriptions into one.
     /// </summary>
     /// <typeparam name="TOutput"></typeparam>
-    public class ColumnSubscriptionAggregator<TOutput>
+    public class ColumnSubscriptionAggregator<TOutput> : IDisposable
     {
         private readonly ReactiveColumnBase<TOutput> _outputColumn;
+        private readonly Subject<TableUpdate> _updateSubject;
         private readonly HashSet<object> _observers = new HashSet<object>();
         private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
 
-        public ColumnSubscriptionAggregator(ReactiveColumnBase<TOutput> outputColumn)
+        public ColumnSubscriptionAggregator(ReactiveColumnBase<TOutput> outputColumn, Subject<TableUpdate> updateSubject)
         {
             _outputColumn = outputColumn;
+            _updateSubject = updateSubject;
         }
 
-        private IColumnObserver GetObserver()
+        private IObserver<TableUpdate> GetObserver()
         {
             var observer = new Observer(this);
             _observers.Add(observer);
@@ -42,17 +45,17 @@ namespace ReactiveTables.Framework.Columns
 
         private void OnNext(int index)
         {
-            _outputColumn.NotifyObserversOnNext(index);
+            _updateSubject.OnNext(new TableUpdate(TableUpdate.TableUpdateAction.Update, index, _outputColumn));
         }
 
-        private void OnError(Exception error, int index)
+        private void OnError(Exception error)
         {
-            _outputColumn.NotifyObserversOnError(error, index);
+            _updateSubject.OnError(error);
         }
 
-        private void OnCompleted(int index)
+        private void OnCompleted()
         {
-            _outputColumn.NotifyObserversOnCompleted(index);
+            _updateSubject.OnCompleted();
         }
 
         public void SubscribeToColumn(IReactiveColumn column)
@@ -60,12 +63,13 @@ namespace ReactiveTables.Framework.Columns
             _subscriptions.Add(column.Subscribe(GetObserver()));
         }
 
-        public void Unsubscribe()
+        public void Dispose()
         {
             _subscriptions.ForEach(s => s.Dispose());
+            _subscriptions.Clear();
         }
 
-        private sealed class Observer : IColumnObserver
+        private sealed class Observer : IObserver<TableUpdate>
         {
             private readonly ColumnSubscriptionAggregator<TOutput> _subscriptionAggregator;
 
@@ -74,19 +78,19 @@ namespace ReactiveTables.Framework.Columns
                 _subscriptionAggregator = subscriptionAggregator;
             }
 
-            public void OnNext(int rowIndex)
+            public void OnNext(TableUpdate value)
             {
-                _subscriptionAggregator.OnNext(rowIndex);
+                _subscriptionAggregator.OnNext(value.RowIndex);
             }
 
-            public void OnError(Exception error, int rowIndex)
+            public void OnError(Exception error)
             {
-                _subscriptionAggregator.OnError(error, rowIndex);
+                _subscriptionAggregator.OnError(error);
             }
 
-            public void OnCompleted(int rowIndex)
+            public void OnCompleted()
             {
-                _subscriptionAggregator.OnCompleted(rowIndex);
+                _subscriptionAggregator.OnCompleted();
             }
         }
     }

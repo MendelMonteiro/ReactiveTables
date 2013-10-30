@@ -14,39 +14,46 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
-using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework.Joins
 {
     /// <summary>
     /// Joins the output of two tables using the given <see cref="IReactiveTableJoiner"/>.
     /// </summary>
-    public class JoinedTable : IReactiveTable, IDisposable, ISubscribable<IObserver<TableUpdate>>
+    public class JoinedTable : IReactiveTable, IDisposable
     {
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
         private readonly IReactiveTableJoiner _joiner;
-        private readonly HashSet<IObserver<TableUpdate>> _calculatedColumnObservers = new HashSet<IObserver<TableUpdate>>();
+        private readonly Subject<TableUpdate> _calculatedColumnSubject = new Subject<TableUpdate>();
 
         private readonly Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>> _tokens =
             new Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>>();
 
         private readonly IndexedDictionary<string, IReactiveColumn> _columns;
+        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
+        /// <summary>
+        /// Create a new table joining two existing tables
+        /// </summary>
+        /// <param name="leftTable"></param>
+        /// <param name="rightTable"></param>
+        /// <param name="joiner"></param>
         public JoinedTable(IReactiveTable leftTable, IReactiveTable rightTable, IReactiveTableJoiner joiner)
         {
             _leftTable = leftTable;
             _rightTable = rightTable;
             _joiner = joiner;
 
+            _joiner.SetObserver(_calculatedColumnSubject);
             _columns = new IndexedDictionary<string, IReactiveColumn>();
-            ChangeNotifier = new PropertyChangedNotifier(this);
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
             AddBaseTableColumns(leftTable);
             AddBaseTableColumns(rightTable);
             // TODO: need to process all existing values in the tables
@@ -62,37 +69,19 @@ namespace ReactiveTables.Framework.Joins
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            _joiner.AddObserver(observer);
-            _calculatedColumnObservers.Add(observer);
-
-            var subscriptionToken = new SubscriptionToken<JoinedTable, IObserver<TableUpdate>>(this, observer);
-//            _tokens.Add(observer, new Tuple<IDisposable, IDisposable>(null, null));
-            return subscriptionToken;
-        }
-
-        public void Unsubscribe(IObserver<TableUpdate> observer)
-        {
-            /*var tokens = _tokens[observer];
-            if (tokens != null)
-            {
-                if (tokens.Item1 != null) tokens.Item1.Dispose();
-                if (tokens.Item2 != null) tokens.Item2.Dispose();
-            }*/
-
-            _calculatedColumnObservers.Remove(observer);
-            _joiner.RemoveObserver(observer);
-            _calculatedColumnObservers.Remove(observer);
+            return _calculatedColumnSubject.Subscribe(observer);
         }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             // Add calc'ed columns
             Columns.Add(column.ColumnId, column);
+            
             var joinableCol = column as IReactiveJoinableColumn;
             if (joinableCol != null) joinableCol.SetJoiner(_joiner);
 
             // Need to subscribe to changes in calculated columns
-            column.Subscribe(new ColumnChangePublisher(column, _calculatedColumnObservers));
+            column.Subscribe(_calculatedColumnSubject);
             return column;
         }
 
@@ -155,7 +144,10 @@ namespace ReactiveTables.Framework.Joins
             return reactiveColumns[index];
         }
 
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
+        public PropertyChangedNotifier ChangeNotifier
+        {
+            get { return _changeNotifier.Value; }
+        }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {

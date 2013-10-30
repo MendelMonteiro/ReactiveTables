@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
@@ -9,8 +8,14 @@ using System.Linq;
 
 namespace ReactiveTables.Framework.Sorting
 {
-    public interface IReactiveSortedTable
+    /// <summary>
+    /// A sorted table
+    /// </summary>
+    public interface ISortedTable
     {
+        /// <summary>
+        /// An observable stream of events which notify when the row positions are updated
+        /// </summary>
         IObservable<bool> RowPositionsUpdated { get; }
     }
 
@@ -25,7 +30,7 @@ namespace ReactiveTables.Framework.Sorting
     /// 3. Row at position X scrolls into view
     ///     - Go get the row id at the given position
     /// </summary>
-    public class SortedTable : IReactiveTable, IReactiveSortedTable, IDisposable 
+    public class SortedTable : IReactiveTable, ISortedTable, IDisposable 
     {
         /// <summary>
         /// Used to notify outside observers
@@ -36,7 +41,12 @@ namespace ReactiveTables.Framework.Sorting
         private ISorter _sorter;
         private IDisposable _token;
         private readonly Subject<bool> _rowPosUpdatedSubject;
+        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
+        /// <summary>
+        /// Create a new sorted table
+        /// </summary>
+        /// <param name="sourceTable"></param>
         public SortedTable(IReactiveTable sourceTable)
         {
             _sourceTable = sourceTable;
@@ -47,18 +57,34 @@ namespace ReactiveTables.Framework.Sorting
             RowPositionsUpdated = _rowPosUpdatedSubject;
 
             _token = _sourceTable.ReplayAndSubscribe(OnNext);
+
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
         public void SortBy<T>(string columnId) where T : IComparable<T>
         {
-            SortBy<T>(columnId, Comparer<T>.Default);
+            SortBy(columnId, Comparer<T>.Default);
         }
 
         public void SortBy<T>(string columnId, IComparer<T> comparer) where T : IComparable<T>
         {
+            if (_sorter != null)
+            {
+                DeleteAllRows();
+            }
+
             _sorter = new Sorter<T>(_sourceTable, columnId, comparer);
             if (_token != null) _token.Dispose();
             _token = _sourceTable.ReplayAndSubscribe(OnNext);
+        }
+
+        private void DeleteAllRows()
+        {
+            for (int i = 0; i < _sorter.RowCount; i++)
+            {
+                var delete = new TableUpdate(TableUpdate.TableUpdateAction.Delete, i);
+                _subject.OnNext(delete);
+            }
         }
 
         private void OnNext(TableUpdate update)
@@ -107,7 +133,10 @@ namespace ReactiveTables.Framework.Sorting
             return _sourceTable.GetColumnByIndex(index);
         }
 
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
+        public PropertyChangedNotifier ChangeNotifier
+        {
+            get { return _changeNotifier.Value; }
+        }
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
@@ -194,6 +223,14 @@ namespace ReactiveTables.Framework.Sorting
         {
             return _comparer.Compare(x.Key, y.Key);
         }
+    }
+
+    internal interface ISorter
+    {
+        int OnNext(TableUpdate update, out bool needToResort);
+        int GetRowAt(int position);
+        int RowCount { get; }
+        IEnumerable<int> GetAllRows();
     }
 
     internal class Sorter<T> : ISorter where T : IComparable<T>
@@ -288,13 +325,5 @@ namespace ReactiveTables.Framework.Sorting
         {
             return _keysToRows.Select(pair => pair.Value);
         }
-    }
-
-    public interface ISorter
-    {
-        int OnNext(TableUpdate update, out bool needToResort);
-        int GetRowAt(int position);
-        int RowCount { get; }
-        IEnumerable<int> GetAllRows();
     }
 }

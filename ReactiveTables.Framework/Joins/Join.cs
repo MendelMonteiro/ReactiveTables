@@ -30,10 +30,14 @@ namespace ReactiveTables.Framework.Joins
         RightOuter
     }
 
+    /// <summary>
+    /// Represents a DB like join which can handle, Inner, Left, Right and Full Outer joins.
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
     public class Join<TKey> : IReactiveTableJoiner
     {
         #region Internal structures
-        public class ColumnRowMapping
+        internal class ColumnRowMapping
         {
             public List<Row> ColRowMappings;
 
@@ -43,7 +47,7 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        public struct Row
+        internal struct Row
         {
             public int? RowId;
             public int? LeftRowId;
@@ -80,7 +84,7 @@ namespace ReactiveTables.Framework.Joins
         private readonly Dictionary<TKey, ColumnRowMapping> _rowsByKey = new Dictionary<TKey, ColumnRowMapping>();
         private readonly List<Row?> _rows = new List<Row?>();
 
-        private readonly List<IObserver<TableUpdate>> _updateObservers = new List<IObserver<TableUpdate>>();
+        private IObserver<TableUpdate> _updateObservers;
 
         private readonly JoinType _joinType;
         private readonly JoinRowDeleteHandler<TKey> _leftRowDeleteHandler;
@@ -104,6 +108,14 @@ namespace ReactiveTables.Framework.Joins
             return _rowManager.GetRows();
         }
 
+        /// <summary>
+        /// Create a new join.
+        /// </summary>
+        /// <param name="leftTable"></param>
+        /// <param name="leftIdColumn">The column from the left table to join on</param>
+        /// <param name="rightTable"></param>
+        /// <param name="rightIdColumn">The column from the right table to join on</param>
+        /// <param name="joinType">The type of the join</param>
         public Join(IReactiveTable leftTable, string leftIdColumn, IReactiveTable rightTable, string rightIdColumn, 
                     JoinType joinType = JoinType.FullOuter)
         {
@@ -150,18 +162,11 @@ namespace ReactiveTables.Framework.Joins
             return -1;
         }
 
-        public void AddObserver(IObserver<TableUpdate> observer)
+        public void SetObserver(IObserver<TableUpdate> observer)
         {
-            _updateObservers.Add(observer);
+            _updateObservers = observer;
             _leftRowDeleteHandler.AddRowObserver(observer);
             _rightRowDeleteHandler.AddRowObserver(observer);
-        }
-
-        public void RemoveObserver(IObserver<TableUpdate> observer)
-        {
-            _updateObservers.Remove(observer);
-            _leftRowDeleteHandler.RemoveRowObserver(observer);
-            _rightRowDeleteHandler.RemoveRowObserver(observer);
         }
 
         public int GetRowAt(int position)
@@ -255,22 +260,19 @@ namespace ReactiveTables.Framework.Joins
             if (table.Columns.ContainsKey(update.Column.ColumnId)
                 && columnRowsToJoinRows.TryGetValue(columnRowIndex, out joinRows))
             {
-                foreach (var colUpdate in from joinRow in joinRows 
-                                          let row = _rows[joinRow] 
-                                          where row.HasValue && !IsRowUnlinked(row.Value, side) 
+                foreach (var colUpdate in from joinRow in joinRows
+                                          let row = _rows[joinRow]
+                                          where row.HasValue && !IsRowUnlinked(row.Value, side)
                                           select new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column))
                 {
-                    foreach (var updateObserver in _updateObservers)
-                    {
-                        updateObserver.OnNext(colUpdate);
-                    }
+                    if (_updateObservers != null) _updateObservers.OnNext(colUpdate);
                     return true;
                 }
             }
             return false;
         }
 
-        private void UpdateRowObserversAdd(List<RowToUpdate> updatedRows, IReactiveColumn column, JoinSide side)
+        private void UpdateRowObserversAdd(IEnumerable<RowToUpdate> updatedRows, IReactiveColumn column, JoinSide side)
         {
             foreach (var updatedRow in updatedRows)
             {
@@ -278,10 +280,7 @@ namespace ReactiveTables.Framework.Joins
                 if (updatedRow.Type == RowToUpdate.RowUpdateType.Add)
                 {
                     var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, updatedRow.RowIndex);
-                    foreach (var observer in _updateObservers)
-                    {
-                        observer.OnNext(rowUpdate);
-                    }
+                    if (_updateObservers != null) _updateObservers.OnNext(rowUpdate);
 
                     // Update all columns for newly added row on the sides that are present.
                     var row = _rows[updatedRow.RowIndex];
@@ -302,10 +301,7 @@ namespace ReactiveTables.Framework.Joins
             foreach (var tableColumn in table.Columns)
             {
                 var columnUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, rowIndex, tableColumn.Value);
-                foreach (var observer in _updateObservers)
-                {
-                    observer.OnNext(columnUpdate);
-                }
+                if (_updateObservers != null) _updateObservers.OnNext(columnUpdate);
             }
         }
 

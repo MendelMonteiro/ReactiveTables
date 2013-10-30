@@ -15,9 +15,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Marshalling;

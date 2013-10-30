@@ -15,34 +15,96 @@
 
 using System;
 using System.Collections.Generic;
+using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework.Columns
 {
-    public interface IReactiveColumn : IObservableColumn, IEquatable<IReactiveColumn>
+    /// <summary>
+    /// Represents a column - exposes observable changes.
+    /// </summary>
+    public interface IReactiveColumn : IObservable<TableUpdate>, IEquatable<IReactiveColumn>
     {
         /// <summary>
         /// Should be an int?
         /// </summary>
         string ColumnId { get; }
 
+        /// <summary>
+        /// The data type represented by the column
+        /// </summary>
         Type Type { get; }
 
+        /// <summary>
+        /// Add a value to the column
+        /// </summary>
+        /// <param name="rowIndex"></param>
         void AddField(int rowIndex);
+
+        /// <summary>
+        /// Clone the column
+        /// </summary>
+        /// <returns></returns>
         IReactiveColumn Clone();
+
+        /// <summary>
+        /// Copy the value from to another column (of the same type)
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="sourceColumn"></param>
+        /// <param name="sourceRowIndex"></param>
         void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
+
+        /// <summary>
+        /// Remove a value from the column
+        /// </summary>
+        /// <param name="rowIndex"></param>
         void RemoveField(int rowIndex);
+
+        /// <summary>
+        /// Get a value from the column
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         object GetValue(int rowIndex);
     }
 
+    /// <summary>
+    /// A typed reactive column
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IReactiveColumn<T> : IReactiveColumn
     {
+        /// <summary>
+        /// Set a value at a particular row in the column
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="value"></param>
         void SetValue(int rowIndex, T value);
+
+        /// <summary>
+        /// Get a value at a particular row in the column
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         new T GetValue(int index);
+
+        /// <summary>
+        /// Find the first row that contains the given value.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         int Find(T value);
     }
 
+    /// <summary>
+    /// A joinable reactive column (columns need to be joinable to be used by the <see cref="JoinedTable"/>)
+    /// </summary>
     public interface IReactiveJoinableColumn
     {
+        /// <summary>
+        /// Set the current joiner
+        /// </summary>
+        /// <param name="joiner"></param>
         void SetJoiner(IReactiveTableJoiner joiner);
     }
 

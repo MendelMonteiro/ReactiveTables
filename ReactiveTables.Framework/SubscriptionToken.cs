@@ -22,7 +22,7 @@ namespace ReactiveTables.Framework
     /// </summary>
     /// <typeparam name="TObservable"></typeparam>
     /// <typeparam name="TObserver"></typeparam>
-    public class SubscriptionToken<TObservable, TObserver> : IDisposable where TObservable : ISubscribable<TObserver>
+    internal class SubscriptionToken<TObservable, TObserver> : IDisposable where TObservable : ISubscribable<TObserver>
     {
         private readonly TObservable _item;
         private readonly TObserver _observer;
@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework
     /// Can be unsubscribed from.
     /// </summary>
     /// <typeparam name="TObserver"></typeparam>
-    public interface ISubscribable<in TObserver>
+    internal interface ISubscribable<in TObserver>
     {
         /// <summary>
         /// Unsubscribe the given observer

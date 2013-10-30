@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
@@ -25,9 +26,9 @@ namespace ReactiveTables.Framework
     internal class ColumnChangePublisher : IColumnObserver
     {
         private readonly IReactiveColumn _column;
-        private readonly HashSet<IObserver<TableUpdate>> _observers;
+        private readonly Subject<TableUpdate> _observers;
 
-        public ColumnChangePublisher(IReactiveColumn column, HashSet<IObserver<TableUpdate>> observers)
+        public ColumnChangePublisher(IReactiveColumn column, Subject<TableUpdate> observers)
         {
             _column = column;
             _observers = observers;
@@ -36,26 +37,17 @@ namespace ReactiveTables.Framework
         public void OnNext(int rowIndex)
         {
             var columnUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, rowIndex, _column);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(columnUpdate);
-            }
+            _observers.OnNext(columnUpdate);
         }
 
         public void OnError(Exception error, int rowIndex)
         {
-            foreach (var observer in _observers)
-            {
-                observer.OnError(error);
-            }
+            _observers.OnError(error);
         }
 
         public void OnCompleted(int rowIndex)
         {
-            foreach (var observer in _observers)
-            {
-                observer.OnCompleted();
-            }
+            _observers.OnCompleted();
         }
     }
 }

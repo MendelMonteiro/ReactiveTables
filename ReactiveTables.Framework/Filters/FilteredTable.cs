@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Joins;
 
@@ -12,7 +13,7 @@ namespace ReactiveTables.Framework.Filters
     /// A current limitation is that if the predicate changes in-flight the subscribers will not be notified
     /// of the changes that the change in predicate brings about.
     /// </summary>
-    public class FilteredTable : IReactiveTable, IDisposable, ISubscribable<IObserver<TableUpdate>>
+    public class FilteredTable : IReactiveTable, IDisposable
     {
         private readonly IReactiveTable _sourceTable;
         private readonly IReactivePredicate _predicate;
@@ -20,10 +21,15 @@ namespace ReactiveTables.Framework.Filters
         private readonly Dictionary<int, int> _sourceRowToFilterRow = new Dictionary<int, int>();
         private readonly IDisposable _token;
         private readonly FieldRowManager _rowManager = new FieldRowManager();
-        private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
+        private readonly Subject<TableUpdate> _updateSubject = new Subject<TableUpdate>(); 
+        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
         public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+
+        public PropertyChangedNotifier ChangeNotifier
+        {
+            get { return _changeNotifier.Value; }
+        }
 
         public FilteredTable(IReactiveTable sourceTable, IReactivePredicate predicate)
         {
@@ -32,7 +38,7 @@ namespace ReactiveTables.Framework.Filters
 
             _token = _sourceTable.ReplayAndSubscribe(OnNext); 
 
-            ChangeNotifier = new PropertyChangedNotifier(this);
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
         private void OnNext(TableUpdate tableUpdate)
@@ -130,28 +136,19 @@ namespace ReactiveTables.Framework.Filters
         private void OnAdd(int filterRow)
         {
             var update = new TableUpdate(TableUpdate.TableUpdateAction.Add, filterRow);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(update);
-            }
+            _updateSubject.OnNext(update);
         }
 
         private void OnUpdate(int filterRow, IList<IReactiveColumn> column)
         {
             var update = new TableUpdate(TableUpdate.TableUpdateAction.Update, filterRow, column);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(update);
-            }
+            _updateSubject.OnNext(update);
         }
 
         private void OnDelete(int filterRow)
         {
             var update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, filterRow);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(update);
-            }
+            _updateSubject.OnNext(update);
         }
 
         private int TryRemoveMapping(int rowIndex)
@@ -168,13 +165,7 @@ namespace ReactiveTables.Framework.Filters
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            _observers.Add(observer);
-            return new SubscriptionToken<FilteredTable, IObserver<TableUpdate>>(this, observer);
-        }
-
-        public void Unsubscribe(IObserver<TableUpdate> observer)
-        {
-            _observers.Remove(observer);
+            return _updateSubject.Subscribe(observer);
         }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)

@@ -87,5 +87,12 @@ namespace ReactiveTables.Framework
         /// <param name="rowIndex"></param>
         /// <returns>The position</returns>
         int GetPositionOfRow(int rowIndex);
+
+        /// <summary>
+        /// Schedule tasks to be run after any current observable notifications.
+        /// Use this when subscribing to a tbale as the result of an observable notification.
+        /// </summary>
+        /// <param name="action"></param>
+//        void ScheduleTask(Action action);
     }
 }

@@ -32,7 +32,7 @@ namespace ReactiveTables.Framework.Joins
             return joinRowIndex;
         }
 
-        public void AddObserver(IObserver<TableUpdate> observer)
+        public void SetObserver(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }

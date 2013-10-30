@@ -32,7 +32,7 @@ namespace ReactiveTables.Demo.Syncfusion
         {
             Table = table;
             Token = table.Subscribe(OnNext);
-            var sortedTable = table as IReactiveSortedTable;
+            var sortedTable = table as ISortedTable;
             if (sortedTable != null)
             {
                 RowPositionsUpdated = sortedTable.RowPositionsUpdated;

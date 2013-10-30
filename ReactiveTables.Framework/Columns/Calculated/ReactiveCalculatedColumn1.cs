@@ -23,7 +23,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
     /// </summary>
     /// <typeparam name="TOut"></typeparam>
     /// <typeparam name="TIn1"></typeparam>
-    public class ReactiveCalculatedColumn1<TOut, TIn1> : ReactiveColumnBase<TOut>, IReactiveJoinableColumn
+    public class ReactiveCalculatedColumn1<TOut, TIn1> : ReactiveColumnBase<TOut>, IReactiveJoinableColumn, IDisposable
     {
         private readonly IReactiveColumn<TIn1> _inputColumn1;
         private readonly Func<TIn1, TOut> _converter;
@@ -38,7 +38,7 @@ namespace ReactiveTables.Framework.Columns.Calculated
             _inputColumn1 = inputColumn1;
             _converter = converter;
 
-            _aggregator = new ColumnSubscriptionAggregator<TOut>(this);
+            _aggregator = new ColumnSubscriptionAggregator<TOut>(this, UpdateSubject);
             _aggregator.SubscribeToColumn(_inputColumn1);
         }
 
@@ -101,10 +101,12 @@ namespace ReactiveTables.Framework.Columns.Calculated
         {
         }
 
-        protected override void Unsubscribe(object observer)
+        /// <summary>
+        /// We need to unsubscribe to the dependent columns
+        /// </summary>
+        public void Dispose()
         {
-            _aggregator.Unsubscribe();
-            //            base.Unsubscribe(observer);
+            if (_aggregator != null) _aggregator.Dispose();
         }
     }
 }

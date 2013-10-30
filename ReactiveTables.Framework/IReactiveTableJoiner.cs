@@ -41,14 +41,8 @@ namespace ReactiveTables.Framework
         /// Register an observer with this joiner
         /// </summary>
         /// <param name="observer"></param>
-        void AddObserver(IObserver<TableUpdate> observer);
-        
-        /// <summary>
-        /// Unregister an observer with this joiner
-        /// </summary>
-        /// <param name="observer"></param>
-        void RemoveObserver(IObserver<TableUpdate> observer);
-        
+        void SetObserver(IObserver<TableUpdate> observer);
+                
         /// <summary>
         /// Get all the row indeces present in this table
         /// </summary>

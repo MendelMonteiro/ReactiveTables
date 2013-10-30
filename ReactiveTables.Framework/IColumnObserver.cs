@@ -27,12 +27,14 @@ namespace ReactiveTables.Framework
         /// </summary>
         /// <param name="rowIndex"></param>
         void OnNext(int rowIndex);
+
         /// <summary>
         /// Error has occurred whe processing column at row <see cref="rowIndex"/>
         /// </summary>
         /// <param name="error"></param>
         /// <param name="rowIndex"></param>
         void OnError(Exception error, int rowIndex);
+
         /// <summary>
         /// Completed processing of row at <see cref="rowIndex"/>
         /// </summary>

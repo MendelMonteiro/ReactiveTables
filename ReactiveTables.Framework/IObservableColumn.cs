@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
 {
@@ -21,13 +22,13 @@ namespace ReactiveTables.Framework
     /// The observable pair to <see cref="IColumnObserver"/>
     /// TODO: Modify this so that it we return ColumnUpdates that have both the before and after values, also return removes.
     /// </summary>
-    public interface IObservableColumn
+    public interface IObservableColumn //: IObservable<ColumnUpdate>
     {
-        /// <summary>
+        /*/// <summary>
         /// Subscribe to all changes from this column
         /// </summary>
         /// <param name="observer"></param>
         /// <returns></returns>
-        IDisposable Subscribe(IColumnObserver observer);
+        IDisposable Subscribe(IObserver<ColumnUpdate> observer);*/
     }
 }

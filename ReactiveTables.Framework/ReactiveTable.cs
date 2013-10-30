@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
@@ -63,12 +64,13 @@ namespace ReactiveTables.Framework
     /// <summary>
     /// The main writable/readable table.
     /// </summary>
-    public class ReactiveTable : IWritableReactiveTable, ISubscribable<IObserver<TableUpdate>>
+    public class ReactiveTable : IWritableReactiveTable, IDisposable
     {
         private readonly IndexedDictionary<string, IReactiveColumn> _columns = new IndexedDictionary<string, IReactiveColumn>();
-        private readonly HashSet<IObserver<TableUpdate>> _observers = new HashSet<IObserver<TableUpdate>>();
+        private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
 
         private readonly FieldRowManager _rowManager = new FieldRowManager();
+        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
@@ -76,23 +78,37 @@ namespace ReactiveTables.Framework
             return list[index];
         }
 
-        public PropertyChangedNotifier ChangeNotifier { get; private set; }
-
-        public ReactiveTable()
+        public PropertyChangedNotifier ChangeNotifier
         {
-            ChangeNotifier = new PropertyChangedNotifier(this);
+            get
+            {
+                return _changeNotifier.Value;
+            }
         }
 
+        /// <summary>
+        /// Create a ReactiveTable
+        /// </summary>
+        public ReactiveTable()
+        {
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
+        }
+
+        /// <summary>
+        /// Create a ReactiveTable copying the columns from the given table
+        /// </summary>
+        /// <param name="reactiveTable"></param>
         public ReactiveTable(IReactiveTable reactiveTable)
         {
             CloneColumns(reactiveTable);
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
-            column.Subscribe(new ColumnChangePublisher(column, _observers));
+            column.Subscribe(_subject);
             // TODO: fire events for existing rows
             return column;
         }
@@ -131,10 +147,7 @@ namespace ReactiveTables.Framework
             }
 
             var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(rowUpdate);
-            }
+            _subject.OnNext(rowUpdate);
             return rowIndex;
         }
 
@@ -147,10 +160,7 @@ namespace ReactiveTables.Framework
             }
 
             var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
-            foreach (var observer in _observers)
-            {
-                observer.OnNext(rowUpdate);
-            }
+            _subject.OnNext(rowUpdate);
         }
 
         public IReactiveTable Filter(IReactivePredicate predicate)
@@ -209,13 +219,7 @@ namespace ReactiveTables.Framework
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            _observers.Add(observer);
-            return new SubscriptionToken<ReactiveTable, IObserver<TableUpdate>>(this, observer);
-        }
-
-        public void Unsubscribe(IObserver<TableUpdate> observer)
-        {
-            _observers.Remove(observer);
+            return _subject.Subscribe(observer);
         }
 
         /// <summary>
@@ -229,6 +233,18 @@ namespace ReactiveTables.Framework
         {
             var column = GetColumn<T>(columnId);
             return column.Find(value);
+        }
+
+        public void Dispose()
+        {
+            foreach (var reactiveColumn in Columns.Values)
+            {
+                var disposable = reactiveColumn as IDisposable;
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
         }
     }
 }

@@ -64,8 +64,7 @@ namespace ReactiveTables.Demo
             _accounts = accounts;
 
             Accounts = new ObservableCollection<AccountViewModel>();
-            _subscription =
-                _accounts.ReplayAndSubscribe(
+            _subscription = _accounts.ReplayAndSubscribe(
                     update => { if (update.IsRowUpdate()) Accounts.Add(new AccountViewModel(_accounts, update.RowIndex)); });
         }
 

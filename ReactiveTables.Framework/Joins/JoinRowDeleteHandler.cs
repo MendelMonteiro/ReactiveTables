@@ -33,7 +33,7 @@ namespace ReactiveTables.Framework.Joins
         private readonly JoinSide _joinSide;
         private readonly JoinType _joinType;
         private readonly FieldRowManager _rowManager;
-        private readonly List<IObserver<TableUpdate>> _observers = new List<IObserver<TableUpdate>>();
+        private IObserver<TableUpdate> _observers;
 
         public JoinRowDeleteHandler(List<Join<TKey>.Row?> rows, Dictionary<TKey, Join<TKey>.ColumnRowMapping> rowsByKey,
             Dictionary<int, HashSet<int>> columnRowsToJoinRows, Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows, 
@@ -224,14 +224,11 @@ namespace ReactiveTables.Framework.Joins
             return colRowMappings.Count(m => m.RightRowId == rowIndex) <= 1;
         }
 
-        private void UpdateObservers(List<TableUpdate> rowUpdates)
+        private void UpdateObservers(IEnumerable<TableUpdate> rowUpdates)
         {
-            foreach (var observer in _observers)
+            foreach (var rowUpdate in rowUpdates)
             {
-                foreach (var rowUpdate in rowUpdates)
-                {
-                    observer.OnNext(rowUpdate);
-                }
+                _observers.OnNext(rowUpdate);
             }
         }
 
@@ -257,12 +254,12 @@ namespace ReactiveTables.Framework.Joins
 
         public void AddRowObserver(IObserver<TableUpdate> observer)
         {
-            _observers.Add(observer);
+            _observers = observer;
         }
 
         public void RemoveRowObserver(IObserver<TableUpdate> observer)
         {
-            _observers.Remove(observer);
+            _observers = null;
         }
     }
 }
