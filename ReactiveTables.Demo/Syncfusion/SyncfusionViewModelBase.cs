@@ -14,11 +14,14 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
 using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Sorting;
 using ReactiveTables.Framework.Utils;
+using System.Linq;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
@@ -31,13 +34,18 @@ namespace ReactiveTables.Demo.Syncfusion
         protected void SetTable(IReactiveTable table)
         {
             Table = table;
-            Token = table.Subscribe(OnNext);
+            Token = table.ReplayAndSubscribe(OnNext);
             var sortedTable = table as ISortedTable;
             if (sortedTable != null)
             {
                 RowPositionsUpdated = sortedTable.RowPositionsUpdated;
             }
+
+            // This should look up a dictionary of column id's to friendly column names
+            ColumnNames = table.Columns.Select(c => c.Value.ColumnId.Substring(c.Value.ColumnId.LastIndexOf('.') + 1)).ToList();
         }
+
+        public IList<string> ColumnNames { get; private set; }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
@@ -81,8 +89,13 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public void Dispose()
         {
+            DisposeCore();
+        }
+
+        protected virtual void DisposeCore()
+        {
             if (Token != null) Token.Dispose();
-            if (_subject != null) _subject.Dispose();
+            if (_subject != null) _subject.Dispose();            
         }
 
         // TODO: Handle columns added after the ViewModel is created.

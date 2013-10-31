@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using ReactiveTables.Framework;
 
 namespace ReactiveTables.Demo.Syncfusion
@@ -25,5 +26,6 @@ namespace ReactiveTables.Demo.Syncfusion
         int GetColPosition(string columnId);
         string GetColumnId(int columnIndex);
         IObservable<bool> RowPositionsUpdated { get; }
+        IList<string> ColumnNames { get; }
     }
 }

@@ -42,5 +42,10 @@ namespace ReactiveTables.Demo.Services
         {
             get { return Kernel.Get<FxClientViewModel>(); }
         }
+
+        public FxClientSyncfusionViewModel FxSyncfusionClientViewModel
+        {
+            get { return Kernel.Get<FxClientSyncfusionViewModel>(); }
+        }
     }
 }

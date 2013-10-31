@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Windows;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Demo.Syncfusion;
@@ -21,13 +22,20 @@ namespace ReactiveTables.Demo.Client
 {
     internal class FxClientSyncfusionViewModel : SyncfusionViewModelBase
     {
-        private readonly FxDataService _dataService = new FxDataService();
+        private readonly IFxDataService _dataService;
 
-        public FxClientSyncfusionViewModel()
+        public FxClientSyncfusionViewModel(IFxDataService dataService)
         {
-            var table = _dataService.FxRates;
+            _dataService = dataService;
+            var table = dataService.FxRates;
             SetTable(table);
-            _dataService.Start(Application.Current.Dispatcher);
+            dataService.Start(Application.Current.Dispatcher);
+        }
+
+        protected override void DisposeCore()
+        {
+            base.DisposeCore();
+            _dataService.Stop();
         }
     }
 }

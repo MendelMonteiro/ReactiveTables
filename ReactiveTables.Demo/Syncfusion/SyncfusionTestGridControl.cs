@@ -32,6 +32,11 @@ namespace ReactiveTables.Demo.Syncfusion
             DependencyProperty.Register("ViewModel", typeof(ISyncfusionViewModel), typeof(SyncfusionTestGridControl),
                                         new PropertyMetadata(default(ISyncfusionViewModel), ViewModelChanged));
 
+        public SyncfusionTestGridControl()
+        {
+            Model.HeaderColumns = 0;
+        }
+
         private static void ViewModelChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
         {
             var grid = (SyncfusionTestGridControl) dependencyObject;
@@ -42,7 +47,10 @@ namespace ReactiveTables.Demo.Syncfusion
                 grid.RowPositionToken = viewModel.RowPositionsUpdated.Subscribe(grid.RowPositionsUpdated);
             }
             grid.CurrentToken = viewModel.Subscribe(grid.OnNext);
+            grid.ColumnNames = viewModel.ColumnNames;
         }
+
+        protected IList<string> ColumnNames { get; private set; }
 
         private IDisposable RowPositionToken { get; set; }
 
@@ -100,9 +108,14 @@ namespace ReactiveTables.Demo.Syncfusion
 
         protected override void OnQueryCellInfo(GridQueryCellInfoEventArgs e)
         {
-            var rowIndex = e.Cell.RowIndex - Model.HeaderRows;
             var columnIndex = e.Cell.ColumnIndex - Model.HeaderColumns;
+            if (e.Cell.RowIndex < Model.HeaderRows)
+            {
+                e.Style.CellValue = ColumnNames[columnIndex];
+                return;
+            }
 
+            var rowIndex = e.Cell.RowIndex - Model.HeaderRows;
             if (rowIndex >= 0 && columnIndex >= 0)
             {
                 var columnId = ViewModel.GetColumnId(columnIndex);
@@ -126,8 +139,14 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public void AddColumn<T>(string columnId)
         {
+            // TODO: create the accessors dynamically
             _viewModelAccessors.Add(columnId, new ViewModelAccessor<T>(ViewModel, columnId));
         }
+    }
+
+    public interface IViewModelAccessor
+    {
+        void SetValue(GridStyleInfo style, int rowIndex, int columnIndex);
     }
 
     public class ViewModelAccessor<T> : IViewModelAccessor
@@ -147,10 +166,5 @@ namespace ReactiveTables.Demo.Syncfusion
             // TODO: Need to check with syncfusion if there's another way of setting the value which does not incur boxing.
             style.CellValue = _viewModel.GetValue<T>(rowIndex, columnIndex);
         }
-    }
-
-    public interface IViewModelAccessor
-    {
-        void SetValue(GridStyleInfo style, int rowIndex, int columnIndex);
     }
 }
