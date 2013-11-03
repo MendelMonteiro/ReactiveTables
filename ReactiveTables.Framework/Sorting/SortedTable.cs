@@ -205,7 +205,7 @@ namespace ReactiveTables.Framework.Sorting
 
         public IEnumerable<int> GetAllRows()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Remember to sort by before subscribing to SortedTable");
 //                return _sourceTable.
         }
     }

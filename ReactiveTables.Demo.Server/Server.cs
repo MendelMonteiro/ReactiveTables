@@ -44,7 +44,7 @@ namespace ReactiveTables.Demo.Server
             _finished.Set();
         }
 
-        private readonly string[] currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD", "CNY", "ZAR", "BRL", "RUB", "JPY", "INR", "DKK", "NOK", "PLN" };
+        private readonly string[] _currencyList = new[] { "EUR", "GBP", "USD", "AUD", "CAD", "CHF", "NZD", "CNY", "ZAR", "BRL", "RUB", "JPY", "INR", "DKK", "NOK", "PLN" };
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
         private readonly Random _random = new Random();
         private readonly DateTime _start = DateTime.Today;
@@ -93,12 +93,12 @@ namespace ReactiveTables.Demo.Server
             ReactiveTable currencies = (ReactiveTable)o;
 
             int ccyPairId = 1;
-            for (int i = 0; i < currencyList.Length; i++)
+            for (int i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < currencyList.Length; j++)
+                for (int j = i + 1; j < _currencyList.Length; j++)
                 {
-                    var ccy1 = currencyList[i];
-                    var ccy2 = currencyList[j];
+                    var ccy1 = _currencyList[i];
+                    var ccy2 = _currencyList[j];
                     var rowId = currencies.AddRow();
                     currencies.SetValue(FxTableDefinitions.CurrencyPair.Id, rowId, ccyPairId++);
                     currencies.SetValue(FxTableDefinitions.CurrencyPair.CcyPair, rowId, ccy1 + ccy2);
@@ -141,12 +141,12 @@ namespace ReactiveTables.Demo.Server
         
         private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)
         {
-            for (int i = 0; i < currencyList.Length; i++)
+            for (int i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < currencyList.Length; j++)
+                for (int j = i + 1; j < _currencyList.Length; j++)
                 {
-                    var ccy1 = currencyList[i];
-                    var ccy2 = currencyList[j];
+                    var ccy1 = _currencyList[i];
+                    var ccy2 = _currencyList[j];
 
                     var rowId = fxRates.AddRow();
                     var ccyPair = ccy1 + ccy2;
@@ -157,12 +157,12 @@ namespace ReactiveTables.Demo.Server
 
         private void UpdateRates(Dictionary<string, int> ccyPairsToRowIds, IWritableReactiveTable fxRates, bool full = true)
         {
-            for (int i = 0; i < currencyList.Length; i++)
+            for (int i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < currencyList.Length; j++)
+                for (int j = i + 1; j < _currencyList.Length; j++)
                 {
-                    var ccy1 = currencyList[i];
-                    var ccy2 = currencyList[j];
+                    var ccy1 = _currencyList[i];
+                    var ccy2 = _currencyList[j];
 
                     var ccyPair = ccy1 + ccy2;
                     var rowId = ccyPairsToRowIds[ccyPair];

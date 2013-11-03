@@ -111,7 +111,7 @@ namespace ReactiveTables.Demo.Syncfusion
             var columnIndex = e.Cell.ColumnIndex - Model.HeaderColumns;
             if (e.Cell.RowIndex < Model.HeaderRows)
             {
-                e.Style.CellValue = ColumnNames[columnIndex];
+                if (ColumnNames != null) e.Style.CellValue = ColumnNames[columnIndex];
                 return;
             }
 

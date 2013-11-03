@@ -5,9 +5,18 @@
         Title="FxClientSyncfusion" Height="600" Width="800"
         DataContext="{Binding Path=FxSyncfusionClientViewModel, Source={StaticResource ViewModelLocator}}">
     <Grid>
-        <ScrollViewer CanContentScroll="True"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="47*"/>
+            <RowDefinition Height="522*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Sort by: " Margin="10"/>
+            <ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding SortByColumn}" Margin="10"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1"
+            CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto">
+                          VerticalScrollBarVisibility="Auto" Grid.RowSpan="2">
             <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="{Binding Path=ColumnCount}" />
         </ScrollViewer>
     </Grid>
