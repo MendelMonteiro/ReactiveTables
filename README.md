@@ -68,6 +68,7 @@ In multi-threaded real-time GUIs there's always so much code necessary to keep y
 
 # FAQ
 
+If you have any questions or suggestions please contact me at reactivetables@gmail.com
 
 # Credits
 
