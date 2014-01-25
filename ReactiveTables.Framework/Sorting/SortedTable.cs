@@ -20,15 +20,7 @@ namespace ReactiveTables.Framework.Sorting
     }
 
     /// <summary>
-    /// 1. New row arrives
-    ///     - Need to propagate event at the righ row position
-    ///     - Update the positions of other rows (invalidate the view)
-    /// 2. Row is updated
-    ///     - If the key column changes we need to re-sort and then do a BinarySearch to find the new position
-    ///     - If another column changes we need to find the row position using the key and BinarySearch to propagate
-    ///     - Update the positions of other rows (invalidate the view)
-    /// 3. Row at position X scrolls into view
-    ///     - Go get the row id at the given position
+    /// A table that can be sorted by a given column
     /// </summary>
     public class SortedTable : IReactiveTable, ISortedTable, IDisposable 
     {
@@ -259,6 +251,20 @@ namespace ReactiveTables.Framework.Sorting
             _rowIdsToValues = new Dictionary<int, T>(sourceTable.RowCount);
         }
 
+        /// <summary>
+        /// 1. New row arrives
+        ///     - Need to propagate event at the righ row position
+        ///     - Update the positions of other rows (invalidate the view)
+        /// 2. Row is updated
+        ///     - If the key column changes we need to re-sort and then do a BinarySearch to find the new position
+        ///     - If another column changes we need to find the row position using the key and BinarySearch to propagate
+        ///     - Update the positions of other rows (invalidate the view)
+        /// 3. Row at position X scrolls into view
+        ///     - Go get the row id at the given position
+        /// </summary>
+        /// <param name="update"></param>
+        /// <param name="needToResort"></param>
+        /// <returns></returns>
         public int OnNext(TableUpdate update, out bool needToResort)
         {
             var sortColValue = _sourceTable.GetValue<T>(_sortColumnId, update.RowIndex);
@@ -281,7 +287,7 @@ namespace ReactiveTables.Framework.Sorting
                     break;
                 case TableUpdate.TableUpdateAction.Update:
                     {
-                        // Sort column updating
+                            // Sort column updating
                         if (update.Columns.Any(column => column.ColumnId == _sortColumnId))
                         {
                             var oldValue = _rowIdsToValues[update.RowIndex];
@@ -293,6 +299,7 @@ namespace ReactiveTables.Framework.Sorting
                             // Other column - row can't change position
                         else
                         {
+                            // In order to avoid this binary search and others should we rather keep build a list of rowIds to indeces at each re-sort?
                             sortedRowId = _keysToRows.BinarySearch(keyValuePair, _keyComparer);
                         }
                     }
