@@ -57,6 +57,7 @@ namespace ReactiveTables.Framework.Protobuf
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                    throw;
                 }
             }
         }

@@ -19,11 +19,11 @@ namespace ReactiveTables.Demo.Client
         {
             _dataService = dataService;
             var feedsTable = dataService.Feeds;
-            _sortedFeeds = new SortedTable(feedsTable);
-            _sortedFeeds.SortBy(BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, Comparer<string>.Default);
+//            _sortedFeeds = new SortedTable(feedsTable);
+//            _sortedFeeds.SortBy(BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, Comparer<string>.Default);
 //            _sortedFeeds = new SortedTable(_sortedFeeds);
 //            _sortedFeeds.SortBy(BrokerFeedTableDefinition.BrokerColumns.MaturityColumn, Comparer<string>.Default);
-            SetTable(_sortedFeeds);
+            SetTable(feedsTable);
 
             _columnTypes = new Dictionary<string, Type>
                               {

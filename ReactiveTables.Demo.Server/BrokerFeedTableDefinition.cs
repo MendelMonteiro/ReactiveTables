@@ -29,15 +29,13 @@ namespace ReactiveTables.Demo.Server
                         {BrokerColumns.MaturityColumn, 105},
                     };
 
-        public static ReactiveTable SetupFeedTable()
+        public static void SetupFeedTable(IReactiveTable feeds)
         {
-            var feeds = new ReactiveTable();
             feeds.AddColumn(new ReactiveColumn<string>(BrokerColumns.CcyPairColumn));
             feeds.AddColumn(new ReactiveColumn<double>(BrokerColumns.BidColumn));
             feeds.AddColumn(new ReactiveColumn<double>(BrokerColumns.AskColumn));
             feeds.AddColumn(new ReactiveColumn<string>(BrokerColumns.MaturityColumn));
             feeds.AddColumn(new ReactiveColumn<string>(BrokerColumns.BrokerNameColumn));
-            return feeds;
         }
     }
 }

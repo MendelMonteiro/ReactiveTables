@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Comms;
+using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
+using ReactiveTables.Framework.Synchronisation;
 
 namespace ReactiveTables.Demo.Server
 {
@@ -25,36 +27,38 @@ namespace ReactiveTables.Demo.Server
             Console.WriteLine("Starting service");
             _finished.Reset();
 
-            var feeds = BrokerFeedTableDefinition.SetupFeedTable();
+            var outputTable = new ReactiveTable();
+            BrokerFeedTableDefinition.SetupFeedTable(outputTable);
+            var feeds = new ReactiveBatchedPassThroughTable(outputTable,
+                                                            new DefaultThreadMarshaller());
 
-            SetupTcpServer(feeds);
+            SetupTcpServer(outputTable, feeds);
 
             StartBrokerFeeds(feeds);
         }
 
-        private void SetupTcpServer(ReactiveTable feeds)
+        private void SetupTcpServer(IWritableReactiveTable feeds, ReactiveBatchedPassThroughTable passThroughTable)
         {
             var server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
                                                     new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
-                                                    _finished);
+                                                    _finished,
+                                                    () => UpdateClients(passThroughTable));
 
             // Start the server in a new thread
             Task.Run(() =>
                      server.Start(feeds,
                                   new ProtobufEncoderState
                                       {
-                                          ColumnsToFieldIds = new Dictionary<string, int>
-                                                                  {
-                                                                      { BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, 101 },
-                                                                      { BrokerFeedTableDefinition.BrokerColumns.MaturityColumn, 102 },
-                                                                      { BrokerFeedTableDefinition.BrokerColumns.BidColumn, 103 },
-                                                                      { BrokerFeedTableDefinition.BrokerColumns.AskColumn, 104 },
-                                                                      { BrokerFeedTableDefinition.BrokerColumns.CcyPairColumn, 105 },
-                                                                  }
+                                          ColumnsToFieldIds = BrokerFeedTableDefinition.ColumnsToFieldIds
                                       }));
         }
 
-        private static void StartBrokerFeeds(ReactiveTable feeds)
+        private void UpdateClients(ReactiveBatchedPassThroughTable passThroughTable)
+        {
+            passThroughTable.SynchroniseChanges();
+        }
+
+        private static void StartBrokerFeeds(IWritableReactiveTable feeds)
         {
             var feeders = new List<BrokerFeed>
                               {
@@ -78,12 +82,12 @@ namespace ReactiveTables.Demo.Server
 
     class BrokerFeed
     {
-        private readonly ReactiveTable _table;
+        private readonly IWritableReactiveTable _table;
         private readonly Random _random = new Random();
         private readonly int[] _rowIndeces = new int[15];
         private readonly string[] _maturities = new[] { "ON", "1W", "2W", "3W", "1M", "2M", "3M", "4M", "5M", "6M", "1Y", "2Y", "3Y", "5Y", "10Y" };
 
-        public BrokerFeed(string name, ReactiveTable table)
+        public BrokerFeed(string name, IWritableReactiveTable table)
         {
             Name = name;
             _table = table;

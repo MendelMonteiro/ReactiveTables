@@ -122,13 +122,7 @@ namespace ReactiveTables.Demo.Server
 
             server.Start(currencies, new ProtobufEncoderState
                                          {
-                                             ColumnsToFieldIds = new Dictionary<string, int>
-                                                                     {
-                                                                         {FxTableDefinitions.CurrencyPair.Id, 101},
-                                                                         {FxTableDefinitions.CurrencyPair.CcyPair, 102},
-                                                                         {FxTableDefinitions.CurrencyPair.Ccy1, 103},
-                                                                         {FxTableDefinitions.CurrencyPair.Ccy2, 104},
-                                                                     }
+                                             ColumnsToFieldIds = FxTableDefinitions.CurrencyPair.ColumnsToFieldIds
                                          });
         }
 

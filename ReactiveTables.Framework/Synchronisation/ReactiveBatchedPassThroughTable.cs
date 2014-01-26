@@ -26,6 +26,7 @@ namespace ReactiveTables.Framework.Synchronisation
     /// <summary>
     /// Buffers access to a table by batching all changes (adds, updates and deletes) and replays them 
     /// according to the delay specified in the constructor.
+    /// This class is thread safe and can be written to by multiple threads.
     /// </summary>
     public class ReactiveBatchedPassThroughTable: IWritableReactiveTable, IDisposable
     {
@@ -72,12 +73,17 @@ namespace ReactiveTables.Framework.Synchronisation
             get { throw new NotImplementedException(); }
         }
 
-        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, TimeSpan delay)
+        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller)
         {
             _targetTable = targetTable;
-            _marshaller = marshaller;
+            _marshaller = marshaller;            
+        }
+
+        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, TimeSpan delay)
+            :this(targetTable, marshaller)
+        {
             _timer = new System.Timers.Timer(delay.TotalMilliseconds);
-            _timer.Elapsed += (sender, args) => SynchroniseChanges(null);
+            _timer.Elapsed += (sender, args) => SynchroniseChanges();
             _timer.AutoReset = false;
             _timer.Start();
         }
@@ -97,8 +103,7 @@ namespace ReactiveTables.Framework.Synchronisation
         /// <summary>
         /// Called when the timer ticks
         /// </summary>
-        /// <param name="state"></param>
-        private void SynchroniseChanges(object state)
+        public void SynchroniseChanges()
         {
             // Make copies to control exactly when we lock
             List<TableUpdate> rowUpdatesAdd = null, rowUpdatesDelete = null;
@@ -123,7 +128,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
             if (rowUpdatesAdd == null && rowUpdatesDelete == null && colUpdaters.Count == 0)
             {
-                _timer.Enabled = true;
+                if (_timer != null) _timer.Enabled = true;
                 return;
             }
 
@@ -168,7 +173,7 @@ namespace ReactiveTables.Framework.Synchronisation
             }
             finally
             {
-                _timer.Enabled = true;
+                if (_timer != null) _timer.Enabled = true;
             }
         }
 
@@ -251,10 +256,11 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public int AddRow()
         {
-            int rowIndex = _rowManager.AddRow();
-            TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
+            int rowIndex;
             lock (_shared)
             {
+                rowIndex = _rowManager.AddRow();
+                TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
                 _rowUpdatesAdd.Enqueue(update);
             }
             return rowIndex;
@@ -262,10 +268,10 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void DeleteRow(int rowIndex)
         {
-            _rowManager.DeleteRow(rowIndex);
-            TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
             lock (_shared)
             {
+                _rowManager.DeleteRow(rowIndex);
+                TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
                 _rowUpdatesDelete.Enqueue(update);
             }
         }

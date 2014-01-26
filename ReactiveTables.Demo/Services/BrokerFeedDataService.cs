@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -15,15 +16,14 @@ namespace ReactiveTables.Demo.Services
 {
     class BrokerFeedDataService : IBrokerFeedDataService
     {
-        private readonly ReactiveTable _feeds;
+        private readonly ReactiveTable _feeds = new ReactiveTable();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(50);
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
 
         public BrokerFeedDataService()
         {
-            _feeds = BrokerFeedTableDefinition.SetupFeedTable();
-
+            BrokerFeedTableDefinition.SetupFeedTable(_feeds);
         }
 
         public IReactiveTable Feeds
@@ -49,6 +49,9 @@ namespace ReactiveTables.Demo.Services
             client.Connect(IPAddress.Loopback, port);
             using (var stream = client.GetStream())
             {
+//                FileStream file = new FileStream("broker-output.bin", FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+//                stream.CopyTo(file);
+
                 var fieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary();
                 var tableDecoder = new ProtobufTableDecoder(wireTable, fieldIdsToColumns, stream);
                 _tableWriters.Add(tableDecoder);
