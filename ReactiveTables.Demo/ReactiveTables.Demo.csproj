@@ -131,10 +131,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\ReactiveTables.Demo.Server\BrokerFeedTableDefinition.cs">
+      <Link>Services\BrokerFeedTableDefinition.cs</Link>
+    </Compile>
     <Compile Include="..\ReactiveTables.Demo.Server\FxTableDefinitions.cs">
       <Link>Client\FxTableDefinitions.cs</Link>
     </Compile>
+    <Compile Include="..\ReactiveTables.Demo.Server\ServerPorts.cs">
+      <Link>Services\ServerPorts.cs</Link>
+    </Compile>
     <Compile Include="AccountViewModel.cs" />
+    <Compile Include="Client\BrokerFeed.xaml.cs">
+      <DependentUpon>BrokerFeed.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Client\BrokerFeedViewModel.cs" />
     <Compile Include="Client\FxClient.xaml.cs">
       <DependentUpon>FxClient.xaml</DependentUpon>
     </Compile>
@@ -145,6 +155,8 @@
     <Compile Include="Client\FxClientViewModel.cs" />
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
     <Compile Include="Services\AccountBalanceDataService.cs" />
+    <Compile Include="Services\BrokerFeedDataService.cs" />
+    <Compile Include="Services\BrokerFeedService.cs" />
     <Compile Include="Services\FxDataService.cs" />
     <Compile Include="Client\FxRateViewModel.cs" />
     <Compile Include="PersonAccountsViewModel.cs" />
@@ -159,6 +171,7 @@
     <Compile Include="Syncfusion\ISyncfusionViewModel.cs" />
     <Compile Include="Syncfusion\SyncfusionTestGridControl.cs" />
     <Compile Include="Syncfusion\SyncfusionViewModelBase.cs" />
+    <Compile Include="Syncfusion\SyncfusionWindow.cs" />
     <Compile Include="TestLauncher.xaml.cs">
       <DependentUpon>TestLauncher.xaml</DependentUpon>
     </Compile>
@@ -176,6 +189,10 @@
       <DependentUpon>XceedTest.xaml</DependentUpon>
     </Compile>
     <Compile Include="XceedTestViewModel.cs" />
+    <Page Include="Client\BrokerFeed.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Client\FxClient.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

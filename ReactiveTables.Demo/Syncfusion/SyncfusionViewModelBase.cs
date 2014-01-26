@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
-    class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
+    public class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
     {
         protected IReactiveTable Table;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();

@@ -29,6 +29,12 @@ namespace ReactiveTables.Framework.Protobuf
         private IDisposable _token;
         private ProtoWriter _protoWriter;
 
+        /// <summary>
+        /// Hook up the table to the output stream
+        /// </summary>
+        /// <param name="outputStream"></param>
+        /// <param name="table"></param>
+        /// <param name="state"></param>
         public void Setup(Stream outputStream, IReactiveTable table, object state)
         {
             var config = (ProtobufEncoderState) state;
@@ -40,6 +46,9 @@ namespace ReactiveTables.Framework.Protobuf
             table.ReplayRows(writerObserver);
         }
 
+        /// <summary>
+        /// Stop listening to the table and writing to the output stream
+        /// </summary>
         public void Close()
         {
             if (_token != null) _token.Dispose();

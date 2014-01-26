@@ -19,7 +19,7 @@ using System.Runtime.CompilerServices;
 
 namespace ReactiveTables.Demo.Utils
 {
-    internal class BaseViewModel
+    public class BaseViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
         

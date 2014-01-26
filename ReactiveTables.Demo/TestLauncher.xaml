@@ -15,6 +15,7 @@
             <Button Name="ClientServerSyncfusionButton" Click="ClientServerSyncfusionButton_Click">Client/server demo [Syncfusion]</Button>
             <Button Name="SyncfusionButton" Click="SyncfusionButton_Click">Syncfusion demo</Button>
             <Button Name="XceedButton" Click="XceedButton_Click">Xceed demo</Button>
+            <Button x:Name="BrokerFeedButton" Click="BrokerFeedButton_OnClick" Content="Broker Feed demo"/>
         </StackPanel>
     </Grid>
 </Window>

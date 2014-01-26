@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Windows;
 using ReactiveTables.Demo.Server;
+using ReactiveTables.Demo.Syncfusion;
 
 namespace ReactiveTables.Demo.Client
 {
     /// <summary>
     /// Interaction logic for FxClientSyncfusion.xaml
     /// </summary>
-    public partial class FxClientSyncfusion : Window
+    partial class FxClientSyncfusion
     {
         public FxClientSyncfusion()
         {
@@ -23,13 +23,6 @@ namespace ReactiveTables.Demo.Client
             Grid.AddColumn<double>(FxTableDefinitions.FxRates.YearRangeEnd);
             Grid.AddColumn<DateTime>(FxTableDefinitions.FxRates.Time);
             Grid.AddColumn<double>(FxTableDefinitions.FxRates.Ticks);
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            var viewModel = (FxClientSyncfusionViewModel)DataContext;
-            viewModel.Dispose();
-            base.OnClosed(e);
         }
     }
 }

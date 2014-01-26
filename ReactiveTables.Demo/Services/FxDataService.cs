@@ -30,7 +30,7 @@ using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Services
 {
-    internal interface IFxDataService
+    public interface IFxDataService
     {
         ReactiveTable FxRates { get; }
         ReactiveTable Currencies { get; }
@@ -76,10 +76,10 @@ namespace ReactiveTables.Demo.Services
         {
             var currenciesWire = new ReactiveBatchedPassThroughTable(_currencies, new WpfThreadMarshaller(dispatcher),
                                                                      _synchroniseTablesDelay);
-            Task.Run(() => StartReceiving(currenciesWire, FxTableDefinitions.CurrencyPair.ColumnsToFieldIds, 1337));
+            Task.Run(() => StartReceiving(currenciesWire, FxTableDefinitions.CurrencyPair.ColumnsToFieldIds, (int) ServerPorts.Currencies));
 
             var ratesWire = new ReactiveBatchedPassThroughTable(_fxRates, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
-            Task.Run(() => StartReceiving(ratesWire, FxTableDefinitions.FxRates.ColumnsToFieldIds, 1338));
+            Task.Run(() => StartReceiving(ratesWire, FxTableDefinitions.FxRates.ColumnsToFieldIds, (int) ServerPorts.FxRates));
         }
 
         private static ReactiveTable GetCurrenciesTable()
@@ -138,16 +138,13 @@ namespace ReactiveTables.Demo.Services
 
         public void Stop()
         {
-            if (_tableWriters != null)
+            foreach (var writer in _tableWriters)
             {
-                foreach (var writer in _tableWriters)
-                {
-                    writer.Stop();
-                }
-                foreach (var client in _clients)
-                {
-                    client.Close();
-                }
+                writer.Stop();
+            }
+            foreach (var client in _clients)
+            {
+                client.Close();
             }
         }
     }

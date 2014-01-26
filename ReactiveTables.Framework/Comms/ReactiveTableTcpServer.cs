@@ -42,6 +42,11 @@ namespace ReactiveTables.Framework.Comms
             _testAction = testAction;
         }
 
+        /// <summary>
+        /// Start waiting for incoming client connections - this is a blocking call
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="encoderState"></param>
         public void Start(IWritableReactiveTable table, object encoderState)
         {
             TcpListener listener = new TcpListener(_endPoint);
@@ -58,6 +63,10 @@ namespace ReactiveTables.Framework.Comms
             listener.Stop();
         }
 
+        /// <summary>
+        /// When a client connects to the server we need to stream changes to it every 50ms
+        /// </summary>
+        /// <param name="ar"></param>
         private void AcceptClient(IAsyncResult ar)
         {
             var state = (ClientState) ar.AsyncState;
@@ -68,9 +77,10 @@ namespace ReactiveTables.Framework.Comms
             _encoder.Setup(outputStream, table, state.EncoderState);
 
             outputStream.Flush();
-            while (client.Connected && !_finished.Wait(50))
+            int millisecondsTimeout = _testAction == null ? -1 : 50;
+            while (client.Connected && !_finished.Wait(millisecondsTimeout))
             {
-                // Update the rates every 50 milliseconds
+                // Run the test action every 50 milliseconds if it has been set.
                 if (_testAction != null) _testAction();
                 //outputStream.Flush();
             }

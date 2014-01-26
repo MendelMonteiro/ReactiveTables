@@ -25,7 +25,7 @@ using ReactiveTables.Framework.Sorting;
 
 namespace ReactiveTables.Demo.Client
 {
-    internal class FxClientSyncfusionViewModel : SyncfusionViewModelBase
+    public class FxClientSyncfusionViewModel : SyncfusionViewModelBase
     {
         private readonly IFxDataService _dataService;
         private string _sortByColumn;

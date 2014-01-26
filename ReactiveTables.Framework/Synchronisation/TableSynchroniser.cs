@@ -22,6 +22,7 @@ namespace ReactiveTables.Framework.Synchronisation
     /// <summary>
     /// Applies all changes that occur to the source table to the target table using a given <see cref="IThreadMarshaller"/>
     /// </summary>
+    [Obsolete("Use the ReactievPassThroughTable instead.")]    
     public class TableSynchroniser : IObserver<TableUpdate>, IDisposable
     {
         private readonly IReactiveTable _sourceTable;

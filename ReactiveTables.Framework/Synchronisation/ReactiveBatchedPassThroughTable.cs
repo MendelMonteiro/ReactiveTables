@@ -36,8 +36,14 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly IWritableReactiveTable _targetTable;
         private readonly IThreadMarshaller _marshaller;
         private readonly object _shared = new object();
-        private readonly System.Timers.Timer _timer1;
+        private readonly System.Timers.Timer _timer;
 
+        /// <summary>
+        /// Not implemented as the table is read only
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         public object GetValue(string columnId, int rowIndex)
         {
             throw new NotImplementedException();
@@ -58,6 +64,9 @@ namespace ReactiveTables.Framework.Synchronisation
             return _targetTable.GetColumnByIndex(index);
         }
 
+        /// <summary>
+        /// Not implemented as the table is write only
+        /// </summary>
         public PropertyChangedNotifier ChangeNotifier
         {
             get { throw new NotImplementedException(); }
@@ -67,10 +76,10 @@ namespace ReactiveTables.Framework.Synchronisation
         {
             _targetTable = targetTable;
             _marshaller = marshaller;
-            _timer1 = new System.Timers.Timer(delay.TotalMilliseconds);
-            _timer1.Elapsed += (sender, args) => SynchroniseChanges(null);
-            _timer1.AutoReset = false;
-            _timer1.Start();
+            _timer = new System.Timers.Timer(delay.TotalMilliseconds);
+            _timer.Elapsed += (sender, args) => SynchroniseChanges(null);
+            _timer.AutoReset = false;
+            _timer.Start();
         }
 
         /// <summary>
@@ -85,6 +94,10 @@ namespace ReactiveTables.Framework.Synchronisation
             }
         }
 
+        /// <summary>
+        /// Called when the timer ticks
+        /// </summary>
+        /// <param name="state"></param>
         private void SynchroniseChanges(object state)
         {
             // Make copies to control exactly when we lock
@@ -110,7 +123,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
             if (rowUpdatesAdd == null && rowUpdatesDelete == null && colUpdaters.Count == 0)
             {
-                _timer1.Enabled = true;
+                _timer.Enabled = true;
                 return;
             }
 
@@ -118,10 +131,17 @@ namespace ReactiveTables.Framework.Synchronisation
             _marshaller.Dispatch(() => CopyChanges(rowUpdatesAdd, colUpdaters, rowUpdatesDelete));
         }
 
+        /// <summary>
+        /// Called on the target table thread - copies adds/updates/deletes
+        /// </summary>
+        /// <param name="rowUpdatesAdd"></param>
+        /// <param name="colUpdaters"></param>
+        /// <param name="rowUpdatesDelete"></param>
         private void CopyChanges(List<TableUpdate> rowUpdatesAdd, List<ITableColumnUpdater> colUpdaters, List<TableUpdate> rowUpdatesDelete)
         {
             try
             {
+                // Copy the adds
                 if (rowUpdatesAdd != null)
                 {
                     for (int i = 0; i < rowUpdatesAdd.Count; i++)
@@ -131,11 +151,13 @@ namespace ReactiveTables.Framework.Synchronisation
                     }
                 }
 
+                // Copy the updates
                 foreach (var updater in colUpdaters)
                 {
                     updater.SetValues(_targetTable);
                 }
 
+                // Copy the deletes
                 if (rowUpdatesDelete != null)
                 {
                     for (int i = 0; i < rowUpdatesDelete.Count; i++)
@@ -146,7 +168,7 @@ namespace ReactiveTables.Framework.Synchronisation
             }
             finally
             {
-                _timer1.Enabled = true;
+                _timer.Enabled = true;
             }
         }
 
@@ -165,6 +187,13 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Not implemented as the table is write only
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columnId"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         public T GetValue<T>(string columnId, int rowIndex)
         {
             throw new NotImplementedException();
@@ -243,7 +272,7 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void Dispose()
         {
-            if (_timer1 != null) _timer1.Dispose();
+            if (_timer != null) _timer.Dispose();
         }
     }
 

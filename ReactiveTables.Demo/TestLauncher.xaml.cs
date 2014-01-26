@@ -58,5 +58,11 @@ namespace ReactiveTables.Demo
             XceedTest window = new XceedTest();
             window.Show();
         }
+
+        private void BrokerFeedButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            BrokerFeed window = new BrokerFeed();
+            window.Show();
+        }
     }
 }

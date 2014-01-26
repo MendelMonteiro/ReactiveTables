@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -26,19 +27,28 @@ using ReactiveTables.Framework.Protobuf;
 
 namespace ReactiveTables.Demo.Server
 {
-    internal class Server
+    internal interface IServer
+    {
+        void Stop();
+        void Start();
+    }
+
+    /// <summary>
+    /// Demo server streams two tables to a client when it connects
+    /// </summary>
+    internal class Server : IServer
     {
         private static void Main(string[] args)
         {
-            Server server = new Server();
-            server.Start();
-            Console.CancelKeyPress += (sender, eventArgs) => server.Stop();
+            var servers = new List<IServer> {new Server(), new BrokerServer()};
+            servers.ForEach(s => s.Start());
+            Console.CancelKeyPress += (sender, eventArgs) => servers.ForEach(s => s.Stop());
             Console.WriteLine("Press Enter to stop server");
             Console.ReadKey();
-            server.Stop();
+            servers.ForEach(s => s.Stop());
         }
 
-        private void Stop()
+        public void Stop()
         {
             Console.WriteLine("Stopping service");
             _finished.Set();
@@ -49,7 +59,7 @@ namespace ReactiveTables.Demo.Server
         private readonly Random _random = new Random();
         private readonly DateTime _start = DateTime.Today;
 
-        private void Start()
+        public void Start()
         {
             _finished.Reset();
 
@@ -108,7 +118,7 @@ namespace ReactiveTables.Demo.Server
             }
 
             ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                                       new IPEndPoint(IPAddress.Loopback, 1337), _finished);
+                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.Currencies), _finished);
 
             server.Start(currencies, new ProtobufEncoderState
                                          {
@@ -132,7 +142,7 @@ namespace ReactiveTables.Demo.Server
 
             Action updateTable = () => UpdateRates(ccyPairsToRowIds, fxRates, false);
             ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                                       new IPEndPoint(IPAddress.Loopback, 1338), _finished, updateTable);
+                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.FxRates), _finished, updateTable);
             server.Start(fxRates, new ProtobufEncoderState
                                       {
                                           ColumnsToFieldIds = FxTableDefinitions.FxRates.ColumnsToFieldIds

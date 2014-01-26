@@ -47,5 +47,10 @@ namespace ReactiveTables.Demo.Services
         {
             get { return Kernel.Get<FxClientSyncfusionViewModel>(); }
         }
+
+        public BrokerFeedViewModel BrokerFeedViewModel
+        {
+            get { return Kernel.Get<BrokerFeedViewModel>(); }
+        }
     }
 }

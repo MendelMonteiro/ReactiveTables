@@ -81,9 +81,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BrokerFeedTableDefinition.cs" />
+    <Compile Include="BrokerServer.cs" />
     <Compile Include="FxTableDefinitions.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerPorts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
