@@ -81,6 +81,7 @@
     <Compile Include="ProtobufTableDecoder.cs" />
     <Compile Include="ProtobufWriterObserver.cs" />
     <Compile Include="ProtobufTableEncoder.cs" />
+    <Compile Include="ReactiveTableTcpClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">

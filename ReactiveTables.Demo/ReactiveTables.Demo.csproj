@@ -131,8 +131,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\ReactiveTables.Demo.Server\BrokerFeedTableDefinition.cs">
-      <Link>Services\BrokerFeedTableDefinition.cs</Link>
+    <Compile Include="..\ReactiveTables.Demo.Server\BrokerTableDefinition.cs">
+      <Link>Services\BrokerTableDefinition.cs</Link>
     </Compile>
     <Compile Include="..\ReactiveTables.Demo.Server\FxTableDefinitions.cs">
       <Link>Client\FxTableDefinitions.cs</Link>
@@ -156,7 +156,6 @@
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
     <Compile Include="Services\AccountBalanceDataService.cs" />
     <Compile Include="Services\BrokerFeedDataService.cs" />
-    <Compile Include="Services\BrokerFeedService.cs" />
     <Compile Include="Services\FxDataService.cs" />
     <Compile Include="Client\FxRateViewModel.cs" />
     <Compile Include="PersonAccountsViewModel.cs" />

@@ -24,11 +24,11 @@ namespace ReactiveTables.Demo.Client
         {
             InitializeComponent();
 
-            Grid.AddColumn<string>(BrokerFeedTableDefinition.BrokerColumns.CcyPairColumn);
-            Grid.AddColumn<double>(BrokerFeedTableDefinition.BrokerColumns.BidColumn);
-            Grid.AddColumn<double>(BrokerFeedTableDefinition.BrokerColumns.AskColumn);
-            Grid.AddColumn<string>(BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn);
-            Grid.AddColumn<string>(BrokerFeedTableDefinition.BrokerColumns.MaturityColumn);
+            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.CcyPairColumn);
+            Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.BidColumn);
+            Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.AskColumn);
+            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.BrokerNameColumn);
+            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.MaturityColumn);
         }
     }
 }

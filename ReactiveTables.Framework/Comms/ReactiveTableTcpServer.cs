@@ -30,16 +30,16 @@ namespace ReactiveTables.Framework.Comms
         private readonly IPEndPoint _endPoint;
         private readonly IReactiveTableEncoder _encoder;
         private readonly Action _testAction;
+        private readonly Func<ReactiveClientSession, IReactiveTable> _source;
 
-        public ReactiveTableTcpServer(IReactiveTableEncoder encoder,
-                                      IPEndPoint endPoint,
-                                      ManualResetEventSlim finished,
-                                      Action testAction = null)
+        public ReactiveTableTcpServer(IReactiveTableEncoder encoder, IPEndPoint endPoint, ManualResetEventSlim finished, 
+                                      Func<ReactiveClientSession, IReactiveTable> source, Action testAction = null)
         {
             _encoder = encoder;
             _endPoint = endPoint;
             _finished = finished;
             _testAction = testAction;
+            _source = source;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace ReactiveTables.Framework.Comms
         /// </summary>
         /// <param name="table"></param>
         /// <param name="encoderState"></param>
-        public void Start(IWritableReactiveTable table, object encoderState)
+        public void Start(IReactiveTable table, object encoderState)
         {
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
@@ -72,9 +72,10 @@ namespace ReactiveTables.Framework.Comms
             var state = (ClientState) ar.AsyncState;
             var client = state.Listener.EndAcceptTcpClient(ar);
             var outputStream = client.GetStream();
-            var table = state.Table;
-
-            _encoder.Setup(outputStream, table, state.EncoderState);
+            
+            var session = new ReactiveClientSession {RemoteEndPoint = (IPEndPoint) client.Client.RemoteEndPoint};
+            IReactiveTable output = _source(session);
+            _encoder.Setup(outputStream, output, state.EncoderState);
 
             outputStream.Flush();
             int millisecondsTimeout = _testAction == null ? -1 : 50;
@@ -90,5 +91,15 @@ namespace ReactiveTables.Framework.Comms
             outputStream.Close();
             client.Close();
         }
+    }
+
+    public class ReactiveClientSession
+    {
+        public IPEndPoint RemoteEndPoint { get; set; } 
+    }
+
+    public interface ITcpServerDataSource
+    {
+        IReactiveTable GetOutputTable(ReactiveClientSession session);
     }
 }

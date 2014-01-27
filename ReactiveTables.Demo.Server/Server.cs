@@ -14,7 +14,6 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -118,7 +117,9 @@ namespace ReactiveTables.Demo.Server
             }
 
             ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.Currencies), _finished);
+                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.Currencies), 
+                                                                       _finished,
+                                                                       session => currencies);
 
             server.Start(currencies, new ProtobufEncoderState
                                          {
@@ -136,7 +137,10 @@ namespace ReactiveTables.Demo.Server
 
             Action updateTable = () => UpdateRates(ccyPairsToRowIds, fxRates, false);
             ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.FxRates), _finished, updateTable);
+                                                                       new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.FxRates), 
+                                                                       _finished, 
+                                                                       session => fxRates,
+                                                                       updateTable);
             server.Start(fxRates, new ProtobufEncoderState
                                       {
                                           ColumnsToFieldIds = FxTableDefinitions.FxRates.ColumnsToFieldIds

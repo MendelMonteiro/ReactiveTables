@@ -20,7 +20,7 @@ namespace ReactiveTables.Framework.Comms
     internal class ClientState
     {
         public TcpListener Listener { get; set; }
-        public IWritableReactiveTable Table { get; set; }
+        public IReactiveTable Table { get; set; }
         public object EncoderState { get; set; }
     }
 }

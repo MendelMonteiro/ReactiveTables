@@ -1,4 +1,18 @@
-﻿using System;
+﻿// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -20,18 +34,18 @@ namespace ReactiveTables.Demo.Client
             _dataService = dataService;
             var feedsTable = dataService.Feeds;
 //            _sortedFeeds = new SortedTable(feedsTable);
-//            _sortedFeeds.SortBy(BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, Comparer<string>.Default);
+//            _sortedFeeds.SortBy(BrokerTableDefinition.BrokerColumns.BrokerNameColumn, Comparer<string>.Default);
 //            _sortedFeeds = new SortedTable(_sortedFeeds);
-//            _sortedFeeds.SortBy(BrokerFeedTableDefinition.BrokerColumns.MaturityColumn, Comparer<string>.Default);
+//            _sortedFeeds.SortBy(BrokerTableDefinition.BrokerColumns.MaturityColumn, Comparer<string>.Default);
             SetTable(feedsTable);
 
             _columnTypes = new Dictionary<string, Type>
                               {
-                                  {BrokerFeedTableDefinition.BrokerColumns.CcyPairColumn, typeof(string)},
-                                  {BrokerFeedTableDefinition.BrokerColumns.BidColumn, typeof(double)},
-                                  {BrokerFeedTableDefinition.BrokerColumns.AskColumn, typeof(double)},
-                                  {BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, typeof(string)},
-                                  {BrokerFeedTableDefinition.BrokerColumns.MaturityColumn, typeof(string)},
+                                  {BrokerTableDefinition.BrokerColumns.CcyPairColumn, typeof(string)},
+                                  {BrokerTableDefinition.BrokerColumns.BidColumn, typeof(double)},
+                                  {BrokerTableDefinition.BrokerColumns.AskColumn, typeof(double)},
+                                  {BrokerTableDefinition.BrokerColumns.BrokerNameColumn, typeof(string)},
+                                  {BrokerTableDefinition.BrokerColumns.MaturityColumn, typeof(string)},
                               };
             Columns = new ObservableCollection<string>(_columnTypes.Keys);
 

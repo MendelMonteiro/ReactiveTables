@@ -1,7 +1,19 @@
-﻿using System;
+﻿// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -10,10 +22,16 @@ using ReactiveTables.Framework;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
-using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Services
 {
+    public interface IBrokerFeedDataService
+    {
+        IReactiveTable Feeds { get; }
+        void Start(Dispatcher dispatcher);
+        void Stop();
+    }
+
     class BrokerFeedDataService : IBrokerFeedDataService
     {
         private readonly ReactiveTable _feeds = new ReactiveTable();
@@ -23,7 +41,7 @@ namespace ReactiveTables.Demo.Services
 
         public BrokerFeedDataService()
         {
-            BrokerFeedTableDefinition.SetupFeedTable(_feeds);
+            BrokerTableDefinition.SetupFeedTable(_feeds);
         }
 
         public IReactiveTable Feeds
@@ -37,27 +55,14 @@ namespace ReactiveTables.Demo.Services
                                                                 new WpfThreadMarshaller(dispatcher),
                                                                 _synchroniseTablesDelay);
             Task.Run(() => StartReceiving(feedsWire,
-                                          BrokerFeedTableDefinition.ColumnsToFieldIds,
+                                          BrokerTableDefinition.ColumnsToFieldIds,
                                           (int) ServerPorts.BrokerFeed));
         }
 
-        private void StartReceiving(ReactiveBatchedPassThroughTable wireTable, Dictionary<string, int> columnsToFieldIds, int port)
+        private void StartReceiving(IWritableReactiveTable wireTable, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new TcpClient();
-            _clients.Add(client);
-            // TODO: Handle disconnections
-            client.Connect(IPAddress.Loopback, port);
-            using (var stream = client.GetStream())
-            {
-//                FileStream file = new FileStream("broker-output.bin", FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-//                stream.CopyTo(file);
-
-                var fieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary();
-                var tableDecoder = new ProtobufTableDecoder(wireTable, fieldIdsToColumns, stream);
-                _tableWriters.Add(tableDecoder);
-                tableDecoder.Start();
-            }
-            //_client.Close();
+            var client = new ReactiveTableTcpClient(wireTable, columnsToFieldIds, port);
+            client.Start();
         }
 
         public void Stop()

@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -26,7 +25,6 @@ using ReactiveTables.Framework.Columns.Calculated;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
-using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Services
 {
@@ -74,8 +72,7 @@ namespace ReactiveTables.Demo.Services
 
         public void Start(Dispatcher dispatcher)
         {
-            var currenciesWire = new ReactiveBatchedPassThroughTable(_currencies, new WpfThreadMarshaller(dispatcher),
-                                                                     _synchroniseTablesDelay);
+            var currenciesWire = new ReactiveBatchedPassThroughTable(_currencies, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
             Task.Run(() => StartReceiving(currenciesWire, FxTableDefinitions.CurrencyPair.ColumnsToFieldIds, (int) ServerPorts.Currencies));
 
             var ratesWire = new ReactiveBatchedPassThroughTable(_fxRates, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
@@ -84,7 +81,7 @@ namespace ReactiveTables.Demo.Services
 
         private static ReactiveTable GetCurrenciesTable()
         {
-            ReactiveTable currencies = new ReactiveTable();
+            var currencies = new ReactiveTable();
             currencies.AddColumn(new ReactiveColumn<int>(FxTableDefinitions.CurrencyPair.Id));
             currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.CcyPair));
             currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.Ccy1));
@@ -94,7 +91,7 @@ namespace ReactiveTables.Demo.Services
 
         private static ReactiveTable GetRatesTable()
         {
-            ReactiveTable fxRates = new ReactiveTable();
+            var fxRates = new ReactiveTable();
             fxRates.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.FxRates.CcyPairId));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Bid));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Ask));
@@ -122,18 +119,8 @@ namespace ReactiveTables.Demo.Services
 
         private void StartReceiving(IWritableReactiveTable currenciesWire, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new TcpClient();
-            _clients.Add(client);
-            // TODO: Handle disconnections
-            client.Connect(IPAddress.Loopback, port);
-            using (var stream = client.GetStream())
-            {
-                var fieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary();
-                var tableDecoder = new ProtobufTableDecoder(currenciesWire, fieldIdsToColumns, stream);
-                _tableWriters.Add(tableDecoder);
-                tableDecoder.Start();
-            }
-            //_client.Close();
+            var client = new ReactiveTableTcpClient(currenciesWire, columnsToFieldIds, port);
+            client.Start();
         }
 
         public void Stop()

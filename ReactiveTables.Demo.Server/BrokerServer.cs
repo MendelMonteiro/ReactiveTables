@@ -1,13 +1,26 @@
-﻿using System;
+﻿// This file is part of ReactiveTables.
+// 
+// ReactiveTables is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// ReactiveTables is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ReactiveTables.Framework;
-using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Comms;
+using ReactiveTables.Framework.Filters;
+using ReactiveTables.Framework.Joins;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
@@ -24,35 +37,65 @@ namespace ReactiveTables.Demo.Server
 
         public void Start()
         {
-            Console.WriteLine("Starting service");
+            Console.WriteLine("Starting broker service");
             _finished.Reset();
 
             var outputTable = new ReactiveTable();
-            BrokerFeedTableDefinition.SetupFeedTable(outputTable);
-            var feeds = new ReactiveBatchedPassThroughTable(outputTable,
-                                                            new DefaultThreadMarshaller());
+            BrokerTableDefinition.SetupFeedTable(outputTable);
+            var feeds = new ReactiveBatchedPassThroughTable(outputTable, new DefaultThreadMarshaller());
 
-            SetupTcpServer(outputTable, feeds);
+
+            var clientsTable = new ReactiveTable();
+            BrokerTableDefinition.SetupClientFeedTable(clientsTable);
+
+            SetupTcpServer(outputTable, feeds, clientsTable);
+
+            StartBrokerClient(clientsTable);
 
             StartBrokerFeeds(feeds);
         }
 
-        private void SetupTcpServer(IWritableReactiveTable feeds, ReactiveBatchedPassThroughTable passThroughTable)
+        private static void StartBrokerClient(ReactiveTable clientsTable)
+        {
+            Task.Run(() =>
+                         {
+                             // Used non-batched pass through as we won't be receiving much data.
+                             var clientTable = new ReactivePassThroughTable(clientsTable, new DefaultThreadMarshaller());
+                             var client = new ReactiveTableTcpClient(clientTable, BrokerTableDefinition.ClientColumnsToFieldIds,
+                                                                     (int) ServerPorts.BrokerFeedClients);
+                             client.Start();
+                         });
+        }
+
+        private void SetupTcpServer(IReactiveTable feeds, ReactiveBatchedPassThroughTable passThroughTable, ReactiveTable clientsTable)
         {
             var server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                    new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
+                                                    new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeed),
                                                     _finished,
+                                                    s => GetClientTable(s, feeds, clientsTable),
                                                     () => UpdateClients(passThroughTable));
 
             // Start the server in a new thread
-            Task.Run(() =>
-                     server.Start(feeds,
-                                  new ProtobufEncoderState
-                                      {
-                                          ColumnsToFieldIds = BrokerFeedTableDefinition.ColumnsToFieldIds
-                                      }));
+            Task.Run(() => server.Start(feeds, new ProtobufEncoderState {ColumnsToFieldIds = BrokerTableDefinition.ColumnsToFieldIds}));
         }
 
+        private IReactiveTable GetClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feeds, ReactiveTable clientsTable)
+        {
+            var joined = new JoinedTable(clientsTable, feeds,
+                                         new Join<string>(clientsTable, BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn,
+                                                          feeds, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
+            var filtered = new FilteredTable(joined,
+                                             new DelegatePredicate1<string>(
+                                                 BrokerTableDefinition.BrokerClientColumns.ClientIpColumn,
+                                                 ip => ip == reactiveClientSession.RemoteEndPoint.Address.ToString()));
+
+            return filtered;
+        }
+
+        /// <summary>
+        /// Push all the changes to the clients
+        /// </summary>
+        /// <param name="passThroughTable"></param>
         private void UpdateClients(ReactiveBatchedPassThroughTable passThroughTable)
         {
             passThroughTable.SynchroniseChanges();
@@ -100,19 +143,13 @@ namespace ReactiveTables.Demo.Server
         /// </summary>
         public void Start()
         {
-            /*_table = new ReactiveTable();
-            _table.AddColumn(new ReactiveColumn<double>(BrokerColumns.BidColumn));
-            _table.AddColumn(new ReactiveColumn<double>(BrokerColumns.AskColumn));
-            _table.AddColumn(new ReactiveColumn<string>(BrokerColumns.MaturityColumn));
-            _table.AddColumn(new ReactiveColumn<string>(BrokerColumns.BrokerNameColumn));*/
-
             for (int i = 0; i < _maturities.Length; i++)
             {
                 int rowIndex = _table.AddRow();
                 _rowIndeces[i] = rowIndex;
-                _table.SetValue(BrokerFeedTableDefinition.BrokerColumns.MaturityColumn, rowIndex, _maturities[i]);
-                _table.SetValue(BrokerFeedTableDefinition.BrokerColumns.CcyPairColumn, rowIndex, "EUR/USD");
-                _table.SetValue(BrokerFeedTableDefinition.BrokerColumns.BrokerNameColumn, rowIndex, Name);
+                _table.SetValue(BrokerTableDefinition.BrokerColumns.MaturityColumn, rowIndex, _maturities[i]);
+                _table.SetValue(BrokerTableDefinition.BrokerColumns.CcyPairColumn, rowIndex, "EUR/USD");
+                _table.SetValue(BrokerTableDefinition.BrokerColumns.BrokerNameColumn, rowIndex, Name);
             }
 
             Task.Run(() => FeedBrokerData());
@@ -124,8 +161,8 @@ namespace ReactiveTables.Demo.Server
             {
                 for (int i = 0; i < _rowIndeces.Length; i++)
                 {
-                    _table.SetValue(BrokerFeedTableDefinition.BrokerColumns.BidColumn, _rowIndeces[i], _random.NextDouble());
-                    _table.SetValue(BrokerFeedTableDefinition.BrokerColumns.AskColumn, _rowIndeces[i], _random.NextDouble());
+                    _table.SetValue(BrokerTableDefinition.BrokerColumns.BidColumn, _rowIndeces[i], _random.NextDouble());
+                    _table.SetValue(BrokerTableDefinition.BrokerColumns.AskColumn, _rowIndeces[i], _random.NextDouble());
                 }
                 Thread.Sleep(50);
             }

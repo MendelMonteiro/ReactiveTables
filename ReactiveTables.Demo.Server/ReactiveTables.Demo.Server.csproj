@@ -81,7 +81,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BrokerFeedTableDefinition.cs" />
+    <Compile Include="BrokerTableDefinition.cs" />
     <Compile Include="BrokerServer.cs" />
     <Compile Include="FxTableDefinitions.cs" />
     <Compile Include="Server.cs" />

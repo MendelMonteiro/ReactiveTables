@@ -23,18 +23,19 @@ namespace ReactiveTables.Framework.Synchronisation
 {
     /// <summary>
     /// A table that does not store any values but instead writes all updates received to another table.
+    /// This table can be written to from multiple threads.
     /// </summary>
     public class ReactivePassThroughTable : IWritableReactiveTable
     {
         private readonly FieldRowManager _rowManager = new FieldRowManager();
 
-        private readonly ReactiveTable _targetTable;
+        private readonly ReactiveTable _targetTargetTable;
 
         private readonly IThreadMarshaller _marshaller;
 
-        public ReactivePassThroughTable(ReactiveTable table, IThreadMarshaller marshaller)
+        public ReactivePassThroughTable(ReactiveTable targetTable, IThreadMarshaller marshaller)
         {
-            _targetTable = table;
+            _targetTargetTable = targetTable;
             _marshaller = marshaller;
         }
 
@@ -100,17 +101,23 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public int GetRowAt(int position)
         {
-            return _rowManager.GetRowAt(position);
+            lock (_rowManager)
+            {
+                return _rowManager.GetRowAt(position);
+            }
         }
 
         public int GetPositionOfRow(int rowIndex)
         {
-            return _rowManager.GetPositionOfRow(rowIndex);
+            lock (_rowManager)
+            {
+                return _rowManager.GetPositionOfRow(rowIndex);
+            }
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
         {
-            _marshaller.Dispatch(() => _targetTable.SetValue(columnId, rowIndex, value));
+            _marshaller.Dispatch(() => _targetTargetTable.SetValue(columnId, rowIndex, value));
         }
 
         public void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
@@ -120,15 +127,21 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public int AddRow()
         {
-            int rowIndex = _rowManager.AddRow();
-            _marshaller.Dispatch(() => _targetTable.AddRow());
-            return rowIndex;
+            lock (_rowManager)
+            {
+                int rowIndex = _rowManager.AddRow();
+                _marshaller.Dispatch(() => _targetTargetTable.AddRow());
+                return rowIndex;
+            }
         }
 
         public void DeleteRow(int rowIndex)
         {
-            _rowManager.DeleteRow(rowIndex);
-            _marshaller.Dispatch(() => _targetTable.DeleteRow(rowIndex));
+            lock (_rowManager)
+            {
+                _rowManager.DeleteRow(rowIndex);
+                _marshaller.Dispatch(() => _targetTargetTable.DeleteRow(rowIndex));
+            }
         }
     }
 }
