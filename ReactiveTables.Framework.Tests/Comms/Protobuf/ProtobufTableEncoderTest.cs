@@ -35,23 +35,22 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
                                             {TestTableColumns.ByteColumn, 112},
                                             {TestTableColumns.CharColumn, 113},
                                         };
-            encoder.Setup(stream, table, new ProtobufEncoderState
-                                             {
-                                                 ColumnsToFieldIds = columnsToFieldIds
-                                             });
+            encoder.Setup(stream, table, new ProtobufEncoderState(columnsToFieldIds));
+
             // Add data
             var row1 = AddTestRow(table);
             var row2 = AddTestRow(table);
 
             UpdateTestRow(table, row1);
 
-            encoder.Close();
+            encoder.Dispose();
             //stream.Flush();
             stream.Seek(0, SeekOrigin.Begin);
 
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
-            ProtobufTableDecoder tableDecoder = new ProtobufTableDecoder(destTable, columnsToFieldIds.InverseUniqueDictionary(), stream);
+            ProtobufTableDecoder tableDecoder = new ProtobufTableDecoder();
+            tableDecoder.Setup(stream, destTable, columnsToFieldIds.InverseUniqueDictionary());
             Task.Run(() => tableDecoder.Start());
             Thread.Sleep(100);
             tableDecoder.Stop();

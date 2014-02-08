@@ -119,7 +119,7 @@ namespace ReactiveTables.Demo.Services
 
         private void StartReceiving(IWritableReactiveTable currenciesWire, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new ReactiveTableTcpClient(currenciesWire, columnsToFieldIds, port);
+            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(),  currenciesWire, columnsToFieldIds, port);
             client.Start();
         }
 

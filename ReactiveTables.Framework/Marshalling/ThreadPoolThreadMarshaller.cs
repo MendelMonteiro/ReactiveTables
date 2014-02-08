@@ -1,4 +1,4 @@
-﻿// This file is part of ReactiveTables.
+// This file is part of ReactiveTables.
 // 
 // ReactiveTables is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,14 +12,16 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+using System;
+using System.Threading;
 
-using System.Net.Sockets;
-
-namespace ReactiveTables.Framework.Comms
+namespace ReactiveTables.Framework.Marshalling
 {
-    internal class ClientState
+    public class ThreadPoolThreadMarshaller : IThreadMarshaller
     {
-        public TcpListener Listener { get; set; }
-        public object EncoderState { get; set; }
+        public void Dispatch(Action action)
+        {
+            ThreadPool.QueueUserWorkItem(state => action());
+        }
     }
 }

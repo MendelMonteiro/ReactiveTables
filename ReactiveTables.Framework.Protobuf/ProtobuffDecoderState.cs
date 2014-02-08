@@ -12,28 +12,23 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+using System.Collections.Generic;
 
-using System;
-using System.IO;
-
-namespace ReactiveTables.Framework.Comms
+namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
-    /// A class used for encoding data sent on the wire
+    /// The state used to decode using the <see cref="ProtobufTableDecoder"/>
     /// </summary>
-    public interface IReactiveTableEncoder : IDisposable
+    public class ProtobuffDecoderState
     {
-        /// <summary>
-        /// Configure the encoder
-        /// </summary>
-        /// <param name="outputStream">The stream to write to</param>
-        /// <param name="table">The table to read from</param>
-        /// <param name="state">Any state required by the encoder</param>
-        void Setup(Stream outputStream, IReactiveTable table, object state);
+        public ProtobuffDecoderState(Dictionary<int, string> fieldIdsToColumns)
+        {
+            FieldIdsToColumns = fieldIdsToColumns;
+        }
 
         /// <summary>
-        /// Stop encoding the table
+        /// A map of field ids to column ids.
         /// </summary>
-        void Close();
+        public Dictionary<int, string> FieldIdsToColumns { get; set; } 
     }
 }

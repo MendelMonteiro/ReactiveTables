@@ -50,7 +50,6 @@ namespace ReactiveTables.Demo.Client
             Columns = new ObservableCollection<string>(_columnTypes.Keys);
 
             dataService.Start(Application.Current.Dispatcher);
-
         }
 
         public ObservableCollection<string> Columns { get; private set; }

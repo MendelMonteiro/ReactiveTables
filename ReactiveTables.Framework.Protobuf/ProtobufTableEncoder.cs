@@ -24,7 +24,7 @@ namespace ReactiveTables.Framework.Protobuf
     /// Encodes a <see cref="IReactiveTable"/> by observing all changes and writing them to the given stream
     /// using the protobuf protocol.
     /// </summary>
-    public class ProtobufTableEncoder : IReactiveTableEncoder
+    public class ProtobufTableEncoder : IReactiveTableProcessor<IReactiveTable>
     {
         private IDisposable _token;
         private ProtoWriter _protoWriter;
@@ -49,7 +49,7 @@ namespace ReactiveTables.Framework.Protobuf
         /// <summary>
         /// Stop listening to the table and writing to the output stream
         /// </summary>
-        public void Close()
+        private void Close()
         {
             if (_token != null) _token.Dispose();
             if (_protoWriter != null) _protoWriter.Close();

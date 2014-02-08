@@ -86,7 +86,7 @@
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Comms\ClientState.cs" />
-    <Compile Include="Comms\IReactiveTableEncoder.cs" />
+    <Compile Include="Comms\IReactiveTableProcessor.cs" />
     <Compile Include="Comms\ReactiveTableTcpServer.cs" />
     <Compile Include="Filters\DelegatePredicate1.cs" />
     <Compile Include="Filters\DelegatePredicate2.cs" />
@@ -94,6 +94,7 @@
     <Compile Include="Filters\IReactivePredicate.cs" />
     <Compile Include="IReactiveTable.cs" />
     <Compile Include="Joins\JoinedTable.cs" />
+    <Compile Include="Marshalling\ThreadPoolThreadMarshaller.cs" />
     <Compile Include="Sorting\SortedTable.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />

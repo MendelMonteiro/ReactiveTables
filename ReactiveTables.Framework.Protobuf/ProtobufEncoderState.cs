@@ -22,6 +22,11 @@ namespace ReactiveTables.Framework.Protobuf
     /// </summary>
     public class ProtobufEncoderState
     {
+        public ProtobufEncoderState(Dictionary<string, int> columnsToFieldIds)
+        {
+            ColumnsToFieldIds = columnsToFieldIds;
+        }
+
         /// <summary>
         /// A map of column ids to Protobuf field ids
         /// </summary>

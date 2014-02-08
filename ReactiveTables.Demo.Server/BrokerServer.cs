@@ -40,56 +40,63 @@ namespace ReactiveTables.Demo.Server
             Console.WriteLine("Starting broker service");
             _finished.Reset();
 
-            var outputTable = new ReactiveTable();
-            BrokerTableDefinition.SetupFeedTable(outputTable);
-            var feeds = new ReactiveBatchedPassThroughTable(outputTable, new DefaultThreadMarshaller());
-
+            var feedsOutputTable = new ReactiveTable();
+            BrokerTableDefinition.SetupFeedTable(feedsOutputTable);
+            var feeds = new ReactiveBatchedPassThroughTable(feedsOutputTable, new DefaultThreadMarshaller());
 
             var clientsTable = new ReactiveTable();
             BrokerTableDefinition.SetupClientFeedTable(clientsTable);
 
-            SetupTcpServer(outputTable, feeds, clientsTable);
-
+            SetupTcpServer(GetFeedsAndClients(clientsTable, feedsOutputTable), feeds);
             StartBrokerClient(clientsTable);
 
             StartBrokerFeeds(feeds);
+            Console.WriteLine("Broker service started");
         }
 
-        private static void StartBrokerClient(ReactiveTable clientsTable)
+        private static JoinedTable GetFeedsAndClients(ReactiveTable clientsTable, ReactiveTable outputTable)
         {
-            Task.Run(() =>
-                         {
-                             // Used non-batched pass through as we won't be receiving much data.
-                             var clientTable = new ReactivePassThroughTable(clientsTable, new DefaultThreadMarshaller());
-                             var client = new ReactiveTableTcpClient(clientTable, BrokerTableDefinition.ClientColumnsToFieldIds,
-                                                                     (int) ServerPorts.BrokerFeedClients);
-                             client.Start();
-                         });
+            return new JoinedTable(clientsTable, outputTable,
+                                   new Join<string>(clientsTable, BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn,
+                                                    outputTable, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
         }
 
-        private void SetupTcpServer(IReactiveTable feeds, ReactiveBatchedPassThroughTable passThroughTable, ReactiveTable clientsTable)
+        private void StartBrokerClient(ReactiveTable clientsTable)
         {
-            var server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
-                                                    new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeed),
+            //            3. Make it reusable
+
+            // Used non-batched pass through as we won't be receiving much data.
+            var clientTable = new ReactivePassThroughTable(clientsTable, new ThreadPoolThreadMarshaller());
+            var server = new ReactiveTableTcpServer<IWritableReactiveTable>(
+                () => new ProtobufServerTableProcessor(BrokerTableDefinition.ColumnsToFieldIds),
+                new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
+                _finished,
+                s => clientTable);
+
+            // Start the server in a new thread
+            Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
+        }
+
+        private void SetupTcpServer(JoinedTable feedsAndClients, ReactiveBatchedPassThroughTable passThroughTable)
+        {
+            var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
+                                                    new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
                                                     _finished,
-                                                    s => GetClientTable(s, feeds, clientsTable),
+                                                    s => FilterFeedsForClientTable(s, feedsAndClients),
                                                     () => UpdateClients(passThroughTable));
 
             // Start the server in a new thread
-            Task.Run(() => server.Start(feeds, new ProtobufEncoderState {ColumnsToFieldIds = BrokerTableDefinition.ColumnsToFieldIds}));
+            Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
         }
 
-        private IReactiveTable GetClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feeds, ReactiveTable clientsTable)
+        private IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, JoinedTable feedsAndClients)
         {
-            var joined = new JoinedTable(clientsTable, feeds,
-                                         new Join<string>(clientsTable, BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn,
-                                                          feeds, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
-            var filtered = new FilteredTable(joined,
+            var feedsForClients = new FilteredTable(feedsAndClients,
                                              new DelegatePredicate1<string>(
                                                  BrokerTableDefinition.BrokerClientColumns.ClientIpColumn,
                                                  ip => ip == reactiveClientSession.RemoteEndPoint.Address.ToString()));
 
-            return filtered;
+            return feedsForClients;
         }
 
         /// <summary>
@@ -107,7 +114,7 @@ namespace ReactiveTables.Demo.Server
                               {
                                   new BrokerFeed("Tullet", feeds),
                                   new BrokerFeed("VolBroker", feeds),
-                                  new BrokerFeed("Broker1", feeds)
+                                  new BrokerFeed("Tradition", feeds)
                               };
 
             foreach (var brokerFeed in feeders)
@@ -118,7 +125,7 @@ namespace ReactiveTables.Demo.Server
 
         public void Stop()
         {
-            Console.WriteLine("Stopping service");
+            Console.WriteLine("Stopping broker service");
             _finished.Set();
         }
     }

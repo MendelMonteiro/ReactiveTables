@@ -21,33 +21,32 @@ using System.Threading;
 namespace ReactiveTables.Framework.Comms
 {
     /// <summary>
-    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableEncoder"/> to the
+    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableProcessor"/> to the
     /// client.  TODO: Should implement much more efficient tcp connection to be able to handle many clients connecting.
     /// </summary>
-    public class ReactiveTableTcpServer
+    public class ReactiveTableTcpServer<TTable> where TTable : IReactiveTable
     {
         private readonly ManualResetEventSlim _finished;
         private readonly IPEndPoint _endPoint;
-        private readonly IReactiveTableEncoder _encoder;
+        private readonly Func<IReactiveTableProcessor<TTable>> _getEncoder;
         private readonly Action _testAction;
-        private readonly Func<ReactiveClientSession, IReactiveTable> _source;
+        private readonly Func<ReactiveClientSession, TTable> _getSourceTable;
 
-        public ReactiveTableTcpServer(IReactiveTableEncoder encoder, IPEndPoint endPoint, ManualResetEventSlim finished, 
-                                      Func<ReactiveClientSession, IReactiveTable> source, Action testAction = null)
+        public ReactiveTableTcpServer(Func<IReactiveTableProcessor<TTable>> getEncoder, IPEndPoint endPoint, ManualResetEventSlim finished, 
+                                      Func<ReactiveClientSession, TTable> getSourceTable, Action testAction = null)
         {
-            _encoder = encoder;
+            _getEncoder = getEncoder;
             _endPoint = endPoint;
             _finished = finished;
             _testAction = testAction;
-            _source = source;
+            _getSourceTable = getSourceTable;
         }
 
         /// <summary>
         /// Start waiting for incoming client connections - this is a blocking call
         /// </summary>
-        /// <param name="table"></param>
         /// <param name="encoderState"></param>
-        public void Start(IReactiveTable table, object encoderState)
+        public void Start(object encoderState)
         {
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
@@ -55,7 +54,6 @@ namespace ReactiveTables.Framework.Comms
             listener.BeginAcceptTcpClient(AcceptClient, new ClientState
                                                             {
                                                                 Listener = listener,
-                                                                Table = table,
                                                                 EncoderState = encoderState
                                                             });
 
@@ -74,19 +72,20 @@ namespace ReactiveTables.Framework.Comms
             var outputStream = client.GetStream();
             
             var session = new ReactiveClientSession {RemoteEndPoint = (IPEndPoint) client.Client.RemoteEndPoint};
-            IReactiveTable output = _source(session);
-            _encoder.Setup(outputStream, output, state.EncoderState);
-
-            outputStream.Flush();
-            int millisecondsTimeout = _testAction == null ? -1 : 50;
-            while (client.Connected && !_finished.Wait(millisecondsTimeout))
+            var output = _getSourceTable(session);
+            using (var encoder = _getEncoder())
             {
-                // Run the test action every 50 milliseconds if it has been set.
-                if (_testAction != null) _testAction();
-                //outputStream.Flush();
-            }
+                encoder.Setup(outputStream, output, state.EncoderState);
 
-            _encoder.Close();
+                outputStream.Flush();
+                int millisecondsTimeout = _testAction == null ? -1 : 50;
+                while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                {
+                    // Run the test action every 50 milliseconds if it has been set.
+                    if (_testAction != null) _testAction();
+                    //outputStream.Flush();
+                }
+            }
 
             outputStream.Close();
             client.Close();

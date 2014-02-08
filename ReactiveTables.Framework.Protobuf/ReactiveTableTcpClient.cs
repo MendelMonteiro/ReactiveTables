@@ -16,22 +16,26 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using ReactiveTables.Framework.Comms;
 using ReactiveTables.Utils;
 
 namespace ReactiveTables.Framework.Protobuf
 {
-    public class ReactiveTableTcpClient
+    public class ReactiveTableTcpClient<TTable> where TTable : IReactiveTable
     {
         private readonly List<TcpClient> _clients = new List<TcpClient>();
+        private readonly IReactiveTableProcessor<TTable> _reactiveTableProcessor;
         private readonly int _port;
         private readonly Dictionary<string, int> _columnsToFieldIds;
-        private readonly IWritableReactiveTable _wireTable;
-        private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
+        private readonly TTable _wireTable;
+        private readonly List<IReactiveTableProcessor<TTable>> _tableProcessors = new List<IReactiveTableProcessor<TTable>>();
 
-        public ReactiveTableTcpClient(IWritableReactiveTable wireTable, Dictionary<string, int> columnsToFieldIds, int port)
+        public ReactiveTableTcpClient(IReactiveTableProcessor<TTable> reactiveTableProcessor, TTable wireTable, 
+            Dictionary<string, int> columnsToFieldIds, int port)
         {
             _columnsToFieldIds = columnsToFieldIds;
             _wireTable = wireTable;
+            _reactiveTableProcessor = reactiveTableProcessor;
             _port = port;
         }
 
@@ -47,9 +51,8 @@ namespace ReactiveTables.Framework.Protobuf
                 //                stream.CopyTo(file);
 
                 var fieldIdsToColumns = _columnsToFieldIds.InverseUniqueDictionary();
-                var tableDecoder = new ProtobufTableDecoder(_wireTable, fieldIdsToColumns, stream);
-                _tableWriters.Add(tableDecoder);
-                tableDecoder.Start();
+                _tableProcessors.Add(_reactiveTableProcessor);
+                _reactiveTableProcessor.Setup(stream, _wireTable, new ProtobuffDecoderState(fieldIdsToColumns));
             }
             //_client.Close();
         }

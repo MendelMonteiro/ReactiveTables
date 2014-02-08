@@ -18,26 +18,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using ProtoBuf;
+using ReactiveTables.Framework.Comms;
 
 namespace ReactiveTables.Framework.Protobuf
 {
     /// <summary>
     /// Writes changes from the given protobuf stream to an <see cref="IWritableReactiveTable"/>.
     /// </summary>
-    public class ProtobufTableDecoder
+    public class ProtobufTableDecoder : IReactiveTableProcessor<IWritableReactiveTable>
     {
-        private readonly IWritableReactiveTable _table;
-        private readonly Dictionary<int, string> _fieldIdsToColumns;
-        private readonly Stream _stream;
-        private readonly ProtoReader _reader;
+        private IWritableReactiveTable _table;
+        private Dictionary<int, string> _fieldIdsToColumns;
+        private Stream _stream;
+        private ProtoReader _reader;
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
 
-        public ProtobufTableDecoder(IWritableReactiveTable table, Dictionary<int, string> fieldIdsToColumns, Stream stream)
+        /// <summary>
+        /// Setups and starts the decoder
+        /// </summary>
+        /// <param name="outputStream"></param>
+        /// <param name="table"></param>
+        /// <param name="state"></param>
+        public void Setup(Stream outputStream, IWritableReactiveTable table, object state)
         {
+            var config = (ProtobuffDecoderState)state;
+            _fieldIdsToColumns = config.FieldIdsToColumns;
             _table = table;
-            _fieldIdsToColumns = fieldIdsToColumns;
-            _stream = stream;
+            _stream = outputStream;
             _reader = new ProtoReader(_stream, null, null);
+            Start();
         }
 
         /// <summary>
@@ -194,6 +203,12 @@ namespace ReactiveTables.Framework.Protobuf
                     table.SetValue(columnId, rowId, reader.ReadSingle());
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            if (_reader != null) _reader.Dispose();
+            Stop();
         }
     }
 }

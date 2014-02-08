@@ -116,15 +116,12 @@ namespace ReactiveTables.Demo.Server
                 }
             }
 
-            ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
+            var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
                                                                        new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.Currencies), 
                                                                        _finished,
                                                                        session => currencies);
 
-            server.Start(currencies, new ProtobufEncoderState
-                                         {
-                                             ColumnsToFieldIds = FxTableDefinitions.CurrencyPair.ColumnsToFieldIds
-                                         });
+            server.Start(new ProtobufEncoderState(FxTableDefinitions.CurrencyPair.ColumnsToFieldIds));
         }
 
         private void StreamRates(object o)
@@ -136,15 +133,12 @@ namespace ReactiveTables.Demo.Server
             UpdateRates(ccyPairsToRowIds, fxRates);
 
             Action updateTable = () => UpdateRates(ccyPairsToRowIds, fxRates, false);
-            ReactiveTableTcpServer server = new ReactiveTableTcpServer(new ProtobufTableEncoder(),
+            var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
                                                                        new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.FxRates), 
                                                                        _finished, 
                                                                        session => fxRates,
                                                                        updateTable);
-            server.Start(fxRates, new ProtobufEncoderState
-                                      {
-                                          ColumnsToFieldIds = FxTableDefinitions.FxRates.ColumnsToFieldIds
-                                      });
+            server.Start(new ProtobufEncoderState(FxTableDefinitions.FxRates.ColumnsToFieldIds));
         }
         
         private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)

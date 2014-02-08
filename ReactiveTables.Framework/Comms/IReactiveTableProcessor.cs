@@ -13,13 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Net.Sockets;
+using System;
+using System.IO;
 
 namespace ReactiveTables.Framework.Comms
 {
-    internal class ClientState
+    /// <summary>
+    /// A class used for encoding data sent on the wire
+    /// </summary>
+    public interface IReactiveTableProcessor<in TTable> : IDisposable where TTable : IReactiveTable
     {
-        public TcpListener Listener { get; set; }
-        public object EncoderState { get; set; }
+        /// <summary>
+        /// Configure the encoder
+        /// </summary>
+        /// <param name="outputStream">The stream to write to</param>
+        /// <param name="table">The table to read from</param>
+        /// <param name="state">Any state required by the encoder</param>
+        void Setup(Stream outputStream, TTable table, object state);
     }
 }

@@ -14,6 +14,7 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -38,10 +39,12 @@ namespace ReactiveTables.Demo.Services
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(50);
         private readonly List<TcpClient> _clients = new List<TcpClient>();
         private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
+        private readonly ReactiveTable _currencyPairs = new ReactiveTable();
 
         public BrokerFeedDataService()
         {
             BrokerTableDefinition.SetupFeedTable(_feeds);
+            BrokerTableDefinition.SetupClientFeedTable(_currencyPairs);
         }
 
         public IReactiveTable Feeds
@@ -49,19 +52,37 @@ namespace ReactiveTables.Demo.Services
             get { return _feeds; }
         }
 
+        public IReactiveTable CurrencyPairs
+        {
+            get { return _currencyPairs; }
+        }
+
         public void Start(Dispatcher dispatcher)
         {
+            // Connect up to receive the feeds
             var feedsWire = new ReactiveBatchedPassThroughTable(_feeds,
                                                                 new WpfThreadMarshaller(dispatcher),
                                                                 _synchroniseTablesDelay);
-            Task.Run(() => StartReceiving(feedsWire,
-                                          BrokerTableDefinition.ColumnsToFieldIds,
-                                          (int) ServerPorts.BrokerFeed));
+            Task.Run(() => StartReceiving(feedsWire, BrokerTableDefinition.ColumnsToFieldIds, (int) ServerPorts.BrokerFeed));
+
+            // Subscribe to the feeds we want
+            var currencyPairsWire = new ReactivePassThroughTable(_currencyPairs, new ThreadPoolThreadMarshaller());
+            var row = currencyPairsWire.AddRow();
+            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
+            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, "EUR/USD");
+            Task.Run(() => SetupFeedSubscription(currencyPairsWire));
+        }
+
+        private void SetupFeedSubscription(IReactiveTable currenciesTable)
+        {
+            var client = new ReactiveTableTcpClient<IReactiveTable>(new ProtobufTableEncoder() , currenciesTable, 
+                BrokerTableDefinition.ClientColumnsToFieldIds, (int) ServerPorts.BrokerFeedClients);
+            client.Start();
         }
 
         private void StartReceiving(IWritableReactiveTable wireTable, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new ReactiveTableTcpClient(wireTable, columnsToFieldIds, port);
+            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(),  wireTable, columnsToFieldIds, port);
             client.Start();
         }
 
