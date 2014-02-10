@@ -154,5 +154,10 @@ namespace ReactiveTables.Framework
         {
             return action == TableUpdateAction.Update;
         }
+
+        public override string ToString()
+        {
+            return string.Format("Action: {0}, RowIndex: {1}, Column: {2}", _action, _rowIndex, _column.ColumnId);
+        }
     }
 }

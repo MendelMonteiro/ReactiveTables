@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -20,15 +21,18 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using ReactiveTables.Demo.Server;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Comms;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
+using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Services
 {
     public interface IBrokerFeedDataService
     {
         IReactiveTable Feeds { get; }
+        IReactiveTable CurrencyPairs { get; }
         void Start(Dispatcher dispatcher);
         void Stop();
     }
@@ -37,9 +41,9 @@ namespace ReactiveTables.Demo.Services
     {
         private readonly ReactiveTable _feeds = new ReactiveTable();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(50);
-        private readonly List<TcpClient> _clients = new List<TcpClient>();
-        private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
         private readonly ReactiveTable _currencyPairs = new ReactiveTable();
+        private ReactiveTableTcpClient<IReactiveTable> _ccyPairSubscriptionClient;
+        private ReactiveTableTcpClient<IWritableReactiveTable> _feedClient;
 
         public BrokerFeedDataService()
         {
@@ -63,10 +67,10 @@ namespace ReactiveTables.Demo.Services
             var feedsWire = new ReactiveBatchedPassThroughTable(_feeds,
                                                                 new WpfThreadMarshaller(dispatcher),
                                                                 _synchroniseTablesDelay);
-            Task.Run(() => StartReceiving(feedsWire, BrokerTableDefinition.ColumnsToFieldIds, (int) ServerPorts.BrokerFeed));
+//            Task.Run(() => StartReceiving(feedsWire, BrokerTableDefinition.ColumnsToFieldIds, (int)ServerPorts.BrokerFeed));
 
             // Subscribe to the feeds we want
-            var currencyPairsWire = new ReactivePassThroughTable(_currencyPairs, new ThreadPoolThreadMarshaller());
+            var currencyPairsWire = _currencyPairs;// new ReactivePassThroughTable(_currencyPairs, new ThreadPoolThreadMarshaller());
             var row = currencyPairsWire.AddRow();
             currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
             currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, "EUR/USD");
@@ -75,27 +79,30 @@ namespace ReactiveTables.Demo.Services
 
         private void SetupFeedSubscription(IReactiveTable currenciesTable)
         {
-            var client = new ReactiveTableTcpClient<IReactiveTable>(new ProtobufTableEncoder() , currenciesTable, 
-                BrokerTableDefinition.ClientColumnsToFieldIds, (int) ServerPorts.BrokerFeedClients);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeedClients);
+            var client = new ReactiveTableTcpClient<IReactiveTable>(new ProtobufTableEncoder(),
+                                                                    currenciesTable,
+                                                                    new ProtobufEncoderState(BrokerTableDefinition.ClientColumnsToFieldIds),
+                                                                    endPoint);
+            _ccyPairSubscriptionClient = client;
             client.Start();
         }
 
         private void StartReceiving(IWritableReactiveTable wireTable, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(),  wireTable, columnsToFieldIds, port);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, port);
+            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(),
+                                                                            wireTable,
+                                                                            new ProtobufDecoderState(columnsToFieldIds.InverseUniqueDictionary()),
+                                                                            endPoint);
+            _feedClient = client;
             client.Start();
         }
 
         public void Stop()
         {
-            foreach (var writer in _tableWriters)
-            {
-                writer.Stop();
-            }
-            foreach (var client in _clients)
-            {
-                client.Close();
-            }
+            if (_feedClient != null) _feedClient.Dispose();
+            if (_ccyPairSubscriptionClient != null) _ccyPairSubscriptionClient.Dispose();
         }
     }
 }

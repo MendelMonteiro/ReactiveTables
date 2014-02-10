@@ -19,9 +19,9 @@ namespace ReactiveTables.Framework.Protobuf
     /// <summary>
     /// The state used to decode using the <see cref="ProtobufTableDecoder"/>
     /// </summary>
-    public class ProtobuffDecoderState
+    public class ProtobufDecoderState
     {
-        public ProtobuffDecoderState(Dictionary<int, string> fieldIdsToColumns)
+        public ProtobufDecoderState(Dictionary<int, string> fieldIdsToColumns)
         {
             FieldIdsToColumns = fieldIdsToColumns;
         }

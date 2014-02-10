@@ -14,7 +14,9 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -22,9 +24,11 @@ using ReactiveTables.Demo.Server;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Columns.Calculated;
+using ReactiveTables.Framework.Comms;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
+using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Services
 {
@@ -48,9 +52,8 @@ namespace ReactiveTables.Demo.Services
         }
 
         private readonly ReactiveTable _currencies;
-        private readonly List<ProtobufTableDecoder> _tableWriters = new List<ProtobufTableDecoder>();
         private readonly TimeSpan _synchroniseTablesDelay = TimeSpan.FromMilliseconds(200);
-        private readonly List<TcpClient> _clients = new List<TcpClient>();
+        private readonly ConcurrentBag<ReactiveTableTcpClient<IWritableReactiveTable>> _clients = new ConcurrentBag<ReactiveTableTcpClient<IWritableReactiveTable>>();
         private readonly ReactiveTable _fxRates;
         private static readonly DateTime _start = DateTime.Today;
 
@@ -119,19 +122,22 @@ namespace ReactiveTables.Demo.Services
 
         private void StartReceiving(IWritableReactiveTable currenciesWire, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(),  currenciesWire, columnsToFieldIds, port);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, port);
+            var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(), currenciesWire,
+                                                                            new ProtobufDecoderState(columnsToFieldIds.InverseUniqueDictionary()), endPoint);
+            _clients.Add(client);
             client.Start();
         }
 
         public void Stop()
         {
-            foreach (var writer in _tableWriters)
+            while (!_clients.IsEmpty)
             {
-                writer.Stop();
-            }
-            foreach (var client in _clients)
-            {
-                client.Close();
+                ReactiveTableTcpClient<IWritableReactiveTable> client;
+                if (_clients.TryTake(out client))
+                {
+                    client.Dispose();
+                }
             }
         }
     }

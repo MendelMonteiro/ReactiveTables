@@ -14,14 +14,16 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace ReactiveTables.Framework.Comms
 {
     /// <summary>
-    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableProcessor"/> to the
+    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableProcessor{TTable}"/> to the
     /// client.  TODO: Should implement much more efficient tcp connection to be able to handle many clients connecting.
     /// </summary>
     public class ReactiveTableTcpServer<TTable> where TTable : IReactiveTable
@@ -30,16 +32,16 @@ namespace ReactiveTables.Framework.Comms
         private readonly IPEndPoint _endPoint;
         private readonly Func<IReactiveTableProcessor<TTable>> _getEncoder;
         private readonly Action _testAction;
-        private readonly Func<ReactiveClientSession, TTable> _getSourceTable;
+        private readonly Func<ReactiveClientSession, TTable> _getOutputTable;
 
         public ReactiveTableTcpServer(Func<IReactiveTableProcessor<TTable>> getEncoder, IPEndPoint endPoint, ManualResetEventSlim finished, 
-                                      Func<ReactiveClientSession, TTable> getSourceTable, Action testAction = null)
+                                      Func<ReactiveClientSession, TTable> getOutputTable, Action testAction = null)
         {
             _getEncoder = getEncoder;
             _endPoint = endPoint;
             _finished = finished;
             _testAction = testAction;
-            _getSourceTable = getSourceTable;
+            _getOutputTable = getOutputTable;
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace ReactiveTables.Framework.Comms
             var outputStream = client.GetStream();
             
             var session = new ReactiveClientSession {RemoteEndPoint = (IPEndPoint) client.Client.RemoteEndPoint};
-            var output = _getSourceTable(session);
+            var output = _getOutputTable(session);
             using (var encoder = _getEncoder())
             {
                 encoder.Setup(outputStream, output, state.EncoderState);
@@ -89,6 +91,64 @@ namespace ReactiveTables.Framework.Comms
 
             outputStream.Close();
             client.Close();
+        }
+    }
+
+    public class TestTcpReadClient
+    {
+        private readonly IPEndPoint _endPoint;
+        private readonly ManualResetEventSlim _finished;
+
+        public TestTcpReadClient(IPEndPoint endPoint, ManualResetEventSlim finished)
+        {
+            _endPoint = endPoint;
+            _finished = finished;
+        }
+
+        public void Start()
+        {
+            Console.WriteLine("Starting to listen to {0}", _endPoint);
+            TcpListener listener = new TcpListener(_endPoint);
+            listener.Start();
+
+            listener.BeginAcceptTcpClient(AcceptClient, listener);
+
+            _finished.Wait();
+            listener.Stop();
+        }
+
+        private void AcceptClient(IAsyncResult ar)
+        {
+            Console.WriteLine("Accepted client");
+            var listener = (TcpListener)ar.AsyncState;
+            var client = listener.EndAcceptTcpClient(ar);
+            var networkStream = client.GetStream();
+            byte[] buffer = new byte[8];
+            int read;
+
+            Console.WriteLine("Waiting for data");
+            while (!networkStream.DataAvailable)
+            {
+                if (_finished.Wait(100))
+                {
+                    networkStream.Close();
+                    return;
+                }
+            }
+
+            Console.WriteLine("Data available - reading...");
+            do
+            {
+                //var b = networkStream.ReadByte();
+                read = networkStream.Read(buffer, 0, buffer.Length);
+                if (read > 0)
+                {
+                    Console.WriteLine("Received buffer of length {0}", read);
+                    Console.WriteLine(Encoding.Default.GetString(buffer, 0, read));
+                }
+            } while (!_finished.Wait(100));
+            networkStream.Close();
+            Console.WriteLine("Finished with client");
         }
     }
 

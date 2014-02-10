@@ -15,23 +15,40 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Windows;
 using ReactiveTables.Demo.Server;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Demo.Syncfusion;
+using ReactiveTables.Demo.Utils;
+using ReactiveTables.Framework;
 using ReactiveTables.Framework.Sorting;
 
 namespace ReactiveTables.Demo.Client
 {
+    public class BrokerFeedCurrencyPairsViewModel : SyncfusionViewModelBase
+    {
+        private readonly IBrokerFeedDataService _dataService;
+
+        public BrokerFeedCurrencyPairsViewModel(IBrokerFeedDataService dataService)
+        {
+            _dataService = dataService;
+
+            SetTable(_dataService.CurrencyPairs);
+        }
+    }
+
     public class BrokerFeedViewModel : SyncfusionViewModelBase
     {
         private readonly IBrokerFeedDataService _dataService;
         private readonly SortedTable _sortedFeeds;
         private readonly Dictionary<string, Type> _columnTypes;
+        private readonly BrokerFeedCurrencyPairsViewModel _currencyPairsViewModel;
 
         public BrokerFeedViewModel(IBrokerFeedDataService dataService)
         {
             _dataService = dataService;
+
             var feedsTable = dataService.Feeds;
 //            _sortedFeeds = new SortedTable(feedsTable);
 //            _sortedFeeds.SortBy(BrokerTableDefinition.BrokerColumns.BrokerNameColumn, Comparer<string>.Default);
@@ -49,14 +66,33 @@ namespace ReactiveTables.Demo.Client
                               };
             Columns = new ObservableCollection<string>(_columnTypes.Keys);
 
+            _currencyPairsViewModel = new BrokerFeedCurrencyPairsViewModel(_dataService);
+
+            AddCcyCommand = new DelegateCommand(
+                () =>
+                    {
+                        var currencyPairsWire = (IWritableReactiveTable) _dataService.CurrencyPairs;
+                        var row = currencyPairsWire.AddRow();
+                        currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
+                        currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, "EUR/USD");
+                    });
+
             dataService.Start(Application.Current.Dispatcher);
         }
+
+        public BrokerFeedCurrencyPairsViewModel CurrencyPairsViewModel
+        {
+            get { return _currencyPairsViewModel; }
+        }
+
+        public DelegateCommand AddCcyCommand { get; private set; }
 
         public ObservableCollection<string> Columns { get; private set; }
 
         protected override void DisposeCore()
         {
             base.DisposeCore();
+            _currencyPairsViewModel.Dispose();
             _dataService.Stop();
         }
     }

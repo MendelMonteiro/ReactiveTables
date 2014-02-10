@@ -41,7 +41,7 @@ namespace ReactiveTables.Framework.Protobuf
         /// <param name="state"></param>
         public void Setup(Stream outputStream, IWritableReactiveTable table, object state)
         {
-            var config = (ProtobuffDecoderState)state;
+            var config = (ProtobufDecoderState)state;
             _fieldIdsToColumns = config.FieldIdsToColumns;
             _table = table;
             _stream = outputStream;
@@ -208,6 +208,7 @@ namespace ReactiveTables.Framework.Protobuf
         public void Dispose()
         {
             if (_reader != null) _reader.Dispose();
+            if (_stream != null) _stream.Dispose();
             Stop();
         }
     }

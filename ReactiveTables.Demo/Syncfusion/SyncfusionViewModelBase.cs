@@ -25,23 +25,28 @@ using System.Linq;
 
 namespace ReactiveTables.Demo.Syncfusion
 {
-    public class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
+    /// <summary>
+    /// Extend this view model to bind a ReactiveTable to a Syncfusion grid.
+    /// There is a 1 to 1 relation between a view model and a ReactiveTable.
+    /// Simply call SetTable in the child class constructor to register the table and then set up the Grid columns in the window code behind.
+    /// </summary>
+    public abstract class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
     {
-        protected IReactiveTable Table;
+        private IReactiveTable _table;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
-        protected IDisposable Token;
+        private IDisposable _token;
 
         protected void SetTable(IReactiveTable table)
         {
-            Table = table;
-            Token = table.ReplayAndSubscribe(OnNext);
+            _table = table;
+            _token = table.ReplayAndSubscribe(OnNext);
             var sortedTable = table as ISortedTable;
             if (sortedTable != null)
             {
                 RowPositionsUpdated = sortedTable.RowPositionsUpdated;
             }
 
-            // This should look up a dictionary of column id's to friendly column names
+            // TODO: This should look up a dictionary of column id's to friendly column names
             ColumnNames = table.Columns.Select(c => c.Value.ColumnId.Substring(c.Value.ColumnId.LastIndexOf('.') + 1)).ToList();
         }
 
@@ -49,7 +54,9 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
-            return _subject.Subscribe(observer);
+            var disposable = _subject.Subscribe(observer);
+            _table.ReplayRows(observer);
+            return disposable;
         }
 
         private void OnNext(TableUpdate tableUpdate)
@@ -59,29 +66,29 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public virtual T GetValue<T>(int rowIndex, int columnIndex)
         {
-            var row = Table.GetRowAt(rowIndex);
+            var row = _table.GetRowAt(rowIndex);
             if (row >= 0 && columnIndex >= 0)
             {
-                var reactiveColumn = Table.GetColumnByIndex(columnIndex);
-                return Table.GetValue<T>(reactiveColumn.ColumnId, row);
+                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
+                return _table.GetValue<T>(reactiveColumn.ColumnId, row);
             }
             return default(T);
         }
 
         public virtual int GetRowPosition(int rowIndex)
         {
-            return Table.GetPositionOfRow(rowIndex);
+            return _table.GetPositionOfRow(rowIndex);
         }
 
         public virtual int GetColPosition(string columnId)
         {
             // TODO: Nasty - should keep a list of columns that are actually used by the grid and a map of their indeces
-            return Table.Columns.Keys.IndexOf(columnId);
+            return _table.Columns.Keys.IndexOf(columnId);
         }
 
         public virtual string GetColumnId(int columnIndex)
         {
-            var reactiveColumn = Table.GetColumnByIndex(columnIndex);
+            var reactiveColumn = _table.GetColumnByIndex(columnIndex);
             return reactiveColumn.ColumnId;
         }
 
@@ -94,11 +101,11 @@ namespace ReactiveTables.Demo.Syncfusion
 
         protected virtual void DisposeCore()
         {
-            if (Token != null) Token.Dispose();
+            if (_token != null) _token.Dispose();
             if (_subject != null) _subject.Dispose();            
         }
 
         // TODO: Handle columns added after the ViewModel is created.
-        public int ColumnCount { get { return Table.Columns.Count; } }
+        public int ColumnCount { get { return _table.Columns.Count; } }
     }
 }

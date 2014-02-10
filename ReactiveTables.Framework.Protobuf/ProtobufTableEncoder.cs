@@ -28,6 +28,7 @@ namespace ReactiveTables.Framework.Protobuf
     {
         private IDisposable _token;
         private ProtoWriter _protoWriter;
+        private Stream _outputStream;
 
         /// <summary>
         /// Hook up the table to the output stream
@@ -38,6 +39,7 @@ namespace ReactiveTables.Framework.Protobuf
         public void Setup(Stream outputStream, IReactiveTable table, object state)
         {
             var config = (ProtobufEncoderState) state;
+            _outputStream = outputStream;
             // TODO: Find way to re-utilise the proto writers (object pool?)
             _protoWriter = new ProtoWriter(outputStream, null, null);
             var writerObserver = new ProtobufWriterObserver(table, _protoWriter, config.ColumnsToFieldIds);
@@ -53,6 +55,7 @@ namespace ReactiveTables.Framework.Protobuf
         {
             if (_token != null) _token.Dispose();
             if (_protoWriter != null) _protoWriter.Close();
+            if (_outputStream != null) _outputStream.Dispose();
         }
 
         public void Dispose()

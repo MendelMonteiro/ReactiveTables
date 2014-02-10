@@ -24,6 +24,7 @@ using ReactiveTables.Framework.Joins;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
+using ReactiveTables.Utils;
 
 namespace ReactiveTables.Demo.Server
 {
@@ -47,8 +48,8 @@ namespace ReactiveTables.Demo.Server
             var clientsTable = new ReactiveTable();
             BrokerTableDefinition.SetupClientFeedTable(clientsTable);
 
-            SetupTcpServer(GetFeedsAndClients(clientsTable, feedsOutputTable), feeds);
-            StartBrokerClient(clientsTable);
+//            SetupFeedServer(feedsOutputTable/*GetFeedsAndClients(clientsTable, feedsOutputTable)*/, feeds);
+            SetupClientCcyPairServer(clientsTable);
 
             StartBrokerFeeds(feeds);
             Console.WriteLine("Broker service started");
@@ -61,35 +62,45 @@ namespace ReactiveTables.Demo.Server
                                                     outputTable, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
         }
 
-        private void StartBrokerClient(ReactiveTable clientsTable)
+        private void SetupClientCcyPairServer(ReactiveTable clientsTable)
         {
             //            3. Make it reusable
 
+            clientsTable.Subscribe(update => Console.WriteLine("Server side: " + update.ToString()));
+            
             // Used non-batched pass through as we won't be receiving much data.
             var clientTable = new ReactivePassThroughTable(clientsTable, new ThreadPoolThreadMarshaller());
             var server = new ReactiveTableTcpServer<IWritableReactiveTable>(
-                () => new ProtobufServerTableProcessor(BrokerTableDefinition.ColumnsToFieldIds),
-                new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
+                () => new ProtobufTableDecoder(),
+                new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeedClients),
                 _finished,
                 s => clientTable);
 
+//            clientTable.Subscribe(update => Console.WriteLine("Wire side: " + update.ToString()));
+
             // Start the server in a new thread
-            Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
+//            Task.Run(() => server.Start(new ProtobufDecoderState(BrokerTableDefinition.ColumnsToFieldIds.InverseUniqueDictionary())));
+            Task.Run(() =>
+                         {
+                             var client = new TestTcpReadClient(new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeedClients),
+                                                                _finished);
+                             client.Start();
+                         });
         }
 
-        private void SetupTcpServer(JoinedTable feedsAndClients, ReactiveBatchedPassThroughTable passThroughTable)
+        private void SetupFeedServer(IReactiveTable feedsAndClients, ReactiveBatchedPassThroughTable feedsTable)
         {
             var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
                                                     new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
                                                     _finished,
-                                                    s => FilterFeedsForClientTable(s, feedsAndClients),
-                                                    () => UpdateClients(passThroughTable));
+                                                    s => feedsAndClients /*FilterFeedsForClientTable(s, feedsAndClients)*/,
+                                                    () => UpdateClients(feedsTable));
 
             // Start the server in a new thread
             Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
         }
 
-        private IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, JoinedTable feedsAndClients)
+        private IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feedsAndClients)
         {
             var feedsForClients = new FilteredTable(feedsAndClients,
                                              new DelegatePredicate1<string>(

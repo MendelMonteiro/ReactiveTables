@@ -13,12 +13,27 @@
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="Sort by: " Margin="10"/>
             <!--            <ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding SortByColumn}" Margin="10"/>-->
+            <Button Command="{Binding AddCcyCommand}">Add currency</Button>
         </StackPanel>
-        <ScrollViewer Grid.Row="1"
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <ScrollViewer 
             CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto" Grid.RowSpan="2">
-            <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="{Binding Path=ColumnCount}" />
-        </ScrollViewer>
+                          VerticalScrollBarVisibility="Auto">
+                <Syncfusion:SyncfusionTestGridControl x:Name="Grid" 
+                                                      ViewModel="{Binding}" 
+                                                      ColumnCount="{Binding Path=ColumnCount}" />
+            </ScrollViewer>
+            <Border BorderThickness="2">
+                <ScrollViewer
+                          CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+                    <Syncfusion:SyncfusionTestGridControl x:Name="CurrencyPairsGrid" 
+                                                      ViewModel="{Binding CurrencyPairsViewModel}" 
+                                                      ColumnCount="{Binding Path=CurrencyPairsViewModel.ColumnCount}" />
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
     </Grid>
 </Syncfusion:SyncfusionWindow>
