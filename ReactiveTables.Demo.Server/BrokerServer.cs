@@ -48,53 +48,44 @@ namespace ReactiveTables.Demo.Server
             var clientsTable = new ReactiveTable();
             BrokerTableDefinition.SetupClientFeedTable(clientsTable);
 
-//            SetupFeedServer(feedsOutputTable/*GetFeedsAndClients(clientsTable, feedsOutputTable)*/, feeds);
             SetupClientCcyPairServer(clientsTable);
+            SetupFeedServer(GetFeedsAndClients(clientsTable, feedsOutputTable), feeds);
 
             StartBrokerFeeds(feeds);
             Console.WriteLine("Broker service started");
         }
 
-        private static JoinedTable GetFeedsAndClients(ReactiveTable clientsTable, ReactiveTable outputTable)
+        private static IReactiveTable GetFeedsAndClients(ReactiveTable clientsTable, ReactiveTable feedsTable)
         {
-            return new JoinedTable(clientsTable, outputTable,
+            return new JoinedTable(clientsTable, feedsTable,
                                    new Join<string>(clientsTable, BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn,
-                                                    outputTable, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
+                                                    feedsTable, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
         }
 
         private void SetupClientCcyPairServer(ReactiveTable clientsTable)
         {
-            //            3. Make it reusable
-
             clientsTable.Subscribe(update => Console.WriteLine("Server side: " + update.ToString()));
             
             // Used non-batched pass through as we won't be receiving much data.
-            var clientTable = new ReactivePassThroughTable(clientsTable, new ThreadPoolThreadMarshaller());
             var server = new ReactiveTableTcpServer<IWritableReactiveTable>(
                 () => new ProtobufTableDecoder(),
                 new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeedClients),
                 _finished,
-                s => clientTable);
-
-//            clientTable.Subscribe(update => Console.WriteLine("Wire side: " + update.ToString()));
+                s => clientsTable);
 
             // Start the server in a new thread
-//            Task.Run(() => server.Start(new ProtobufDecoderState(BrokerTableDefinition.ColumnsToFieldIds.InverseUniqueDictionary())));
-            Task.Run(() =>
-                         {
-                             var client = new TestTcpReadClient(new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeedClients),
-                                                                _finished);
-                             client.Start();
-                         });
+            Task.Run(() => server.Start(new ProtobufDecoderState(BrokerTableDefinition.ClientColumnsToFieldIds.InverseUniqueDictionary())));
         }
 
         private void SetupFeedServer(IReactiveTable feedsAndClients, ReactiveBatchedPassThroughTable feedsTable)
         {
+//            feedsAndClients.Subscribe(update => Console.WriteLine(update.ToString()));
+
             var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
-                                                    new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeed),
-                                                    _finished,
-                                                    s => feedsAndClients /*FilterFeedsForClientTable(s, feedsAndClients)*/,
-                                                    () => UpdateClients(feedsTable));
+                                                                    new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeed),
+                                                                    _finished,
+                                                                    s => FilterFeedsForClientTable(s, feedsAndClients),
+                                                                    () => UpdateClients(feedsTable));
 
             // Start the server in a new thread
             Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
@@ -103,9 +94,9 @@ namespace ReactiveTables.Demo.Server
         private IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feedsAndClients)
         {
             var feedsForClients = new FilteredTable(feedsAndClients,
-                                             new DelegatePredicate1<string>(
-                                                 BrokerTableDefinition.BrokerClientColumns.ClientIpColumn,
-                                                 ip => ip == reactiveClientSession.RemoteEndPoint.Address.ToString()));
+                                                    new DelegatePredicate1<string>(
+                                                        BrokerTableDefinition.BrokerClientColumns.ClientIpColumn,
+                                                        ip => ip == reactiveClientSession.RemoteEndPoint.Address.ToString()));
 
             return feedsForClients;
         }
@@ -145,8 +136,9 @@ namespace ReactiveTables.Demo.Server
     {
         private readonly IWritableReactiveTable _table;
         private readonly Random _random = new Random();
-        private readonly int[] _rowIndeces = new int[15];
+        private int[] _rowIndeces;
         private readonly string[] _maturities = new[] { "ON", "1W", "2W", "3W", "1M", "2M", "3M", "4M", "5M", "6M", "1Y", "2Y", "3Y", "5Y", "10Y" };
+        private readonly string[] _ccyPairs = new [] {"EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD"};
 
         public BrokerFeed(string name, IWritableReactiveTable table)
         {
@@ -161,15 +153,19 @@ namespace ReactiveTables.Demo.Server
         /// </summary>
         public void Start()
         {
-            for (int i = 0; i < _maturities.Length; i++)
+            _rowIndeces = new int[_ccyPairs.Length*_maturities.Length];
+            int count = 0;
+            foreach (var ccyPair in _ccyPairs)
             {
-                int rowIndex = _table.AddRow();
-                _rowIndeces[i] = rowIndex;
-                _table.SetValue(BrokerTableDefinition.BrokerColumns.MaturityColumn, rowIndex, _maturities[i]);
-                _table.SetValue(BrokerTableDefinition.BrokerColumns.CcyPairColumn, rowIndex, "EUR/USD");
-                _table.SetValue(BrokerTableDefinition.BrokerColumns.BrokerNameColumn, rowIndex, Name);
+                for (int i = 0; i < _maturities.Length; i++)
+                {
+                    int rowIndex = _table.AddRow();
+                    _rowIndeces[count++] = rowIndex;
+                    _table.SetValue(BrokerTableDefinition.BrokerColumns.MaturityColumn, rowIndex, _maturities[i]);
+                    _table.SetValue(BrokerTableDefinition.BrokerColumns.CcyPairColumn, rowIndex, ccyPair);
+                    _table.SetValue(BrokerTableDefinition.BrokerColumns.BrokerNameColumn, rowIndex, Name);
+                }
             }
-
             Task.Run(() => FeedBrokerData());
         }
 

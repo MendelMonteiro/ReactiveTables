@@ -13,10 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using ReactiveTables.Demo.Server;
@@ -67,13 +65,10 @@ namespace ReactiveTables.Demo.Services
             var feedsWire = new ReactiveBatchedPassThroughTable(_feeds,
                                                                 new WpfThreadMarshaller(dispatcher),
                                                                 _synchroniseTablesDelay);
-//            Task.Run(() => StartReceiving(feedsWire, BrokerTableDefinition.ColumnsToFieldIds, (int)ServerPorts.BrokerFeed));
+            Task.Run(() => StartReceiving(feedsWire, BrokerTableDefinition.ColumnsToFieldIds, (int)ServerPorts.BrokerFeed));
 
             // Subscribe to the feeds we want
             var currencyPairsWire = _currencyPairs;// new ReactivePassThroughTable(_currencyPairs, new ThreadPoolThreadMarshaller());
-            var row = currencyPairsWire.AddRow();
-            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
-            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, "EUR/USD");
             Task.Run(() => SetupFeedSubscription(currencyPairsWire));
         }
 

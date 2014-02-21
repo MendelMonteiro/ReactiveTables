@@ -44,6 +44,7 @@ namespace ReactiveTables.Demo.Client
         private readonly SortedTable _sortedFeeds;
         private readonly Dictionary<string, Type> _columnTypes;
         private readonly BrokerFeedCurrencyPairsViewModel _currencyPairsViewModel;
+        private readonly Stack<string> _ccyPairs = new Stack<string>(new []{ "EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD" });
 
         public BrokerFeedViewModel(IBrokerFeedDataService dataService)
         {
@@ -71,10 +72,13 @@ namespace ReactiveTables.Demo.Client
             AddCcyCommand = new DelegateCommand(
                 () =>
                     {
-                        var currencyPairsWire = (IWritableReactiveTable) _dataService.CurrencyPairs;
-                        var row = currencyPairsWire.AddRow();
-                        currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
-                        currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, "EUR/USD");
+                        if (_ccyPairs.Count > 0)
+                        {
+                            var currencyPairsWire = (IWritableReactiveTable) _dataService.CurrencyPairs;
+                            var row = currencyPairsWire.AddRow();
+                            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
+                            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, _ccyPairs.Pop());
+                        }
                     });
 
             dataService.Start(Application.Current.Dispatcher);

@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 
@@ -43,14 +44,12 @@ namespace ReactiveTables.Framework.Comms
             _clients.Add(client);
             // TODO: Handle disconnections
             client.Connect(_endPoint);
-            var stream = client.GetStream();
 
-            //                FileStream file = new FileStream("broker-output.bin", FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-            //                stream.CopyTo(file);
+            Stream stream = client.GetStream();
 
             _tableProcessors.Add(_reactiveTableProcessor);
             _reactiveTableProcessor.Setup(stream, _wireTable, _processorState);
-            stream.Flush();
+
             //_client.Close();
         }
 

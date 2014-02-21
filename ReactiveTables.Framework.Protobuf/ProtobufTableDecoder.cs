@@ -30,8 +30,8 @@ namespace ReactiveTables.Framework.Protobuf
         private IWritableReactiveTable _table;
         private Dictionary<int, string> _fieldIdsToColumns;
         private Stream _stream;
-        private ProtoReader _reader;
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
+        private bool _withLengthPrefix = true;
 
         /// <summary>
         /// Setups and starts the decoder
@@ -45,7 +45,7 @@ namespace ReactiveTables.Framework.Protobuf
             _fieldIdsToColumns = config.FieldIdsToColumns;
             _table = table;
             _stream = outputStream;
-            _reader = new ProtoReader(_stream, null, null);
+
             Start();
         }
 
@@ -57,11 +57,11 @@ namespace ReactiveTables.Framework.Protobuf
             var remoteToLocalRowIds = new Dictionary<int, int>();
 
             _finished.Reset();
-            while (!_finished.Wait(10))
+            while (!_finished.Wait(0))
             {
                 try
                 {
-                    ReadStream(remoteToLocalRowIds);
+                    ReadStream(_stream, remoteToLocalRowIds);
                 }
                 catch (Exception e)
                 {
@@ -79,50 +79,64 @@ namespace ReactiveTables.Framework.Protobuf
             _finished.Set();
         }
 
-        private void ReadStream(Dictionary<int, int> remoteToLocalRowIds)
+        private void ReadStream(Stream stream, Dictionary<int, int> remoteToLocalRowIds)
         {
-            int fieldId;
-            while ((fieldId = _reader.ReadFieldHeader()) != 0)
+            int len = -1;
+            if (_withLengthPrefix)
             {
-                if (fieldId == ProtobufOperationTypes.Add)
+                // Read the length of the message from the stream.
+                int header = ProtoReader.DirectReadVarintInt32(stream);
+                len = ProtoReader.DirectReadVarintInt32(stream);
+            }
+            using (var reader = new ProtoReader(stream, null, null, len))
+            {
+                int fieldId;
+                while ((fieldId = reader.ReadFieldHeader()) != 0)
                 {
-                    var rowId = ReadRowId(_reader);
-                    if (rowId >= 0)
+                    if (fieldId == ProtobufOperationTypes.Add)
                     {
-                        remoteToLocalRowIds.Add(rowId, _table.AddRow());
-                        fieldId = _reader.ReadFieldHeader();
-                        ReadUpdate(remoteToLocalRowIds);
+                        var rowId = ReadRowId(reader);
+                        if (rowId >= 0)
+                        {
+                            remoteToLocalRowIds.Add(rowId, _table.AddRow());
+                            fieldId = reader.ReadFieldHeader();
+                            ReadUpdate(remoteToLocalRowIds, reader);
+                        }
                     }
-                }
-                else if (fieldId == ProtobufOperationTypes.Update)
-                {
-                    ReadUpdate(remoteToLocalRowIds);
-                }
-                else if (fieldId == ProtobufOperationTypes.Delete)
-                {
-                    var rowId = ReadRowId(_reader);
-                    if (rowId >= 0)
+                    else if (fieldId == ProtobufOperationTypes.Update)
                     {
-                        _table.DeleteRow(remoteToLocalRowIds[rowId]);
-                        remoteToLocalRowIds.Remove(rowId);
+                        ReadUpdate(remoteToLocalRowIds, reader);
+                    }
+                    else if (fieldId == ProtobufOperationTypes.Delete)
+                    {
+                        var rowId = ReadRowId(reader);
+                        if (rowId >= 0)
+                        {
+                            _table.DeleteRow(remoteToLocalRowIds[rowId]);
+                            remoteToLocalRowIds.Remove(rowId);
+                        }
                     }
                 }
             }
         }
 
-        private void ReadUpdate(Dictionary<int, int> remoteToLocalRowIds)
+        private void ReadUpdate(Dictionary<int, int> remoteToLocalRowIds, ProtoReader reader)
         {
-            var token = ProtoReader.StartSubItem(_reader);
+            var token = ProtoReader.StartSubItem(reader);
 
-            int fieldId = _reader.ReadFieldHeader();
+            int fieldId = reader.ReadFieldHeader();
             if (fieldId == ProtobufFieldIds.RowId) // Check for row id
             {
-                var rowId = _reader.ReadInt32();
+                var rowId = reader.ReadInt32();
 
-                WriteFieldsToTable(_table, _fieldIdsToColumns, _reader, remoteToLocalRowIds[rowId]);
+                int localRowId;
+                if (remoteToLocalRowIds.TryGetValue(rowId, out localRowId))
+                {
+                    WriteFieldsToTable(_table, _fieldIdsToColumns, reader, remoteToLocalRowIds[rowId]);
+                }
             }
 
-            ProtoReader.EndSubItem(token, _reader);
+            ProtoReader.EndSubItem(token, reader);
         }
 
         private static int ReadRowId(ProtoReader reader)
@@ -207,7 +221,6 @@ namespace ReactiveTables.Framework.Protobuf
 
         public void Dispose()
         {
-            if (_reader != null) _reader.Dispose();
             if (_stream != null) _stream.Dispose();
             Stop();
         }

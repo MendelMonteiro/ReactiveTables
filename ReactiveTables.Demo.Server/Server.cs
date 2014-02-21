@@ -43,7 +43,7 @@ namespace ReactiveTables.Demo.Server
             servers.ForEach(s => s.Start());
             Console.CancelKeyPress += (sender, eventArgs) => servers.ForEach(s => s.Stop());
             Console.WriteLine("Press Enter to stop server");
-            Console.ReadKey();
+            Console.ReadLine();
             servers.ForEach(s => s.Stop());
         }
 

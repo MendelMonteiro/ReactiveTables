@@ -41,8 +41,8 @@ namespace ReactiveTables.Framework.Protobuf
             var config = (ProtobufEncoderState) state;
             _outputStream = outputStream;
             // TODO: Find way to re-utilise the proto writers (object pool?)
-            _protoWriter = new ProtoWriter(outputStream, null, null);
-            var writerObserver = new ProtobufWriterObserver(table, _protoWriter, config.ColumnsToFieldIds);
+            
+            var writerObserver = new ProtobufWriterObserver(table, _outputStream, config.ColumnsToFieldIds);
             _token = table.Subscribe(writerObserver);
             // Replay state when new client connects
             table.ReplayRows(writerObserver);

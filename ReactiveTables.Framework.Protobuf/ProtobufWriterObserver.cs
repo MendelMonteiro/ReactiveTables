@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ProtoBuf;
 using ReactiveTables.Framework.Columns;
 
@@ -26,143 +27,161 @@ namespace ReactiveTables.Framework.Protobuf
     class ProtobufWriterObserver : IObserver<TableUpdate>
     {
         private readonly Dictionary<string, int> _columnsToFieldIds;
-        private readonly ProtoWriter _writer;
         private readonly IReactiveTable _table;
+        private readonly Stream _outputStream;
+        private bool _withLengthPrefix = true;
 
-        public ProtobufWriterObserver(IReactiveTable table, ProtoWriter writer, Dictionary<string, int> columnsToFieldIds)
+        public ProtobufWriterObserver(IReactiveTable table, Stream outputStream, Dictionary<string, int> columnsToFieldIds)
         {
             _table = table;
-            _writer = writer;
+            _outputStream = outputStream;
             _columnsToFieldIds = columnsToFieldIds;
         }
 
         public void OnNext(TableUpdate value)
         {
-            switch (value.Action)
+            using (var writer = new ProtoWriter(_outputStream, null, null))
             {
-                case TableUpdate.TableUpdateAction.Add:
-                    WriteAdd(value);
-                    WriteUpdate(_table.Columns.Values, value.RowIndex);
-                    break;
-                case TableUpdate.TableUpdateAction.Update:
-                    WriteUpdate(value.Columns, value.RowIndex);
-                    break;
-                case TableUpdate.TableUpdateAction.Delete:
-                    WriteDelete(value);
-                    break;
+                SubItemToken outerToken = new SubItemToken();
+                if (_withLengthPrefix)
+                {
+                    // Encode the length of the stream (protobuf-net will automatically calculate the length of the 'String' field)
+                    ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.MessageSize, WireType.String, writer);
+                    outerToken = ProtoWriter.StartSubItem(ProtobufOperationTypes.MessageSize, writer);
+                }
+                switch (value.Action)
+                {
+                    case TableUpdate.TableUpdateAction.Add:
+                        WriteAdd(writer, value);
+                        WriteUpdate(writer, _table.Columns.Values, value.RowIndex);
+                        break;
+                    case TableUpdate.TableUpdateAction.Update:
+                        WriteUpdate(writer, value.Columns, value.RowIndex);
+                        break;
+                    case TableUpdate.TableUpdateAction.Delete:
+                        WriteDelete(writer, value);
+                        break;
+                }
+                if (_withLengthPrefix)
+                {
+                    ProtoWriter.EndSubItem(outerToken, writer);
+                }
             }
         }
 
-        private void WriteAdd(TableUpdate value)
+        private void WriteAdd(ProtoWriter writer, TableUpdate value)
         {
-            WriteRowId(value, ProtobufOperationTypes.Add);
+            WriteRowId(writer, value, ProtobufOperationTypes.Add);
         }
 
-        private void WriteDelete(TableUpdate value)
+        private void WriteDelete(ProtoWriter writer, TableUpdate value)
         {
-            WriteRowId(value, ProtobufOperationTypes.Delete);
+            WriteRowId(writer, value, ProtobufOperationTypes.Delete);
         }
 
-        private void WriteUpdate(IEnumerable<IReactiveColumn> columns, int rowIndex)
+        private void WriteUpdate(ProtoWriter writer, IEnumerable<IReactiveColumn> columns, int rowIndex)
         {
             // Start the row group
-            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, _writer);
-            var token = ProtoWriter.StartSubItem(rowIndex, _writer);
+            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, writer);
+            var token = ProtoWriter.StartSubItem(rowIndex, writer);
 
             var rowId = rowIndex;
 
             // Send the row id so that it can be matched against the local row id at the other end.
-            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, _writer);
-            ProtoWriter.WriteInt32(rowId, _writer);
+            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, writer);
+            ProtoWriter.WriteInt32(rowId, writer);
 
             foreach (var column in columns)
             {
-                var fieldId = _columnsToFieldIds[column.ColumnId];
-
-                WriteColumn(column, fieldId, rowId);
+                // Only write columns for which we have mappings defined (gives the consumer a way to filter which columns are written to stream)
+                int fieldId;
+                if (_columnsToFieldIds.TryGetValue(column.ColumnId, out fieldId))
+                {
+                    WriteColumn(writer, column, fieldId, rowId);
+                }
             }
 
-            ProtoWriter.EndSubItem(token, _writer);
+            ProtoWriter.EndSubItem(token, writer);
         }
 
-        private void WriteColumn(IReactiveColumn column, int fieldId, int rowId)
+        private void WriteColumn(ProtoWriter writer, IReactiveColumn column, int fieldId, int rowId)
         {
             if (column.Type == typeof (int))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteInt32(_table.GetValue<int>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteInt32(_table.GetValue<int>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (short))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteInt16(_table.GetValue<short>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteInt16(_table.GetValue<short>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (string))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.String, _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.String, writer);
                 var value = _table.GetValue<string>(column.ColumnId, rowId);
 //                Console.WriteLine("Writing string {0}", value);
-                ProtoWriter.WriteString(value ?? string.Empty, _writer);
+                ProtoWriter.WriteString(value ?? string.Empty, writer);
             }
             else if (column.Type == typeof (bool))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteBoolean(_table.GetValue<bool>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteBoolean(_table.GetValue<bool>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (double))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed64, _writer);
-                ProtoWriter.WriteDouble(_table.GetValue<double>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed64, writer);
+                ProtoWriter.WriteDouble(_table.GetValue<double>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (long))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteInt64(_table.GetValue<long>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteInt64(_table.GetValue<long>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (decimal))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
-                BclHelpers.WriteDecimal(_table.GetValue<decimal>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, writer);
+                BclHelpers.WriteDecimal(_table.GetValue<decimal>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (DateTime))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
-                BclHelpers.WriteDateTime(_table.GetValue<DateTime>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, writer);
+                BclHelpers.WriteDateTime(_table.GetValue<DateTime>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (TimeSpan))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
-                BclHelpers.WriteTimeSpan(_table.GetValue<TimeSpan>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, writer);
+                BclHelpers.WriteTimeSpan(_table.GetValue<TimeSpan>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof (Guid))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, _writer);
-                BclHelpers.WriteGuid(_table.GetValue<Guid>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.StartGroup, writer);
+                BclHelpers.WriteGuid(_table.GetValue<Guid>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof(float))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, _writer);
-                ProtoWriter.WriteSingle(_table.GetValue<float>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Fixed32, writer);
+                ProtoWriter.WriteSingle(_table.GetValue<float>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof(byte))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteByte(_table.GetValue<byte>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteByte(_table.GetValue<byte>(column.ColumnId, rowId), writer);
             }
             else if (column.Type == typeof(char))
             {
-                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, _writer);
-                ProtoWriter.WriteInt16((short)_table.GetValue<char>(column.ColumnId, rowId), _writer);
+                ProtoWriter.WriteFieldHeader(fieldId, WireType.Variant, writer);
+                ProtoWriter.WriteInt16((short)_table.GetValue<char>(column.ColumnId, rowId), writer);
             }
         }
 
-        private void WriteRowId(TableUpdate value, int operationType)
+        private void WriteRowId(ProtoWriter writer, TableUpdate value, int operationType)
         {
-            ProtoWriter.WriteFieldHeader(operationType, WireType.StartGroup, _writer);
-            var token = ProtoWriter.StartSubItem(value.RowIndex, _writer);
-            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, _writer);
-            ProtoWriter.WriteInt32(value.RowIndex, _writer);
-            ProtoWriter.EndSubItem(token, _writer);
+            ProtoWriter.WriteFieldHeader(operationType, WireType.StartGroup, writer);
+            var token = ProtoWriter.StartSubItem(value.RowIndex, writer);
+            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, writer);
+            ProtoWriter.WriteInt32(value.RowIndex, writer);
+            ProtoWriter.EndSubItem(token, writer);
         }
 
         public void OnError(Exception error)

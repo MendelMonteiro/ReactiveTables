@@ -123,7 +123,7 @@ namespace ReactiveTables.Framework.Comms
             var listener = (TcpListener)ar.AsyncState;
             var client = listener.EndAcceptTcpClient(ar);
             var networkStream = client.GetStream();
-            byte[] buffer = new byte[8];
+            byte[] buffer = new byte[1024];
             int read;
 
             Console.WriteLine("Waiting for data");

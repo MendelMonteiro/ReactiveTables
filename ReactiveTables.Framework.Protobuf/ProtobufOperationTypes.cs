@@ -23,5 +23,6 @@ namespace ReactiveTables.Framework.Protobuf
         public const int Update = 1;
         public const int Add = 2;
         public const int Delete = 3;
+        public const int MessageSize = 4;
     }
 }

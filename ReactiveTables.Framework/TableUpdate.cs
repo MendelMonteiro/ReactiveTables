@@ -157,7 +157,7 @@ namespace ReactiveTables.Framework
 
         public override string ToString()
         {
-            return string.Format("Action: {0}, RowIndex: {1}, Column: {2}", _action, _rowIndex, _column.ColumnId);
+            return string.Format("Action: {0}, RowIndex: {1}, Column: {2}", _action, _rowIndex, _column == null ? "null" : _column.ColumnId);
         }
     }
 }
