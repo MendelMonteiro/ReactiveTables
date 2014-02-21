@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ReactiveTables.Framework.Comms
 {
@@ -48,18 +49,20 @@ namespace ReactiveTables.Framework.Comms
         /// Start waiting for incoming client connections - this is a blocking call
         /// </summary>
         /// <param name="encoderState"></param>
-        public void Start(object encoderState)
+        public async Task Start(object encoderState)
         {
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
 
-            listener.BeginAcceptTcpClient(AcceptClient, new ClientState
-                                                            {
-                                                                Listener = listener,
-                                                                EncoderState = encoderState
-                                                            });
+            while (!_finished.Wait(0))
+            {
+                listener.BeginAcceptTcpClient(AcceptClient, new ClientState
+                                                                {
+                                                                    Listener = listener,
+                                                                    EncoderState = encoderState
+                                                                });
+            }
 
-            _finished.Wait();
             listener.Stop();
         }
 
@@ -69,6 +72,7 @@ namespace ReactiveTables.Framework.Comms
         /// <param name="ar"></param>
         private void AcceptClient(IAsyncResult ar)
         {
+            Console.WriteLine("Accepted client");
             var state = (ClientState) ar.AsyncState;
             var client = state.Listener.EndAcceptTcpClient(ar);
             var outputStream = client.GetStream();
