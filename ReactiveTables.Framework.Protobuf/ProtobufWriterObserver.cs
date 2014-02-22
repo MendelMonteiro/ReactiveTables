@@ -119,7 +119,7 @@ namespace ReactiveTables.Framework.Protobuf
 
         private static SubItemToken WriteStartUpdate(ProtoWriter writer, int rowIndex, out int rowId)
         {
-// Start the row group
+            // Start the row group
             ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, writer);
             var token = ProtoWriter.StartSubItem(rowIndex, writer);
 

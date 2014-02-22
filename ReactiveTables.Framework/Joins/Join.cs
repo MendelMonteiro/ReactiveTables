@@ -263,13 +263,15 @@ namespace ReactiveTables.Framework.Joins
             if (table.Columns.ContainsKey(update.Column.ColumnId)
                 && columnRowsToJoinRows.TryGetValue(columnRowIndex, out joinRows))
             {
-                foreach (var colUpdate in from joinRow in joinRows
-                                          let row = _rows[joinRow]
-                                          where row.HasValue && !IsRowUnlinked(row.Value, side)
-                                          select new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column))
+                foreach (var joinRow in joinRows)
                 {
-                    if (_updateObservers != null) _updateObservers.OnNext(colUpdate);
-                    return true;
+                    var row = _rows[joinRow];
+                    if (row.HasValue && !IsRowUnlinked(row.Value, side))
+                    {
+                        var colUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column);
+                        if (_updateObservers != null) _updateObservers.OnNext(colUpdate);
+                        return true;
+                    }
                 }
             }
             return false;
