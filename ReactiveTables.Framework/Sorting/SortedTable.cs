@@ -85,7 +85,7 @@ namespace ReactiveTables.Framework.Sorting
             var sortedRowId = _sorter.OnNext(update, out needToResort);
 
             // Propagate the update
-            _subject.OnNext(new TableUpdate(update.Action, sortedRowId, update.Columns));
+            _subject.OnNext(new TableUpdate(update.Action, sortedRowId, update.Column));
 
             if (needToResort)
             {
@@ -288,7 +288,7 @@ namespace ReactiveTables.Framework.Sorting
                 case TableUpdate.TableUpdateAction.Update:
                     {
                             // Sort column updating
-                        if (update.Columns.Any(column => column.ColumnId == _sortColumnId))
+                        if (update.Column.ColumnId == _sortColumnId)
                         {
                             var oldValue = _rowIdsToValues[update.RowIndex];
                             var oldSortColValue = new KeyValuePair<T, int>(oldValue, update.RowIndex);

@@ -205,13 +205,16 @@ namespace ReactiveTables.Framework.Joins
                 if (!_replaying) return;
 
                 var columns = GetTableColumns(side);
-                update = new TableUpdate(TableUpdate.TableUpdateAction.Update, update.RowIndex, columns);
+                foreach (var column in columns)
+                {
+                    update = new TableUpdate(TableUpdate.TableUpdateAction.Update, update.RowIndex, column);
+                    ProcessColumnUpdate(update, column);
+                }
             }
-
-            // Key update
-            foreach (var column in update.Columns)
+            else
             {
-                ProcessColumnUpdate(update, column);
+                // Key update
+                ProcessColumnUpdate(update, update.Column);
             }
         }
 

@@ -94,10 +94,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
 
         private void OnNext(TableUpdate tableUpdate)
         {
-            foreach (var updatedColumn in from column in tableUpdate.Columns
-                                          where _groupColumns.Contains(column.ColumnId)
-                                          select column)
+            if (_groupColumns.Contains(tableUpdate.Column.ColumnId))
             {
+                var upatedColumn = tableUpdate.Column;
                 if (tableUpdate.IsColumnUpdate())
                 {
                     // Updated values - reevaluate grouping
@@ -108,10 +107,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
                 }
             }
 
-            foreach (var updateColumn in from column in tableUpdate.Columns
-                                         where _aggregateColumns.ContainsKey(column.ColumnId)
-                                         select column)
+            if (_aggregateColumns.ContainsKey(tableUpdate.Column.ColumnId))
             {
+                var updateColumn = tableUpdate.Column;
                 if (tableUpdate.IsColumnUpdate())
                 {
                     // Updated values - reevaluate grouping

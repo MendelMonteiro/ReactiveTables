@@ -53,10 +53,10 @@ namespace ReactiveTables.Framework.Protobuf
                 {
                     case TableUpdate.TableUpdateAction.Add:
                         WriteAdd(writer, value);
-                        WriteUpdate(writer, _table.Columns.Values, value.RowIndex);
+                        WriteUpdates(writer, _table.Columns.Values, value.RowIndex);
                         break;
                     case TableUpdate.TableUpdateAction.Update:
-                        WriteUpdate(writer, value.Columns, value.RowIndex);
+                        WriteUpdate(writer, value.Column, value.RowIndex);
                         break;
                     case TableUpdate.TableUpdateAction.Delete:
                         WriteDelete(writer, value);
@@ -79,17 +79,10 @@ namespace ReactiveTables.Framework.Protobuf
             WriteRowId(writer, value, ProtobufOperationTypes.Delete);
         }
 
-        private void WriteUpdate(ProtoWriter writer, IEnumerable<IReactiveColumn> columns, int rowIndex)
+        private void WriteUpdates(ProtoWriter writer, IEnumerable<IReactiveColumn> columns, int rowIndex)
         {
-            // Start the row group
-            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, writer);
-            var token = ProtoWriter.StartSubItem(rowIndex, writer);
-
-            var rowId = rowIndex;
-
-            // Send the row id so that it can be matched against the local row id at the other end.
-            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, writer);
-            ProtoWriter.WriteInt32(rowId, writer);
+            int rowId;
+            var token = WriteStartUpdate(writer, rowIndex, out rowId);
 
             foreach (var column in columns)
             {
@@ -101,7 +94,41 @@ namespace ReactiveTables.Framework.Protobuf
                 }
             }
 
+            WriteEndUpdate(writer, token);
+        }
+
+        private void WriteUpdate(ProtoWriter writer, IReactiveColumn column, int rowIndex)
+        {
+            int rowId;
+            var token = WriteStartUpdate(writer, rowIndex, out rowId);
+
+            // Only write columns for which we have mappings defined (gives the consumer a way to filter which columns are written to stream)
+            int fieldId;
+            if (_columnsToFieldIds.TryGetValue(column.ColumnId, out fieldId))
+            {
+                WriteColumn(writer, column, fieldId, rowId);
+            }
+
+            WriteEndUpdate(writer, token);
+        }
+
+        private static void WriteEndUpdate(ProtoWriter writer, SubItemToken token)
+        {
             ProtoWriter.EndSubItem(token, writer);
+        }
+
+        private static SubItemToken WriteStartUpdate(ProtoWriter writer, int rowIndex, out int rowId)
+        {
+// Start the row group
+            ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.Update, WireType.StartGroup, writer);
+            var token = ProtoWriter.StartSubItem(rowIndex, writer);
+
+            rowId = rowIndex;
+
+            // Send the row id so that it can be matched against the local row id at the other end.
+            ProtoWriter.WriteFieldHeader(ProtobufFieldIds.RowId, WireType.Variant, writer);
+            ProtoWriter.WriteInt32(rowId, writer);
+            return token;
         }
 
         private void WriteColumn(ProtoWriter writer, IReactiveColumn column, int fieldId, int rowId)

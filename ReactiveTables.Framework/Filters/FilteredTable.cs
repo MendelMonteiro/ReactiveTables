@@ -60,7 +60,7 @@ namespace ReactiveTables.Framework.Filters
                 int filterRowIndex;
                 if (_sourceRowToFilterRow.TryGetValue(sourceRowIndex, out filterRowIndex))
                 {
-                    OnUpdate(filterRowIndex, tableUpdate.Columns);
+                    OnUpdate(filterRowIndex, tableUpdate.Column);
                 }
                 return;
             }
@@ -79,7 +79,7 @@ namespace ReactiveTables.Framework.Filters
                     // otherwise do we need to propagate the column update
                 else
                 {
-                    OnUpdate(filterRow, tableUpdate.Columns);
+                    OnUpdate(filterRow, tableUpdate.Column);
                 }
             }
             // No mapping yet
@@ -139,7 +139,7 @@ namespace ReactiveTables.Framework.Filters
             _updateSubject.OnNext(update);
         }
 
-        private void OnUpdate(int filterRow, IList<IReactiveColumn> column)
+        private void OnUpdate(int filterRow, IReactiveColumn column)
         {
             var update = new TableUpdate(TableUpdate.TableUpdateAction.Update, filterRow, column);
             _updateSubject.OnNext(update);

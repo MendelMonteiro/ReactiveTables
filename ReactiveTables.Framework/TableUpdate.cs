@@ -14,7 +14,6 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework
@@ -38,31 +37,12 @@ namespace ReactiveTables.Framework
         private readonly TableUpdateAction _action;
         private readonly int _rowIndex;
         private readonly IReactiveColumn _column;
-        private readonly IList<IReactiveColumn> _columns;
 
         public TableUpdate(TableUpdateAction action, int rowIndex, IReactiveColumn column = (IReactiveColumn) null)
         {
             _action = action;
             _rowIndex = rowIndex;
             _column = column;
-            _columns = column != null ? new[] {column} : null;
-        }
-
-        public TableUpdate(TableUpdateAction action, int rowIndex, IList<IReactiveColumn> columns)
-        {
-            _action = action;
-            _rowIndex = rowIndex;
-            _column = null;
-            _columns = null;
-            if (IsColumnUpdate(action))
-            {
-                if (columns == null || columns.Count == 0)
-                {
-                    throw new ArgumentException("Columns must have values for column updates", "columns");
-                }
-                _column = columns[0];
-                _columns = columns;
-            }
         }
 
         /// <summary>
@@ -87,14 +67,6 @@ namespace ReactiveTables.Framework
         public IReactiveColumn Column
         {
             get { return _column; }
-        }
-
-        /// <summary>
-        /// The columns being affected by the change
-        /// </summary>
-        public IList<IReactiveColumn> Columns
-        {
-            get { return _columns; }
         }
 
         /// <summary>
