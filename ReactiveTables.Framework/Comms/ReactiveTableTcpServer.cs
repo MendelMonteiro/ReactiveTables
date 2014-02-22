@@ -54,14 +54,15 @@ namespace ReactiveTables.Framework.Comms
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
 
-            while (!_finished.Wait(0))
-            {
+//            while (!_finished.Wait(0))
+//            {
                 listener.BeginAcceptTcpClient(AcceptClient, new ClientState
                                                                 {
                                                                     Listener = listener,
                                                                     EncoderState = encoderState
                                                                 });
-            }
+//            }
+            _finished.Wait();
 
             listener.Stop();
         }
@@ -75,7 +76,9 @@ namespace ReactiveTables.Framework.Comms
             Console.WriteLine("Accepted client");
             var state = (ClientState) ar.AsyncState;
             var client = state.Listener.EndAcceptTcpClient(ar);
+            state.Listener.BeginAcceptTcpClient(AcceptClient, state);
             var outputStream = client.GetStream();
+
             
             var session = new ReactiveClientSession {RemoteEndPoint = (IPEndPoint) client.Client.RemoteEndPoint};
             var output = _getOutputTable(session);

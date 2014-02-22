@@ -85,9 +85,11 @@ namespace ReactiveTables.Framework.Protobuf
             if (_withLengthPrefix)
             {
                 // Read the length of the message from the stream.
+                // DirectReadVarintInt32 calls Stream.ReadByte() which allocates a one byte array on every call - yuck!
                 int header = ProtoReader.DirectReadVarintInt32(stream);
                 len = ProtoReader.DirectReadVarintInt32(stream);
             }
+            // Allocation of protoreader for each message - blurghh!
             using (var reader = new ProtoReader(stream, null, null, len))
             {
                 int fieldId;
