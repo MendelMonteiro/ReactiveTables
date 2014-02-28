@@ -21,6 +21,10 @@ using System.Net.Sockets;
 
 namespace ReactiveTables.Framework.Comms
 {
+    /// <summary>
+    /// A TCP client which will accept incoming connections and pass the network stream to the provided table processor.
+    /// </summary>
+    /// <typeparam name="TTable"></typeparam>
     public class ReactiveTableTcpClient<TTable> : IDisposable where TTable : IReactiveTable
     {
         private readonly List<TcpClient> _clients = new List<TcpClient>();
@@ -30,6 +34,13 @@ namespace ReactiveTables.Framework.Comms
         private readonly object _processorState;
         private readonly IPEndPoint _endPoint;
 
+        /// <summary>
+        /// Create the tcp client
+        /// </summary>
+        /// <param name="reactiveTableProcessor"></param>
+        /// <param name="wireTable"></param>
+        /// <param name="processorState"></param>
+        /// <param name="endPoint"></param>
         public ReactiveTableTcpClient(IReactiveTableProcessor<TTable> reactiveTableProcessor, TTable wireTable, object processorState, IPEndPoint endPoint)
         {
             _reactiveTableProcessor = reactiveTableProcessor;
@@ -38,19 +49,38 @@ namespace ReactiveTables.Framework.Comms
             _endPoint = endPoint;
         }
 
+        /// <summary>
+        /// Start the tcp client - this is a blocking call
+        /// </summary>
         public void Start()
         {
             var client = new TcpClient();
             _clients.Add(client);
             // TODO: Handle disconnections
             client.Connect(_endPoint);
-
             Stream stream = client.GetStream();
-
             _tableProcessors.Add(_reactiveTableProcessor);
             _reactiveTableProcessor.Setup(stream, _wireTable, _processorState);
 
             //_client.Close();
+        }
+
+        // Aysnc version - not really necessary on the client side.
+        private void OnConnect(IAsyncResult ar)
+        {
+            TcpClient client = (TcpClient) ar.AsyncState;
+            client.BeginConnect(_endPoint.Address, _endPoint.Port, OnConnect, client);
+
+            try
+            {
+                Stream stream = client.GetStream();
+                _tableProcessors.Add(_reactiveTableProcessor);
+                _reactiveTableProcessor.Setup(stream, _wireTable, _processorState);
+            }
+            catch (EndOfStreamException)
+            {
+                Console.WriteLine("Disconnected from server");
+            }
         }
 
         public void Dispose()

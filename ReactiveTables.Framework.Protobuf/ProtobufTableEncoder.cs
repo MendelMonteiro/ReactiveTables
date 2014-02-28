@@ -15,7 +15,6 @@
 
 using System;
 using System.IO;
-using ProtoBuf;
 using ReactiveTables.Framework.Comms;
 
 namespace ReactiveTables.Framework.Protobuf
@@ -27,7 +26,6 @@ namespace ReactiveTables.Framework.Protobuf
     public class ProtobufTableEncoder : IReactiveTableProcessor<IReactiveTable>
     {
         private IDisposable _token;
-        private ProtoWriter _protoWriter;
         private Stream _outputStream;
 
         /// <summary>
@@ -54,7 +52,6 @@ namespace ReactiveTables.Framework.Protobuf
         private void Close()
         {
             if (_token != null) _token.Dispose();
-            if (_protoWriter != null) _protoWriter.Close();
             if (_outputStream != null) _outputStream.Dispose();
         }
 

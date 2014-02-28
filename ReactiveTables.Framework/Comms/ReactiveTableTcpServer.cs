@@ -35,7 +35,15 @@ namespace ReactiveTables.Framework.Comms
         private readonly Action _testAction;
         private readonly Func<ReactiveClientSession, TTable> _getOutputTable;
 
-        public ReactiveTableTcpServer(Func<IReactiveTableProcessor<TTable>> getEncoder, IPEndPoint endPoint, ManualResetEventSlim finished, 
+        /// <summary>
+        /// Create the tcp server
+        /// </summary>
+        /// <param name="getEncoder"></param>
+        /// <param name="endPoint"></param>
+        /// <param name="finished"></param>
+        /// <param name="getOutputTable"></param>
+        /// <param name="testAction"></param>
+        public ReactiveTableTcpServer(Func<IReactiveTableProcessor<TTable>> getEncoder, IPEndPoint endPoint, ManualResetEventSlim finished,
                                       Func<ReactiveClientSession, TTable> getOutputTable, Action testAction = null)
         {
             _getEncoder = getEncoder;
@@ -54,14 +62,11 @@ namespace ReactiveTables.Framework.Comms
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
 
-//            while (!_finished.Wait(0))
-//            {
-                listener.BeginAcceptTcpClient(AcceptClient, new ClientState
-                                                                {
-                                                                    Listener = listener,
-                                                                    EncoderState = encoderState
-                                                                });
-//            }
+            listener.BeginAcceptTcpClient(AcceptClient, new ClientState
+                                                            {
+                                                                Listener = listener,
+                                                                EncoderState = encoderState
+                                                            });
             _finished.Wait();
 
             listener.Stop();
@@ -74,25 +79,32 @@ namespace ReactiveTables.Framework.Comms
         private void AcceptClient(IAsyncResult ar)
         {
             Console.WriteLine("Accepted client");
-            var state = (ClientState) ar.AsyncState;
+            var state = (ClientState)ar.AsyncState;
             var client = state.Listener.EndAcceptTcpClient(ar);
+            // Start waiting for the next client
             state.Listener.BeginAcceptTcpClient(AcceptClient, state);
+
             var outputStream = client.GetStream();
 
-            
-            var session = new ReactiveClientSession {RemoteEndPoint = (IPEndPoint) client.Client.RemoteEndPoint};
+            var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
             var output = _getOutputTable(session);
             using (var encoder = _getEncoder())
             {
-                encoder.Setup(outputStream, output, state.EncoderState);
-
-                outputStream.Flush();
-                int millisecondsTimeout = _testAction == null ? -1 : 50;
-                while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                try
                 {
-                    // Run the test action every 50 milliseconds if it has been set.
-                    if (_testAction != null) _testAction();
-                    //outputStream.Flush();
+                    encoder.Setup(outputStream, output, state.EncoderState);
+
+                    outputStream.Flush();
+                    int millisecondsTimeout = _testAction == null ? -1 : 50;
+                    while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                    {
+                        // Run the test action every 50 milliseconds if it has been set.
+                        if (_testAction != null) _testAction();
+                    }
+                }
+                catch (EndOfStreamException)
+                {
+                    Console.WriteLine("Client Disconnected");
                 }
             }
 
@@ -161,7 +173,7 @@ namespace ReactiveTables.Framework.Comms
 
     public class ReactiveClientSession
     {
-        public IPEndPoint RemoteEndPoint { get; set; } 
+        public IPEndPoint RemoteEndPoint { get; set; }
     }
 
     public interface ITcpServerDataSource

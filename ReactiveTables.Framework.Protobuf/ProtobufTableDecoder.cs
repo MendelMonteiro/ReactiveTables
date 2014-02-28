@@ -31,7 +31,7 @@ namespace ReactiveTables.Framework.Protobuf
         private Dictionary<int, string> _fieldIdsToColumns;
         private Stream _stream;
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
-        private bool _withLengthPrefix = true;
+        private const bool WithLengthPrefix = true;
 
         /// <summary>
         /// Setups and starts the decoder
@@ -52,7 +52,7 @@ namespace ReactiveTables.Framework.Protobuf
         /// <summary>
         /// Start listening for changes on the stream and writing to the table
         /// </summary>
-        public void Start()
+        private void Start()
         {
             var remoteToLocalRowIds = new Dictionary<int, int>();
 
@@ -82,7 +82,7 @@ namespace ReactiveTables.Framework.Protobuf
         private void ReadStream(Stream stream, Dictionary<int, int> remoteToLocalRowIds)
         {
             int len = -1;
-            if (_withLengthPrefix)
+            if (WithLengthPrefix)
             {
                 // Read the length of the message from the stream.
                 // DirectReadVarintInt32 calls Stream.ReadByte() which allocates a one byte array on every call - yuck!
