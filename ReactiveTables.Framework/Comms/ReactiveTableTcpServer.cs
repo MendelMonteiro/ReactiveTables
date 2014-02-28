@@ -85,7 +85,7 @@ namespace ReactiveTables.Framework.Comms
             state.Listener.BeginAcceptTcpClient(AcceptClient, state);
 
             var outputStream = client.GetStream();
-
+            
             var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
             var output = _getOutputTable(session);
             using (var encoder = _getEncoder())
@@ -105,6 +105,27 @@ namespace ReactiveTables.Framework.Comms
                 catch (EndOfStreamException)
                 {
                     Console.WriteLine("Client Disconnected");
+                }
+                catch (SocketException sex)
+                {
+                    if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
+                    {
+                        Console.WriteLine("Client Disconnected");
+                    }
+                    else throw;
+                }
+                catch (IOException ioex)
+                {
+                    var sex = ioex.InnerException as SocketException;
+                    if (sex != null)
+                    {
+                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
+                        {
+                            Console.WriteLine("Client Disconnected");
+                        }
+                        else throw;
+                    }
+                    else throw;
                 }
             }
 

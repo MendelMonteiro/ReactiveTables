@@ -59,15 +59,7 @@ namespace ReactiveTables.Framework.Protobuf
             _finished.Reset();
             while (!_finished.Wait(0))
             {
-                try
-                {
-                    ReadStream(_stream, remoteToLocalRowIds);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                ReadStream(_stream, remoteToLocalRowIds);
             }
         }
 
