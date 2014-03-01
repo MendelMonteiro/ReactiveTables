@@ -47,6 +47,12 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
+        /// <summary>
+        /// The row can have three states:
+        /// 1. It exists with only one side and the row id - when an outer join is used
+        /// 2. It exists with only one side and _no_ row id - when an inner join is used
+        /// 3. IT exists with both sides and the row id - when the row is fully joined for both inner and outer joins
+        /// </summary>
         internal struct Row
         {
             public int? RowId;
@@ -266,7 +272,7 @@ namespace ReactiveTables.Framework.Joins
                 foreach (var joinRow in joinRows)
                 {
                     var row = _rows[joinRow];
-                    if (row.HasValue && !IsRowUnlinked(row.Value, side))
+                    if (row.HasValue && row.Value.RowId.HasValue && !IsRowUnlinked(row.Value, side))
                     {
                         var colUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column);
                         if (_updateObservers != null) _updateObservers.OnNext(colUpdate);

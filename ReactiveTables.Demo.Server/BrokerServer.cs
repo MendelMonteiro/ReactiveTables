@@ -79,7 +79,7 @@ namespace ReactiveTables.Demo.Server
 
         private void SetupFeedServer(IReactiveTable feedsAndClients, ReactiveBatchedPassThroughTable feedsTable)
         {
-//            feedsAndClients.Subscribe(update => Console.WriteLine(update.ToString()));
+            feedsAndClients.Subscribe(update => Console.WriteLine(update.ToString()));
 
             var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
                                                                     new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeed),
