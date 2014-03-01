@@ -11,6 +11,7 @@
 10. Batched synch		- done
 11. Unit tests for Comms - 
 12. Measure time between server and client - done
+13. Add readme for demo project - 
 
 Notes
 * Should the property change notifier live in the view model base instead? What's more efficient?

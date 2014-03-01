@@ -1,6 +1,6 @@
 ﻿1. Subscribe and unsubscribe to currencies - make subscription handler generic
-2. Handle disconnections gracefully
-3. Test with multiple clients
+2. Handle disconnections gracefully - done
+3. Test with multiple clients - done
 4. Add ATM/RR25+50/BF
 5. Add valid + last update time
 6. 

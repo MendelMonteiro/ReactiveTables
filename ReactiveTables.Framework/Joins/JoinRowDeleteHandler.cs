@@ -114,6 +114,7 @@ namespace ReactiveTables.Framework.Joins
         private void DeleteClearedRows(List<Join<TKey>.Row> colRowMappings, List<TableUpdate> rowUpdates, TKey key,
             IEnumerable<int> joinRowIds)
         {
+            // Remove the mappings where we don't have values on either side
             for (int i = colRowMappings.Count - 1; i >= 0; i--)
             {
                 var mapping = colRowMappings[i];
@@ -123,14 +124,37 @@ namespace ReactiveTables.Framework.Joins
                 }
             }
 
+            // Where we don't have values for the left or right hand sides we need to decrement the row count
             foreach (var joinRowId in joinRowIds)
             {
-                var joinRow = _rows[joinRowId];
-                if (!joinRow.Value.LeftRowId.HasValue && !joinRow.Value.RightRowId.HasValue)
+                var joinRow = _rows[joinRowId].Value;
+                if (_joinType == JoinType.Inner)
                 {
-                    _rows[joinRowId] = null;
-                    rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
-                    _rowManager.DeleteRow(joinRowId);
+                    // Inner joins should leave the row in place but as soon as one side dissapears the row will no longer be visible to consumers
+                    if (!joinRow.LeftRowId.HasValue ^ !joinRow.RightRowId.HasValue)
+                    {
+                        // Clear the row ids from the Join state
+                        joinRow.RowId = null;
+                        _rows[joinRowId] = joinRow;
+                        for (int i = 0; i < _rowsByKey[key].ColRowMappings.Count; i++)
+                        {
+                            var mapping = _rowsByKey[key].ColRowMappings[i];
+                            mapping.RowId = null;
+                            _rowsByKey[key].ColRowMappings[i] = mapping;
+                        }
+                        // Actually delete the row
+                        rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
+                        _rowManager.DeleteRow(joinRowId);
+                    }
+                }
+                else
+                {
+                    if (!joinRow.LeftRowId.HasValue && !joinRow.RightRowId.HasValue)
+                    {
+                        _rows[joinRowId] = null;
+                        rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
+                        _rowManager.DeleteRow(joinRowId);
+                    }
                 }
             }
 
@@ -187,13 +211,30 @@ namespace ReactiveTables.Framework.Joins
         {
             if (joinSide == JoinSide.Left)
             {
-                columnRowsToJoinRows[mapping.LeftRowId.Value].Remove(mapping.RowId.Value);
-                if (columnRowsToJoinRows[mapping.LeftRowId.Value].Count == 0) columnRowsToJoinRows.Remove(mapping.LeftRowId.Value);
+                var leftRowsToJoinRow = columnRowsToJoinRows[mapping.LeftRowId.Value];
+                if (mapping.RowId.HasValue)
+                {
+                    leftRowsToJoinRow.Remove(mapping.RowId.Value);
+                }
+                else
+                {
+                    leftRowsToJoinRow.Clear();
+                }
+                if (leftRowsToJoinRow.Count == 0) columnRowsToJoinRows.Remove(mapping.LeftRowId.Value);
             }
             else
             {
-                columnRowsToJoinRows[mapping.RightRowId.Value].Remove(mapping.RowId.Value);
-                if (columnRowsToJoinRows[mapping.RightRowId.Value].Count == 0) columnRowsToJoinRows.Remove(mapping.RightRowId.Value);
+                var rightRowsToJoinRow = columnRowsToJoinRows[mapping.RightRowId.Value];
+                if (mapping.RowId.HasValue)
+                {
+                    rightRowsToJoinRow.Remove(mapping.RowId.Value);
+                }
+                else
+                {
+                    rightRowsToJoinRow.Clear();
+                }
+
+                if (rightRowsToJoinRow.Count == 0) columnRowsToJoinRows.Remove(mapping.RightRowId.Value);
             }
         }
 
@@ -209,7 +250,7 @@ namespace ReactiveTables.Framework.Joins
             if (rowIndex < 0) return true;
 
             // When it's an inner join we never keep the last row
-            if (joinType == JoinType.Inner) return false;
+//            if (joinType == JoinType.Inner) return false;
 
             if (joinSide == JoinSide.Left)
             {

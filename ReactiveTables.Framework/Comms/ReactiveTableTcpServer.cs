@@ -119,7 +119,7 @@ namespace ReactiveTables.Framework.Comms
                     var sex = ioex.InnerException as SocketException;
                     if (sex != null)
                     {
-                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
+                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted || sex.ErrorCode == (int)SocketError.ConnectionReset)
                         {
                             Console.WriteLine("Client Disconnected");
                         }

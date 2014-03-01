@@ -34,6 +34,11 @@ namespace ReactiveTables.Demo.Server
         {
             public const string ClientIpColumn = "BrokerClient.IpColumn";
             public const string ClientCcyPairColumn = "BrokerClient.CcyColumn";
+
+            public static class ClientSide
+            {
+                public const string Selected = "BrokerSubscription.Selected";
+            }
         }
 
         public static readonly Dictionary<string, int> ColumnsToFieldIds =

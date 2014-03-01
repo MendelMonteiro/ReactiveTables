@@ -122,9 +122,37 @@ namespace ReactiveTables.Demo.Syncfusion
                 IViewModelAccessor accessor;
                 if (_viewModelAccessors.TryGetValue(columnId, out accessor))
                 {
-                    accessor.SetValue(e.Style, rowIndex, columnIndex);
+                    accessor.SetCellValue(e.Style, rowIndex, columnIndex);
+
+                    // TODO: move cell rendering to custom cell renderers
+                    if (accessor.Type == typeof(bool))
+                    {
+                        e.Style.CellType = "CheckBox";
+                        e.Style.Description = "Enabled";
+                    } 
                 }
             }
+        }
+
+        protected override void OnCommitCellInfo(GridCommitCellInfoEventArgs e)
+        {
+            var columnIndex = e.Cell.ColumnIndex - Model.HeaderColumns;
+            var rowIndex = e.Cell.RowIndex - Model.HeaderRows;
+            if (columnIndex >= 0 && rowIndex >= 0)
+            {
+                var columnId = ViewModel.GetColumnId(columnIndex);
+                IViewModelAccessor accessor;
+                if (_viewModelAccessors.TryGetValue(columnId, out accessor))
+                {
+                    accessor.SetModelValue(e.Style, rowIndex, columnIndex);
+                }
+            }
+            base.OnCommitCellInfo(e);
+        }
+
+        protected override void OnSaveCellText(GridCellTextEventArgs e)
+        {
+            base.OnSaveCellText(e);
         }
 
         public override void Dispose(bool disposing)
@@ -146,7 +174,10 @@ namespace ReactiveTables.Demo.Syncfusion
 
     public interface IViewModelAccessor
     {
-        void SetValue(GridStyleInfo style, int rowIndex, int columnIndex);
+        void SetCellValue(GridStyleInfo style, int rowIndex, int columnIndex);
+        void SetModelValue(GridStyleInfo style, int rowIndex, int columnIndex);
+        
+        Type Type { get; }
     }
 
     public class ViewModelAccessor<T> : IViewModelAccessor
@@ -161,10 +192,17 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public string ColumnId { get; private set; }
 
-        public void SetValue(GridStyleInfo style, int rowIndex, int columnIndex)
+        public void SetCellValue(GridStyleInfo style, int rowIndex, int columnIndex)
         {
             // TODO: Need to check with syncfusion if there's another way of setting the value which does not incur boxing.
             style.CellValue = _viewModel.GetValue<T>(rowIndex, columnIndex);
         }
+
+        public void SetModelValue(GridStyleInfo style, int rowIndex, int columnIndex)
+        {
+            _viewModel.SetValue(rowIndex, columnIndex, (T) style.CellValue);
+        }
+
+        public Type Type { get { return typeof (T); } }
     }
 }

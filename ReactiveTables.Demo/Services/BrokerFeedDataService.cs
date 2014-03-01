@@ -19,7 +19,9 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using ReactiveTables.Demo.Server;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Comms;
+using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.Synchronisation;
@@ -30,7 +32,7 @@ namespace ReactiveTables.Demo.Services
     public interface IBrokerFeedDataService
     {
         IReactiveTable Feeds { get; }
-        IReactiveTable CurrencyPairs { get; }
+        IWritableReactiveTable CurrencyPairs { get; }
         void Start(Dispatcher dispatcher);
         void Stop();
     }
@@ -47,6 +49,7 @@ namespace ReactiveTables.Demo.Services
         {
             BrokerTableDefinition.SetupFeedTable(_feeds);
             BrokerTableDefinition.SetupClientFeedTable(_currencyPairs);
+            _currencyPairs.AddColumn(new ReactiveColumn<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected));
         }
 
         public IReactiveTable Feeds
@@ -54,7 +57,7 @@ namespace ReactiveTables.Demo.Services
             get { return _feeds; }
         }
 
-        public IReactiveTable CurrencyPairs
+        public IWritableReactiveTable CurrencyPairs
         {
             get { return _currencyPairs; }
         }
@@ -75,8 +78,12 @@ namespace ReactiveTables.Demo.Services
         private void SetupFeedSubscription(IReactiveTable currenciesTable)
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeedClients);
+            var selectedCurrencies = new FilteredTable(
+                currenciesTable,
+                new DelegatePredicate1<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected, selected => selected));
+
             var client = new ReactiveTableTcpClient<IReactiveTable>(new ProtobufTableEncoder(),
-                                                                    currenciesTable,
+                                                                    selectedCurrencies,
                                                                     new ProtobufEncoderState(BrokerTableDefinition.ClientColumnsToFieldIds),
                                                                     endPoint);
             _ccyPairSubscriptionClient = client;

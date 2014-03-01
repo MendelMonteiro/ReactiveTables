@@ -33,6 +33,7 @@ namespace ReactiveTables.Demo.Client
 
             CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn);
             CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn);
+            CurrencyPairsGrid.AddColumn<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected);
         }
     }
 }

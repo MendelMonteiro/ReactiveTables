@@ -677,6 +677,51 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
         }
 
+        [Test]
+        public void TestDeleteFromOneSideInnerJoin()
+        {
+            ReactiveTable rightTable;
+            IReactiveTable joinedTable;
+            var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
+
+            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
+
+            // Add rows, first to the left and then to the right
+            var leftRowId = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId, updateHandler, joinedTable, 401, 0, false);
+
+            var leftRowId1 = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId1, updateHandler, joinedTable, 402, 0, false);
+            
+            var rightRowId = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId, updateHandler, joinedTable, 401, 801, 1);
+
+            var rightRowId1 = rightTable.AddRow();
+            SetAndTestRightRow(rightTable, rightRowId1, updateHandler, joinedTable, 402, 802, 2);
+            Assert.AreEqual(2, joinedTable.RowCount);
+
+            // Then delete only the left side and check that the rows are deleted
+            leftTable.DeleteRow(leftRowId);
+            TestRowCount(updateHandler, joinedTable, 1);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+            Assert.AreEqual(1, joinedTable.RowCount);
+
+            leftTable.DeleteRow(leftRowId1);
+            TestRowCount(updateHandler, joinedTable, 0);
+            Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, updateHandler.LastRowUpdated));
+            Assert.AreEqual(0, joinedTable.RowCount);
+
+            // Re-add the rows to the left side and make sure that the rows reappear
+            leftRowId = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId, updateHandler, joinedTable, 401, 1);
+            Assert.AreEqual(1, joinedTable.RowCount);
+
+            leftRowId1 = leftTable.AddRow();
+            SetAndTestLeftRow(leftTable, leftRowId1, updateHandler, joinedTable, 402, 2);
+            Assert.AreEqual(2, joinedTable.RowCount);
+        }
+
         private static void TestRowCount(RowUpdateHandler updateHandler, IReactiveTable joinedTable, int expectedRows)
         {
             Assert.AreEqual(expectedRows, updateHandler.CurrentRowCount);

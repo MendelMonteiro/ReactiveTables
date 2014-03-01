@@ -138,7 +138,7 @@ namespace ReactiveTables.Demo.Server
         private readonly Random _random = new Random();
         private int[] _rowIndeces;
         private readonly string[] _maturities = new[] { "ON", "1W", "2W", "3W", "1M", "2M", "3M", "4M", "5M", "6M", "1Y", "2Y", "3Y", "5Y", "10Y" };
-        private readonly string[] _ccyPairs = new [] {"EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD"};
+        private readonly string[] _ccyPairs = new[] { "EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD", "EUR/DKK", "EUR/CHF", "AUD/NZD", "USD/CHF", "USD/CNY", "EUR/CNY" };
 
         public BrokerFeed(string name, IWritableReactiveTable table)
         {

@@ -33,12 +33,14 @@ namespace ReactiveTables.Demo.Syncfusion
     public abstract class SyncfusionViewModelBase : BaseViewModel, ISyncfusionViewModel, IDisposable
     {
         private IReactiveTable _table;
+        private IWritableReactiveTable _writableTable;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
         private IDisposable _token;
 
         protected void SetTable(IReactiveTable table)
         {
             _table = table;
+            _writableTable = _table as IWritableReactiveTable;
             _token = table.ReplayAndSubscribe(OnNext);
             var sortedTable = table as ISortedTable;
             if (sortedTable != null)
@@ -66,13 +68,33 @@ namespace ReactiveTables.Demo.Syncfusion
 
         public virtual T GetValue<T>(int rowIndex, int columnIndex)
         {
-            var row = _table.GetRowAt(rowIndex);
-            if (row >= 0 && columnIndex >= 0)
+            IReactiveColumn column;
+            var row = GetColAndRowFromGridCoordinates<T>(rowIndex, columnIndex, out column);
+            if (column != null && row >= 0)
             {
-                var reactiveColumn = _table.GetColumnByIndex(columnIndex);
-                return _table.GetValue<T>(reactiveColumn.ColumnId, row);
+                return _table.GetValue<T>(column.ColumnId, row);
             }
             return default(T);
+        }
+
+        private int GetColAndRowFromGridCoordinates<T>(int rowIndex, int columnIndex, out IReactiveColumn column)
+        {
+            var row = _table.GetRowAt(rowIndex);
+            column = null;
+            if (row >= 0 && columnIndex >= 0)
+            {
+                column = _table.GetColumnByIndex(columnIndex);
+            }
+            return row;
+        }
+
+        public void SetValue<T>(int rowIndex, int columnIndex, T value)
+        {
+            if (_writableTable == null) return;
+
+            IReactiveColumn column;
+            var row = GetColAndRowFromGridCoordinates<T>(rowIndex, columnIndex, out column);
+            _writableTable.SetValue(column.ColumnId, row, value);
         }
 
         public virtual int GetRowPosition(int rowIndex)

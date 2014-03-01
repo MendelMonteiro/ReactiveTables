@@ -44,7 +44,7 @@ namespace ReactiveTables.Demo.Client
         private readonly SortedTable _sortedFeeds;
         private readonly Dictionary<string, Type> _columnTypes;
         private readonly BrokerFeedCurrencyPairsViewModel _currencyPairsViewModel;
-        private readonly Stack<string> _ccyPairs = new Stack<string>(new []{ "EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD" });
+        private readonly Stack<string> _ccyPairs = new Stack<string>(new []{ "EUR/USD", "EUR/CAD", "AUD/CAD", "USD/CAD", "EUR/DKK", "EUR/CHF", "AUD/NZD", "USD/CHF", "USD/CNY", "EUR/CNY" });
 
         public BrokerFeedViewModel(IBrokerFeedDataService dataService)
         {
@@ -69,19 +69,30 @@ namespace ReactiveTables.Demo.Client
 
             _currencyPairsViewModel = new BrokerFeedCurrencyPairsViewModel(_dataService);
 
-            AddCcyCommand = new DelegateCommand(
+            foreach (var ccyPair in _ccyPairs)
+            {
+                AddCurrencyPair(_dataService.CurrencyPairs, ccyPair);
+            }
+
+            /*AddCcyCommand = new DelegateCommand(
                 () =>
                     {
                         if (_ccyPairs.Count > 0)
                         {
-                            var currencyPairsWire = (IWritableReactiveTable) _dataService.CurrencyPairs;
-                            var row = currencyPairsWire.AddRow();
-                            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
-                            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, _ccyPairs.Pop());
+                            var currencyPairsWire = _dataService.CurrencyPairs;
+                            AddCurrencyPair(currencyPairsWire, _ccyPairs.Pop());
                         }
-                    });
+                    });*/
 
             dataService.Start(Application.Current.Dispatcher);
+        }
+
+        private void AddCurrencyPair(IWritableReactiveTable currencyPairsWire, string ccyPair)
+        {
+            var row = currencyPairsWire.AddRow();
+            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn, row, IPAddress.Loopback.ToString());
+            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn, row, ccyPair);
+            currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected, row, false);
         }
 
         public BrokerFeedCurrencyPairsViewModel CurrencyPairsViewModel
