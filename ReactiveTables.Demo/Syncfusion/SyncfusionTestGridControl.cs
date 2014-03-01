@@ -128,7 +128,7 @@ namespace ReactiveTables.Demo.Syncfusion
                     if (accessor.Type == typeof(bool))
                     {
                         e.Style.CellType = "CheckBox";
-                        e.Style.Description = "Enabled";
+                        e.Style.IsThreeState = false;
                     } 
                 }
             }
@@ -148,11 +148,6 @@ namespace ReactiveTables.Demo.Syncfusion
                 }
             }
             base.OnCommitCellInfo(e);
-        }
-
-        protected override void OnSaveCellText(GridCellTextEventArgs e)
-        {
-            base.OnSaveCellText(e);
         }
 
         public override void Dispose(bool disposing)
