@@ -21,6 +21,10 @@ namespace ReactiveTables.Framework.Protobuf
     /// </summary>
     public class ProtobufDecoderState
     {
+        /// <summary>
+        /// Create a new decoder state
+        /// </summary>
+        /// <param name="fieldIdsToColumns"></param>
         public ProtobufDecoderState(Dictionary<int, string> fieldIdsToColumns)
         {
             FieldIdsToColumns = fieldIdsToColumns;

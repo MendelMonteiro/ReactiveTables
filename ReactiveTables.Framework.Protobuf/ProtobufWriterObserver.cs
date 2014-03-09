@@ -29,7 +29,7 @@ namespace ReactiveTables.Framework.Protobuf
         private readonly Dictionary<string, int> _columnsToFieldIds;
         private readonly IReactiveTable _table;
         private readonly Stream _outputStream;
-        private bool _withLengthPrefix = true;
+        private bool WithLengthPrefix = true;
 
         public ProtobufWriterObserver(IReactiveTable table, Stream outputStream, Dictionary<string, int> columnsToFieldIds)
         {
@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework.Protobuf
             using (var writer = new ProtoWriter(_outputStream, null, null))
             {
                 SubItemToken outerToken = new SubItemToken();
-                if (_withLengthPrefix)
+                if (WithLengthPrefix)
                 {
                     // Encode the length of the stream (protobuf-net will automatically calculate the length of the 'String' field)
                     ProtoWriter.WriteFieldHeader(ProtobufOperationTypes.MessageSize, WireType.String, writer);
@@ -62,7 +62,7 @@ namespace ReactiveTables.Framework.Protobuf
                         WriteDelete(writer, value);
                         break;
                 }
-                if (_withLengthPrefix)
+                if (WithLengthPrefix)
                 {
                     ProtoWriter.EndSubItem(outerToken, writer);
                 }

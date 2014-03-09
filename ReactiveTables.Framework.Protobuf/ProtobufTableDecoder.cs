@@ -31,7 +31,7 @@ namespace ReactiveTables.Framework.Protobuf
         private Dictionary<int, string> _fieldIdsToColumns;
         private Stream _stream;
         private readonly ManualResetEventSlim _finished = new ManualResetEventSlim();
-        private const bool WithLengthPrefix = true;
+        private bool WithLengthPrefix = true;
 
         /// <summary>
         /// Setups and starts the decoder
@@ -73,7 +73,7 @@ namespace ReactiveTables.Framework.Protobuf
 
         private void ReadStream(Stream stream, Dictionary<int, int> remoteToLocalRowIds)
         {
-            int len = -1;
+            int len = 0;
             if (WithLengthPrefix)
             {
                 // Read the length of the message from the stream.
@@ -93,7 +93,7 @@ namespace ReactiveTables.Framework.Protobuf
                         if (rowId >= 0)
                         {
                             remoteToLocalRowIds.Add(rowId, _table.AddRow());
-                            fieldId = reader.ReadFieldHeader();
+                            var dummyFieldId = reader.ReadFieldHeader();
                             ReadUpdate(remoteToLocalRowIds, reader);
                         }
                     }
@@ -140,7 +140,7 @@ namespace ReactiveTables.Framework.Protobuf
             if (fieldId != ProtobufFieldIds.RowId) return -1;
 
             var rowId = reader.ReadInt32();
-            fieldId = reader.ReadFieldHeader();
+            var dummyFieldId = reader.ReadFieldHeader();
             ProtoReader.EndSubItem(token, reader);
             return rowId;
         }

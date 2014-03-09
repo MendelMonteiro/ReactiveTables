@@ -20,9 +20,21 @@ namespace ReactiveTables.Framework.Protobuf
     /// </summary>
     public static class ProtobufOperationTypes
     {
+        /// <summary>
+        /// An update
+        /// </summary>
         public const int Update = 1;
+        /// <summary>
+        /// An add
+        /// </summary>
         public const int Add = 2;
+        /// <summary>
+        /// A delete
+        /// </summary>
         public const int Delete = 3;
+        /// <summary>
+        /// A message size header
+        /// </summary>
         public const int MessageSize = 4;
     }
 }
