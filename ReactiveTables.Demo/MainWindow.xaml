@@ -16,7 +16,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto" MinWidth="174"/>
             <ColumnDefinition Width="Auto" MinWidth="104"/>
-            <ColumnDefinition Width="Auto" MinWidth="29"/>
+            <ColumnDefinition Width="*" MinWidth="29"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal">
             <Button Content="Start data" HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -26,33 +26,36 @@
             <TextBlock  Margin="10">Filter balances below</TextBlock>
             <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10"></TextBox>
         </StackPanel>
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="5" Orientation="Horizontal" HorizontalAlignment="Center">
-            <ScrollViewer>
-                <StackPanel>
-                    <Label Content="People" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding People.People}" VirtualizingPanel.IsVirtualizing="True"
+        <Grid Grid.Row="1" Grid.ColumnSpan="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" Content="People" HorizontalAlignment="Center" />
+            <DataGrid Grid.Row="1" Grid.Column="0" ItemsSource="{Binding People.People}" VirtualizingPanel.IsVirtualizing="True"
+                              EnableColumnVirtualization="True"
+                              EnableRowVirtualization="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
                           VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
-                </StackPanel>
-            </ScrollViewer>
-            <ScrollViewer>
-                <StackPanel>
-                    <Label Content="Accounts" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding Accounts.Accounts}" VirtualizingPanel.IsVirtualizing="True"
+            </DataGrid>
+            <Label Grid.Row="0" Grid.Column="1" Content="Accounts" HorizontalAlignment="Center" />
+            <DataGrid Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Accounts.Accounts}" VirtualizingPanel.IsVirtualizing="True"
+                              EnableColumnVirtualization="True"
+                              EnableRowVirtualization="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
                           VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
-                </StackPanel>
-            </ScrollViewer>
-            <ScrollViewer>
-                <StackPanel>
-                    <Label Content="Account details joined" HorizontalAlignment="Center" />
-                    <DataGrid ItemsSource="{Binding PersonAccounts.PersonAccounts}" VirtualizingPanel.IsVirtualizing="True"
+            </DataGrid>
+            <Label Grid.Row="0" Grid.Column="2" Content="Account details joined" HorizontalAlignment="Center" />
+            <DataGrid Grid.Row="1" Grid.Column="2" ItemsSource="{Binding PersonAccounts.PersonAccounts}" VirtualizingPanel.IsVirtualizing="True"
+                              EnableColumnVirtualization="True"
+                              EnableRowVirtualization="True"
             			VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
             			VirtualizingPanel.CacheLength="2"/>
-                </StackPanel>
-            </ScrollViewer>
-        </StackPanel>
+        </Grid>
     </Grid>
 </Window>
