@@ -14,7 +14,6 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using NUnit.Framework;
@@ -1312,26 +1311,6 @@ namespace ReactiveTables.Framework.Tests.Joins
 
             rightTable.SetValue(TestRightColumns.DecimalColumn, rightRowId, 9876m);
             Assert.AreEqual(9876m, joinedTable.GetValue<decimal>(TestRightColumns.DecimalColumn, lastRowUpdated));
-        }
-
-        private class ColumnUpdateHandler
-        {
-            public List<string> LastColumnsUpdated { get; private set; }
-            public List<int> LastRowsUpdated { get; private set; }
-            public int LastRowUpdated { get { return LastRowsUpdated.LastOrDefault(); } }
-            public string LastColumnUpdated { get { return LastColumnsUpdated.LastOrDefault(); } }
-
-            public ColumnUpdateHandler()
-            {
-                LastColumnsUpdated = new List<string>();
-                LastRowsUpdated = new List<int>();
-            }
-
-            public void OnColumnUpdate(TableUpdate update)
-            {
-                LastColumnsUpdated.Add(update.Column.ColumnId);
-                LastRowsUpdated.Add(update.RowIndex);
-            }
         }
     }
 }

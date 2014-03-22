@@ -14,27 +14,31 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using NUnit.Framework;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Synchronisation;
+using System.Linq;
 
 namespace ReactiveTables.Framework.Tests
 {
     [TestFixture]
     public class BatchedPassThroughTableTests
     {
-        const int delay = 250;
 
         [Test]
         public void TestAdd()
         {
             ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
+            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
+            TestAdd(source, target, updateHandler);
+        }
+
+        private static void TestAdd(ReactiveBatchedPassThroughTable source, ReactiveTable target, RowUpdateHandler updateHandler)
+        {
             var sourceRow1 = source.AddRow();
             Assert.AreEqual(0, target.RowCount);
 
@@ -49,7 +53,7 @@ namespace ReactiveTables.Framework.Tests
             TestTableHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
             TestTableHelper.SetAndTestValueNotPresent(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
 
-            Thread.Sleep(delay + 100);
+            source.SynchroniseChanges();
             Assert.AreEqual(2, target.RowCount);
 
             TestTableHelper.TestValue(target, updateHandler.RowsUpdated[0], 101, TestTableColumns.IdColumn);
@@ -61,76 +65,85 @@ namespace ReactiveTables.Framework.Tests
             TestTableHelper.TestValue(target, updateHandler.RowsUpdated[1], 42m, TestTableColumns.DecimalColumn);
         }
 
-//        [Test]
+        [Test]
         public void TestUpdate()
         {
             ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
+            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
-            target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            target.RowUpdates().Subscribe(rowUpdates.OnRowUpdate);
+            ColumnUpdateHandler columnUpdates = new ColumnUpdateHandler();
+            target.ColumnUpdates().Subscribe(columnUpdates.OnColumnUpdate);
 
-            var sourceRow1 = source.AddRow();
-            Assert.AreEqual(1, target.RowCount);
+            TestAdd(source, target, rowUpdates);
 
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 101, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, "Blah", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 4324m, TestTableColumns.DecimalColumn);
+            source.SetValue(TestTableColumns.StringColumn, 0, "Changed");
+            Assert.AreEqual("Blah", target.GetValue<string>(TestTableColumns.StringColumn, 0));
 
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 103, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 43999m, TestTableColumns.DecimalColumn);
+            source.SynchroniseChanges();
 
-            var sourceRow2 = source.AddRow();
-            Assert.AreEqual(2, target.RowCount);
-
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 102, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
-
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 104, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah4", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 421111m, TestTableColumns.DecimalColumn);
+            Assert.AreEqual("Changed", target.GetValue<string>(TestTableColumns.StringColumn, 0));
         }
 
-        // TODO: implement
-//        [Test]
+        [Test]
+        public void TestUpdateOnlyLastValue()
+        {
+            ReactiveTable target = TestTableHelper.CreateReactiveTable();
+            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), true);
+
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            target.RowUpdates().Subscribe(rowUpdates.OnRowUpdate);
+            ColumnUpdateHandler columnUpdates = new ColumnUpdateHandler();
+            target.ColumnUpdates().Subscribe(columnUpdates.OnColumnUpdate);
+
+            TestAdd(source, target, rowUpdates);
+
+            columnUpdates.LastColumnsUpdated.Clear();
+
+            source.SetValue(TestTableColumns.StringColumn, 0, "Changed");
+            Assert.AreEqual("Blah", target.GetValue<string>(TestTableColumns.StringColumn, 0));
+            source.SetValue(TestTableColumns.StringColumn, 0, "Changed2");
+            Assert.AreEqual("Blah", target.GetValue<string>(TestTableColumns.StringColumn, 0));
+
+            source.SynchroniseChanges();
+
+            // Check that there was only one col update fro the StringColumn
+            Assert.AreEqual(1, columnUpdates.LastColumnsUpdated.Count);
+            Assert.AreEqual(columnUpdates.LastColumnsUpdated.Last(), TestTableColumns.StringColumn);
+            // And that the value is the last one
+            Assert.AreEqual("Changed2", target.GetValue<string>(TestTableColumns.StringColumn, 0));
+        }
+
+        [Test]
         public void TestDelete()
         {
             ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), TimeSpan.FromMilliseconds(delay));
+            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
             RowUpdateHandler updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
-            var sourceRow1 = source.AddRow();
-            Assert.AreEqual(1, target.RowCount);
+            TestAdd(source, target, updateHandler);
 
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 101, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, "Blah", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow1, updateHandler.LastRowUpdated, 4324m, TestTableColumns.DecimalColumn);
-
-            var sourceRow2 = source.AddRow();
+            source.DeleteRow(0);
             Assert.AreEqual(2, target.RowCount);
 
-            var targetRow2 = updateHandler.LastRowUpdated;
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 102, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, "Blah2", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow2, updateHandler.LastRowUpdated, 42m, TestTableColumns.DecimalColumn);
-
-            source.DeleteRow(sourceRow1);
+            source.SynchroniseChanges();
             Assert.AreEqual(1, target.RowCount);
-            Assert.AreEqual(102, target.GetValue<int>(TestTableColumns.IdColumn, targetRow2));
+            Assert.AreEqual(102, target.GetValue<int>(TestTableColumns.IdColumn, 1));
 
-            source.DeleteRow(sourceRow2);
+            source.DeleteRow(1);
+            Assert.AreEqual(1, target.RowCount);
+
+            source.SynchroniseChanges();
             Assert.AreEqual(0, target.RowCount);
 
-            var sourceRow3 = source.AddRow();
+            source.AddRow();
+            Assert.AreEqual(0, target.RowCount);
+            
+            source.SynchroniseChanges();
             Assert.AreEqual(1, target.RowCount);
-
-            TestTableHelper.SetAndTestValue(source, target, sourceRow3, updateHandler.LastRowUpdated, 101, TestTableColumns.IdColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow3, updateHandler.LastRowUpdated, "Blah", TestTableColumns.StringColumn);
-            TestTableHelper.SetAndTestValue(source, target, sourceRow3, updateHandler.LastRowUpdated, 4324m, TestTableColumns.DecimalColumn);
         }
     }
 }

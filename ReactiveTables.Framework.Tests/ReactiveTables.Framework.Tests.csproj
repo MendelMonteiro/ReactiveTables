@@ -104,6 +104,7 @@
     <Compile Include="Columns\Aggregate\CountColumnTests.cs" />
     <Compile Include="Columns\Calculated\CalculatedColumnTest.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
+    <Compile Include="ColumnUpdateHandler.cs" />
     <Compile Include="Comms\Protobuf\ProtobufTableEncoderTest.cs" />
     <Compile Include="Filters\FilterTest.cs" />
     <Compile Include="Joins\JoinTests.cs" />

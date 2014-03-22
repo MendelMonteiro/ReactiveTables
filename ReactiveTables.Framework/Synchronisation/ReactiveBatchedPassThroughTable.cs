@@ -38,7 +38,8 @@ namespace ReactiveTables.Framework.Synchronisation
         private readonly IThreadMarshaller _marshaller;
         private readonly object _shared = new object();
         private readonly System.Timers.Timer _timer;
-
+        private readonly bool _onlyKeepLastValue;
+        
         /// <summary>
         /// Not implemented as the table is read only
         /// </summary>
@@ -73,14 +74,28 @@ namespace ReactiveTables.Framework.Synchronisation
             get { throw new NotImplementedException(); }
         }
 
-        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller)
+        /// <summary>
+        /// Create batched pass through table
+        /// </summary>
+        /// <param name="targetTable">The table to write to</param>
+        /// <param name="marshaller">The thread marshaller</param>
+        /// <param name="onlyKeepLastValue">Whether to only keep the last value for a column/cell position</param>
+        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, bool onlyKeepLastValue = false)
         {
             _targetTable = targetTable;
-            _marshaller = marshaller;            
+            _marshaller = marshaller;
+            _onlyKeepLastValue = onlyKeepLastValue;
         }
 
-        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, TimeSpan delay)
-            :this(targetTable, marshaller)
+        /// <summary>
+        /// Create batched pass through table - uses a timer
+        /// </summary>
+        /// <param name="targetTable">The table to write to</param>
+        /// <param name="marshaller">The thread marshaller</param>
+        /// <param name="delay">The frequency with which we should update the target table</param>
+        /// <param name="onlyKeepLastValue">Whether to only keep the last value for a column/cell position</param>
+        public ReactiveBatchedPassThroughTable(IWritableReactiveTable targetTable, IThreadMarshaller marshaller, TimeSpan delay, bool onlyKeepLastValue = false)
+            :this(targetTable, marshaller, onlyKeepLastValue)
         {
             _timer = new System.Timers.Timer(delay.TotalMilliseconds);
             _timer.Elapsed += (sender, args) => SynchroniseChanges();
@@ -151,8 +166,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 {
                     for (int i = 0; i < rowUpdatesAdd.Count; i++)
                     {
-                        var row = _targetTable.AddRow();
-//                      Console.WriteLine("Added row id {0} to table {1}", row, _targetTable.Columns.First().Key);
+                        _targetTable.AddRow();
                     }
                 }
 
@@ -178,11 +192,6 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public IDisposable Subscribe(IObserver<TableUpdate> observer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Unsubscribe(IObserver<TableUpdate> observer)
         {
             throw new NotImplementedException();
         }
@@ -234,19 +243,29 @@ namespace ReactiveTables.Framework.Synchronisation
             BatchedColumnUpdate<T> update = new BatchedColumnUpdate<T> {ColumnId = columnId, Value = value, RowIndex = rowIndex};
             lock (_shared)
             {
-                TableColumnUpdater<T> updater;
+                ITypedTableColumnUpdater<T> updater;
                 Type type = typeof (T);
                 if (!_columnUpdaters.ContainsKey(type))
                 {
-                    updater = new TableColumnUpdater<T>();
+                    updater = _onlyKeepLastValue ? CreateNormalColumnUpdaterLastValue<T>() : CreateNormalColumnUpdater<T>();
                     _columnUpdaters.Add(type, updater);
                 }
                 else
                 {
-                    updater = (TableColumnUpdater<T>) _columnUpdaters[type];
+                    updater = (ITypedTableColumnUpdater<T>) _columnUpdaters[type];
                 }
                 updater.Add(update);
             }
+        }
+
+        private static ITypedTableColumnUpdater<T> CreateNormalColumnUpdater<T>()
+        {
+            return new TableColumnUpdater<T>();
+        }
+
+        private static ITypedTableColumnUpdater<T> CreateNormalColumnUpdaterLastValue<T>()
+        {
+            return new TableColumnUpdaterLastValue<T>();
         }
 
         public void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
@@ -297,9 +316,13 @@ namespace ReactiveTables.Framework.Synchronisation
         void Clear();
     }
 
-    class TableColumnUpdater<T> : ITableColumnUpdater
+    /// <summary>
+    /// Keeps all events in order
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    class TableColumnUpdater<T> : ITableColumnUpdater, ITypedTableColumnUpdater<T>
     {
-        readonly Queue<BatchedColumnUpdate<T>> _updates;
+        private readonly Queue<BatchedColumnUpdate<T>> _updates;
 
         public TableColumnUpdater()
         {
@@ -321,7 +344,6 @@ namespace ReactiveTables.Framework.Synchronisation
             while (_updates.Count > 0)
             {
                 var update = _updates.Dequeue();
-//                Console.WriteLine("Updating column {0} at row {1} with value {2}", update.ColumnId, update.RowIndex, update.Value);
                 targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
             }
         }
@@ -337,5 +359,52 @@ namespace ReactiveTables.Framework.Synchronisation
         }
 
         public int UpdateCount { get { return _updates.Count; } }
+    }
+
+    internal interface ITypedTableColumnUpdater<T> : ITableColumnUpdater
+    {
+        void Add(BatchedColumnUpdate<T> update);
+    }
+
+    /// <summary>
+    /// Only keeps last event per row
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    class TableColumnUpdaterLastValue<T> : ITableColumnUpdater, ITypedTableColumnUpdater<T>
+    {
+        private readonly Dictionary<int, BatchedColumnUpdate<T>> _updatesByRow = new Dictionary<int, BatchedColumnUpdate<T>>();
+
+        public TableColumnUpdaterLastValue(){}
+
+        private TableColumnUpdaterLastValue(IDictionary<int, BatchedColumnUpdate<T>> updates)
+        {
+            _updatesByRow = new Dictionary<int, BatchedColumnUpdate<T>>(updates);
+        }
+
+        public void Add(BatchedColumnUpdate<T> update)
+        {
+            _updatesByRow[update.RowIndex] = update;
+        }
+
+        public void SetValues(IWritableReactiveTable targetTable)
+        {
+            foreach (var update in _updatesByRow.Values)
+            {
+                targetTable.SetValue(update.ColumnId, update.RowIndex, update.Value);
+            }
+            Clear();
+        }
+
+        public void Clear()
+        {
+            _updatesByRow.Clear();
+        }
+
+        public ITableColumnUpdater Clone()
+        {
+            return new TableColumnUpdaterLastValue<T>(_updatesByRow);
+        }
+
+        public int UpdateCount { get { return _updatesByRow.Count; } }
     }
 }
