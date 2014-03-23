@@ -1,47 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using ReactiveTables.Framework.Protobuf;
+using ReactiveTables.Framework.SimpleBinaryEncoding;
+using ReactiveTables.Framework.Tests.Comms.Protobuf;
 using ReactiveTables.Framework.Utils;
 
-namespace ReactiveTables.Framework.Tests.Comms.Protobuf
+namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
 {
     [TestFixture]
-    public class ProtobufTableEncoderTest
+    public class SbeTableEncoderTest
     {
         [Test]
-        public void Test()
+        public void TestAdd()
         {
             var tableEncoderTester = new TableEncoderTester();
-
             // Setup encoder
-            ProtobufTableEncoder encoder = new ProtobufTableEncoder();
+            SbeTableEncoder encoder = new SbeTableEncoder();
             MemoryStream stream = new MemoryStream();
             var table = TestTableHelper.CreateReactiveTableFull();
             var columnsToFieldIds = new Dictionary<string, int>
                                         {
                                             {TestTableColumns.IdColumn, 101},
                                             {TestTableColumns.StringColumn, 102}, 
-                                            {TestTableColumns.DecimalColumn, 103},
+//                                            {TestTableColumns.DecimalColumn, 103},
                                             {TestTableColumns.BoolColumn, 104},
                                             {TestTableColumns.DoubleColumn, 105},
                                             {TestTableColumns.ShortColumn, 106},
                                             {TestTableColumns.LongColumn, 107},
-                                            {TestTableColumns.DateTimeColumn, 108},
-                                            {TestTableColumns.TimespanColumn, 109},
-                                            {TestTableColumns.GuidColumn, 110},
+//                                            {TestTableColumns.DateTimeColumn, 108},
+//                                            {TestTableColumns.TimespanColumn, 109},
+//                                            {TestTableColumns.GuidColumn, 110},
                                             {TestTableColumns.FloatColumn, 111},
                                             {TestTableColumns.ByteColumn, 112},
                                             {TestTableColumns.CharColumn, 113},
                                         };
-            encoder.Setup(stream, table, new ProtobufEncoderState(columnsToFieldIds));
+            encoder.Setup(stream, table, new SbeTableEncoderState { ColumnsToFieldIds = columnsToFieldIds});
 
             // Add data
-            var row1 = TableEncoderTester.AddTestRow(table);
-            var row2 = TableEncoderTester.AddTestRow(table);
+            var row1 = TableEncoderTester.AddTestRow(table, false);
+            var row2 = TableEncoderTester.AddTestRow(table, false);
 
-            tableEncoderTester.UpdateTestRow(table, row1);
+            tableEncoderTester.UpdateTestRow(table, row1, false);
 
             encoder.Dispose();
             //stream.Flush();
@@ -49,10 +49,12 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
 
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
-            ProtobufTableDecoder tableDecoder = new ProtobufTableDecoder();
-            tableDecoder.Setup(stream, destTable, columnsToFieldIds.InverseUniqueDictionary());
-//            Task.Run(() => tableDecoder.Start());
-            Thread.Sleep(100);
+            SbeTableDecoder tableDecoder = new SbeTableDecoder();
+            var t = Task.Run(() => 
+            tableDecoder.Setup(stream, destTable, new SbeTableDecoderState {FieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary()})
+                );
+
+            t.Wait(100);
             tableDecoder.Stop();
 
             tableEncoderTester.CompareTables(table, destTable);

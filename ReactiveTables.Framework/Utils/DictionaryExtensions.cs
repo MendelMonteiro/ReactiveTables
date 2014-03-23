@@ -13,12 +13,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System.Collections.Generic;
 
-namespace ReactiveTables.Utils
+namespace ReactiveTables.Framework.Utils
 {
+    /// <summary>
+    /// Helper class for working with dictionaries.
+    /// </summary>
     public static class DictionaryExtensions
     {
+        /// <summary>
+        /// Add a new default element if it does not already exist
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <returns></returns>
         public static TValue AddNewIfNotExists<TKey, TValue> (this Dictionary<TKey, TValue> dictionary, TKey key) 
             where TValue : class, new()
         {
@@ -32,6 +44,13 @@ namespace ReactiveTables.Utils
             return value;
         }
 
+        /// <summary>
+        /// Copy to another dictionary of the same type
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
         public static void CopyTo<TKey, TValue>(this Dictionary<TKey, TValue> source, Dictionary<TKey, TValue> target)
         {
             foreach (var keyValue in source)
@@ -40,6 +59,14 @@ namespace ReactiveTables.Utils
             }
         }
 
+        /// <summary>
+        /// Converts a dictionary so that the values become the keys and the keys become the values.
+        /// Note that the values must also be unique
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <returns></returns>
         public static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
         {
             var inverse = new Dictionary<TValue, TKey>(dictionary.Count);

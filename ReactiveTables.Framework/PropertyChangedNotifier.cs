@@ -16,7 +16,7 @@
 using System;
 using System.Collections.Generic;
 using ReactiveTables.Framework.UI;
-using ReactiveTables.Utils;
+using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework
 {

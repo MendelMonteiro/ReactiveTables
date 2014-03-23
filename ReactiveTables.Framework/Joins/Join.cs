@@ -17,8 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
-using ReactiveTables.Utils;
 using System.Reactive.Linq;
+using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Framework.Joins
 {

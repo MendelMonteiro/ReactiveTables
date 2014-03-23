@@ -167,7 +167,6 @@ namespace ReactiveTables.Framework.Protobuf
                 else if (column.Type == typeof (string))
                 {
                     var value = reader.ReadString();
-//                    Console.WriteLine("Writing string {0}", value);
                     table.SetValue(columnId, rowId, value);
                 }
                 else if (column.Type == typeof (bool))
