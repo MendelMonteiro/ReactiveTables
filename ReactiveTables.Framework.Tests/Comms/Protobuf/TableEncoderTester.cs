@@ -13,10 +13,10 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             table.SetValue(TestTableColumns.DoubleColumn, rowId, 2222.23);
             table.SetValue(TestTableColumns.ShortColumn, rowId, (short)3131);
             table.SetValue(TestTableColumns.LongColumn, rowId, 11111111111111);
+            table.SetValue(TestTableColumns.DecimalColumn, rowId, 7678.232m);
 
             if (includeComplexTypes)
             {
-                table.SetValue(TestTableColumns.DecimalColumn, rowId, 7678.232m);
                 table.SetValue(TestTableColumns.DateTimeColumn, rowId, new DateTime(1983, 07, 03));
                 table.SetValue(TestTableColumns.TimespanColumn, rowId, TimeSpan.FromHours(1));
                 table.SetValue(TestTableColumns.GuidColumn, rowId, Guid.NewGuid());
@@ -36,10 +36,10 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             table.SetValue(TestTableColumns.DoubleColumn, rowId, 1111.232);
             table.SetValue(TestTableColumns.ShortColumn, rowId, (short)4242);
             table.SetValue(TestTableColumns.LongColumn, rowId, 22222222222222);
+            table.SetValue(TestTableColumns.DecimalColumn, rowId, 2132.233m);
 
             if (includeComplexTypes)
             {
-                table.SetValue(TestTableColumns.DecimalColumn, rowId, 2132.233m);
                 table.SetValue(TestTableColumns.DateTimeColumn, rowId, new DateTime(1982, 04, 10));
                 table.SetValue(TestTableColumns.TimespanColumn, rowId, TimeSpan.FromDays(1));
                 table.SetValue(TestTableColumns.GuidColumn, rowId, Guid.NewGuid());

@@ -31,6 +31,11 @@ namespace ReactiveTables.Framework.Filters
             get { return _changeNotifier.Value; }
         }
 
+        /// <summary>
+        /// Filter the source table using the given predicate.
+        /// </summary>
+        /// <param name="sourceTable"></param>
+        /// <param name="predicate"></param>
         public FilteredTable(IReactiveTable sourceTable, IReactivePredicate predicate)
         {
             _sourceTable = sourceTable;

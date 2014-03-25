@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<messageSchema package="ReactiveTables.Framework.SimpleBinaryEncoding"
+               id="1"
+               version="0"
+               semanticVersion="5.2"
+               description="Code generation unit test support"
+               byteOrder="littleEndian">
+  <types>
+    <composite name="messageHeader" description="Message identifiers and length of message root">
+      <type name="blockLength" primitiveType="uint16"/>
+      <type name="templateId" primitiveType="uint16"/>
+      <type name="schemaId" primitiveType="uint16"/>
+      <type name="version" primitiveType="uint16"/>
+    </composite>
+    <composite name="groupSizeEncoding" description="Repeating group dimensions">
+      <type name="blockLength" primitiveType="uint16"/>
+      <type name="numInGroup" primitiveType="uint8"/>
+    </composite>
+    <composite name="varDataEncoding">
+      <type name="length" primitiveType="uint8"/>
+      <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+    </composite>
+  </types>
+  <types>
+    <enum name="OperationType" encodingType="uint8">
+      <validValue name="Add">0</validValue>
+      <validValue name="Update">1</validValue>
+      <validValue name="Delete">2</validValue>
+    </enum>
+  </types>
+
+  <message name="SbeTableUpdate" id="2" description="Description of a table update">
+    <field name="type" id="1" type="OperationType"/>
+    <field name="rowId" id="2" type="int32"/>
+    <field name="fieldId" id="3" type="int32"/>
+
+  </message>
+</messageSchema>

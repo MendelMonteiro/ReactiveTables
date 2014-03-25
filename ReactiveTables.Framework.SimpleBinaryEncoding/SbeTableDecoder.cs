@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using Adaptive.SimpleBinaryEncoding;
@@ -25,13 +27,19 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
         private readonly SbeTableUpdate _update;
         private const short MessageTemplateVersion = 0;
         private readonly byte[] _stringTempBuffer = new byte[ushort.MaxValue];
+        private readonly Func<byte[], decimal> _bytesToDecimal;
+        private readonly byte[] _decimalBuffer = new byte[sizeof(decimal)];
 
-        public SbeTableDecoder()
+        public SbeTableDecoder(int bufferSize = 4096)
         {
             _update = new SbeTableUpdate();
-            _byteArray = new byte[1024];
+            _byteArray = new byte[bufferSize];
             _buffer = new DirectBuffer(_byteArray);
             _header = new MessageHeader();
+
+            // Jon skeet's delegeate to relfection hack https://msmvps.com/blogs/jon_skeet/archive/2008/08/09/making-reflection-fly-and-exploring-delegates.aspx
+            var methodInfo = typeof(decimal).GetMethod("ToDecimal", BindingFlags.Static | BindingFlags.NonPublic);
+            _bytesToDecimal = (Func<byte[], decimal>)Delegate.CreateDelegate(typeof(Func<byte[], decimal>), methodInfo);
         }
 
         /// <summary>
@@ -63,13 +71,21 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
 
         private void ReadStream(Stream stream, Dictionary<int, int> remoteToLocalRowIds, Dictionary<int, string> fieldIdsToColumns)
         {
-            int read;
-            while ((read = stream.Read(_byteArray, 0, _byteArray.Length)) > 0)
+            int read, tornMessageSize = 0;
+            while ((read = stream.Read(_byteArray, tornMessageSize, _byteArray.Length - tornMessageSize)) > 0)
             {
+                Debug.WriteLine("Received {0} bytes with {1} bytes from previous read", read, tornMessageSize);
+                read += tornMessageSize;
+                tornMessageSize = 0;
                 int bufferOffset = 0;
                 while (bufferOffset < read)
                 {
-                    if (bufferOffset + MessageHeader.Size > read) throw new ApplicationException("Not enough data read");
+                    int messageStart = bufferOffset;
+                    if (bufferOffset + MessageHeader.Size > read)
+                    {
+                        tornMessageSize = MoveTornMessage(read, messageStart);
+                        break;
+                    }
                     _header.Wrap(_buffer, bufferOffset, MessageTemplateVersion);
 
                     int actingBlockLength = _header.BlockLength;
@@ -77,8 +93,13 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                     int actingVersion = _header.Version;
                     bufferOffset += MessageHeader.Size;
 
-                    if (bufferOffset + _update.Size > read) throw new ApplicationException("Not enough data read");
-                    _update.WrapForDecode(_buffer, bufferOffset, actingBlockLength, actingVersion);
+//                    Debug.Assert(actingBlockLength < 256);
+                    if (bufferOffset + SbeTableUpdate.BlockLength > read)
+                    {
+                        tornMessageSize = MoveTornMessage(read, messageStart);
+                        break;
+                    }
+                    _update.WrapForDecode(_buffer, bufferOffset, SbeTableUpdate.BlockLength, actingVersion);
 
                     var operationType = _update.Type;
 
@@ -88,13 +109,20 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                     {
                         if (rowId >= 0)
                         {
+                            Debug.WriteLine("Received row {0}", rowId);
                             remoteToLocalRowIds.Add(rowId, _table.AddRow());
                         }
                     }
                     else if (operationType == OperationType.Update)
                     {
                         var column = _table.Columns[fieldIdsToColumns[_update.FieldId]];
-                        bufferOffset += WriteFieldsToTable(_table, column, rowId, _buffer, bufferOffset);
+                        var written = WriteFieldsToTable(_table, column, rowId, _buffer, bufferOffset, read);
+                        if (written == -1)
+                        {
+                            tornMessageSize = MoveTornMessage(read, messageStart);
+                            break;
+                        }
+                        bufferOffset += written;
                     }
                     else if (operationType == OperationType.Delete)
                     {
@@ -108,24 +136,41 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             }
         }
 
-        private int WriteFieldsToTable(IWritableReactiveTable table, IReactiveColumn column, int rowId, DirectBuffer buffer, int bufferOffset)
+        private int MoveTornMessage(int read, int messageStart)
+        {
+            int tornMessageSize = read - messageStart;
+            Buffer.BlockCopy(_byteArray, messageStart, _byteArray, 0, tornMessageSize);
+            Debug.WriteLine("Moved torn message of size {0} from buffer {1} of {2}", tornMessageSize, messageStart, read);
+            return tornMessageSize;
+        }
+
+        private int WriteFieldsToTable(IWritableReactiveTable table, IReactiveColumn column, int rowId, DirectBuffer buffer, int bufferOffset, int read)
         {
             var columnId = column.ColumnId;
+            var remaining = read - bufferOffset;
 
             if (column.Type == typeof(int))
             {
+                if (remaining < sizeof (int)) return -1;
+
                 table.SetValue(columnId, rowId, buffer.Int32GetLittleEndian(bufferOffset));
                 return sizeof(int);
             }
             else if (column.Type == typeof(short))
             {
+                if (remaining < sizeof(short)) return -1;
                 table.SetValue(columnId, rowId, buffer.Int16GetLittleEndian(bufferOffset));
                 return sizeof(short);
             }
             else if (column.Type == typeof(string))
             {
+                if (remaining < sizeof(ushort)) return -1;
                 ushort stringLength = buffer.Uint16GetLittleEndian(bufferOffset);
+
                 bufferOffset += sizeof(ushort);
+                remaining = read - bufferOffset;
+
+                if (remaining < stringLength) return -1;
                 var bytesRead = buffer.GetBytes(bufferOffset, _stringTempBuffer, 0, stringLength);
                 var value = Encoding.Default.GetString(_stringTempBuffer, 0, bytesRead);
                 table.SetValue(columnId, rowId, value);
@@ -133,24 +178,30 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             }
             else if (column.Type == typeof(bool))
             {
+                if (remaining < sizeof(byte)) return -1;
                 byte b = buffer.CharGet(bufferOffset);
                 table.SetValue(columnId, rowId, b == 1);
                 return sizeof(byte);
             }
             else if (column.Type == typeof(double))
             {
+                if (remaining < sizeof(double)) return -1;
                 var value = buffer.DoubleGetLittleEndian(bufferOffset);
                 table.SetValue(columnId, rowId, value);
                 return sizeof(double);
             }
             else if (column.Type == typeof(long))
             {
+                if (remaining < sizeof(long)) return -1;
                 table.SetValue(columnId, rowId, buffer.Int64GetLittleEndian(bufferOffset));
                 return sizeof(long);
             }
             else if (column.Type == typeof(decimal))
             {
-                //                    table.SetValue(columnId, rowId, BclHelpers.ReadDecimal(reader));
+                if (remaining < sizeof(decimal)) return -1;
+                Buffer.BlockCopy(_byteArray, bufferOffset, _decimalBuffer, 0, _decimalBuffer.Length);
+                table.SetValue(columnId, rowId, _bytesToDecimal(_decimalBuffer));
+                return _decimalBuffer.Length;
             }
             else if (column.Type == typeof(DateTime))
             {
@@ -166,16 +217,19 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             }
             else if (column.Type == typeof(byte))
             {
+                if (remaining < sizeof(byte)) return -1;
                 table.SetValue(columnId, rowId, buffer.CharGet(bufferOffset));
                 return sizeof(byte);
             }
             else if (column.Type == typeof(char))
             {
+                if (remaining < sizeof(char)) return -1;
                 table.SetValue(columnId, rowId, (char)buffer.Uint16GetLittleEndian(bufferOffset));
                 return sizeof(char);
             }
             else if (column.Type == typeof(float))
             {
+                if (remaining < sizeof(float)) return -1;
                 table.SetValue(columnId, rowId, buffer.FloatGetLittleEndian(bufferOffset));
                 return sizeof(float);
             }

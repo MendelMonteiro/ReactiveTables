@@ -23,6 +23,7 @@ using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Joins;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Protobuf;
+using ReactiveTables.Framework.SimpleBinaryEncoding;
 using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Framework.Utils;
 
@@ -48,50 +49,86 @@ namespace ReactiveTables.Demo.Server
             var clientsTable = new ReactiveTable();
             BrokerTableDefinition.SetupClientFeedTable(clientsTable);
 
-            SetupClientCcyPairServer(clientsTable);
-            SetupFeedServer(GetFeedsAndClients(clientsTable, feedsOutputTable), feeds);
+            SetupClientCcyPairServer(clientsTable, GetTableDecoder());
+            SetupFeedServer(GetFeedsAndClients(clientsTable, feedsOutputTable), feeds, GetTableEncoder());
 
             StartBrokerFeeds(feeds);
             Console.WriteLine("Broker service started");
         }
 
-        private static IReactiveTable GetFeedsAndClients(ReactiveTable clientsTable, ReactiveTable feedsTable)
+        private static IReactiveTableProcessor<IReactiveTable> GetTableEncoder()
+        {
+#if SBE
+            return new SbeTableEncoder();
+#else
+            return new ProtobufTableEncoder();
+#endif
+        }
+
+        private static IReactiveTableProcessor<IWritableReactiveTable> GetTableDecoder()
+        {
+#if SBE
+            return new SbeTableDecoder();
+#else
+            return new ProtobufTableDecoder();
+#endif
+        }
+
+        private static object GetDecoderState()
+        {
+#if SBE
+            return new SbeTableDecoderState {FieldIdsToColumns = BrokerTableDefinition.ClientColumnsToFieldIds.InverseUniqueDictionary()};
+#else
+            return new ProtobufDecoderState(BrokerTableDefinition.ClientColumnsToFieldIds.InverseUniqueDictionary());
+#endif
+        }
+
+        private static object GetEncoderState()
+        {
+#if SBE
+            return new SbeTableEncoderState {ColumnsToFieldIds = BrokerTableDefinition.ColumnsToFieldIds};
+#else
+            return new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds);
+#endif
+        }
+
+        private static IReactiveTable GetFeedsAndClients(IReactiveTable clientsTable, IReactiveTable feedsTable)
         {
             return new JoinedTable(clientsTable, feedsTable,
                                    new Join<string>(clientsTable, BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn,
                                                     feedsTable, BrokerTableDefinition.BrokerColumns.CcyPairColumn, JoinType.Inner));
         }
 
-        private void SetupClientCcyPairServer(ReactiveTable clientsTable)
+        private void SetupClientCcyPairServer(IWritableReactiveTable clientsTable, IReactiveTableProcessor<IWritableReactiveTable> tableDecoder)
         {
             clientsTable.Subscribe(update => Console.WriteLine("Server side: " + update.ToString()));
             
             // Used non-batched pass through as we won't be receiving much data.
             var server = new ReactiveTableTcpServer<IWritableReactiveTable>(
-                () => new ProtobufTableDecoder(),
+                () => tableDecoder,
                 new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeedClients),
                 _finished,
                 s => clientsTable);
 
             // Start the server in a new thread
-            Task.Run(() => server.Start(new ProtobufDecoderState(BrokerTableDefinition.ClientColumnsToFieldIds.InverseUniqueDictionary())));
+            Task.Run(() => server.Start(GetDecoderState()));
         }
 
-        private void SetupFeedServer(IReactiveTable feedsAndClients, ReactiveBatchedPassThroughTable feedsTable)
+        private void SetupFeedServer(IReactiveTable feedsAndClients, ReactiveBatchedPassThroughTable feedsTable, IReactiveTableProcessor<IReactiveTable> tableEncoder)
         {
 //            feedsAndClients.Subscribe(update => Console.WriteLine(update.ToString()));
 
-            var server = new ReactiveTableTcpServer<IReactiveTable>(() => new ProtobufTableEncoder(),
+            var server = new ReactiveTableTcpServer<IReactiveTable>(() => tableEncoder,
                                                                     new IPEndPoint(IPAddress.Loopback, (int) ServerPorts.BrokerFeed),
                                                                     _finished,
                                                                     s => FilterFeedsForClientTable(s, feedsAndClients),
                                                                     () => UpdateClients(feedsTable));
 
             // Start the server in a new thread
-            Task.Run(() => server.Start(new ProtobufEncoderState(BrokerTableDefinition.ColumnsToFieldIds)));
+            Task.Run(() => server.Start(GetEncoderState()));
         }
 
-        private IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feedsAndClients)
+        private static IReactiveTable FilterFeedsForClientTable(ReactiveClientSession reactiveClientSession, IReactiveTable feedsAndClients)
         {
             var feedsForClients = new FilteredTable(feedsAndClients,
                                                     new DelegatePredicate1<string>(
@@ -105,7 +142,7 @@ namespace ReactiveTables.Demo.Server
         /// Push all the changes to the clients
         /// </summary>
         /// <param name="passThroughTable"></param>
-        private void UpdateClients(ReactiveBatchedPassThroughTable passThroughTable)
+        private static void UpdateClients(ReactiveBatchedPassThroughTable passThroughTable)
         {
             passThroughTable.SynchroniseChanges();
         }

@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SBE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -267,6 +267,10 @@
     <ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj">
       <Project>{dd7b70dd-d622-4b6f-b654-bb1f58a3a562}</Project>
       <Name>ReactiveTables.Framework.Protobuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ReactiveTables.Framework.SimpleBinaryEncoding\ReactiveTables.Framework.SimpleBinaryEncoding.csproj">
+      <Project>{3502a634-b1c1-448e-9e32-cc900edb30a1}</Project>
+      <Name>ReactiveTables.Framework.SimpleBinaryEncoding</Name>
     </ProjectReference>
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
       <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>

@@ -78,63 +78,71 @@ namespace ReactiveTables.Framework.Comms
         /// <param name="ar"></param>
         private void AcceptClient(IAsyncResult ar)
         {
-            Console.WriteLine("Accepted client");
-            var state = (ClientState)ar.AsyncState;
-            var client = state.Listener.EndAcceptTcpClient(ar);
-            // Start waiting for the next client
-            state.Listener.BeginAcceptTcpClient(AcceptClient, state);
-
-            var outputStream = client.GetStream();
-            
-            var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
-            var output = _getOutputTable(session);
-            using (var encoder = _getEncoder())
+            try
             {
-                try
-                {
-                    encoder.Setup(outputStream, output, state.EncoderState);
+                Console.WriteLine("Accepted client");
+                var state = (ClientState)ar.AsyncState;
+                var client = state.Listener.EndAcceptTcpClient(ar);
+                // Start waiting for the next client
+                state.Listener.BeginAcceptTcpClient(AcceptClient, state);
 
-                    outputStream.Flush();
-                    int millisecondsTimeout = _testAction == null ? -1 : 50;
-                    while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                var outputStream = client.GetStream();
+            
+                var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
+                var output = _getOutputTable(session);
+                using (var encoder = _getEncoder())
+                {
+                    try
                     {
-                        // Run the test action every 50 milliseconds if it has been set.
-                        if (_testAction != null) _testAction();
+                        encoder.Setup(outputStream, output, state.EncoderState);
+
+                        outputStream.Flush();
+                        int millisecondsTimeout = _testAction == null ? -1 : 50;
+                        while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                        {
+                            // Run the test action every 50 milliseconds if it has been set.
+                            if (_testAction != null) _testAction();
+                        }
                     }
-                }
-                catch (EndOfStreamException)
-                {
-                    Console.WriteLine("Client Disconnected");
-                }
-                catch (SocketException sex)
-                {
-                    if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
+                    catch (EndOfStreamException)
                     {
                         Console.WriteLine("Client Disconnected");
                     }
-                    else throw;
-                }
-                catch (IOException ioex)
-                {
-                    var sex = ioex.InnerException as SocketException;
-                    if (sex != null)
+                    catch (SocketException sex)
                     {
-                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted || sex.ErrorCode == (int)SocketError.ConnectionReset)
+                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
                         {
                             Console.WriteLine("Client Disconnected");
                         }
                         else throw;
                     }
-                    else throw;
+                    catch (IOException ioex)
+                    {
+                        var sex = ioex.InnerException as SocketException;
+                        if (sex != null)
+                        {
+                            if (sex.ErrorCode == (int) SocketError.ConnectionAborted || sex.ErrorCode == (int)SocketError.ConnectionReset)
+                            {
+                                Console.WriteLine("Client Disconnected");
+                            }
+                            else throw;
+                        }
+                        else throw;
+                    }
                 }
-            }
 
-            outputStream.Close();
-            client.Close();
+                outputStream.Close();
+                client.Close();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw;
+            }
         }
     }
 
-    public class TestTcpReadClient
+    class TestTcpReadClient
     {
         private readonly IPEndPoint _endPoint;
         private readonly ManualResetEventSlim _finished;

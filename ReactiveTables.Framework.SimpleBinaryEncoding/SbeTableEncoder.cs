@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive;
+using System.Reflection;
 using System.Text;
 using Adaptive.SimpleBinaryEncoding;
 using ReactiveTables.Framework.Comms;
@@ -22,14 +24,20 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
         private readonly MessageHeader _header;
         private readonly byte[] _byteArray;
         private readonly byte[] _stringBuffer = new byte[ushort.MaxValue];
+        private readonly byte[] _decimalBuffer = new byte[sizeof(decimal)];
+        private readonly Action<decimal, byte[]> _decimalGetBytes;
         private const short MessageTemplateVersion = 0;
 
-        public SbeTableEncoder()
+        public SbeTableEncoder(int bufferSize = 4096)
         {
             _update = new SbeTableUpdate();
-            _byteArray = new byte[1024];
+            _byteArray = new byte[bufferSize];
             _buffer = new DirectBuffer(_byteArray);
             _header = new MessageHeader();
+
+            // Jon skeet's delegeate to relfection hack https://msmvps.com/blogs/jon_skeet/archive/2008/08/09/making-reflection-fly-and-exploring-delegates.aspx
+            var methodInfo = typeof (decimal).GetMethod("GetBytes", BindingFlags.Static | BindingFlags.NonPublic);
+            _decimalGetBytes = (Action<decimal, byte[]>) Delegate.CreateDelegate(typeof (Action<decimal, byte[]>), methodInfo);
         }
 
         public void Setup(Stream outputStream, IReactiveTable table, object state)
@@ -45,28 +53,43 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
         {
             int offset = 0;
 
-            // Is this header shit needed?
             _header.Wrap(_buffer, offset, MessageTemplateVersion);
-            _header.BlockLength = SbeTableUpdate.BlockLength; // size that a car takes on the wire
+            _header.BlockLength = SbeTableUpdate.BlockLength; // size that a table update takes on the wire
             _header.SchemaId = SbeTableUpdate.SchemaId;
-            _header.TemplateId = SbeTableUpdate.TemplateId;   // identifier for the car object (SBE template ID)
-            _header.Version = SbeTableUpdate.Schema_Version; // this can be overriden if we want to support different versions of the car object (advanced functionality)
+            _header.TemplateId = SbeTableUpdate.TemplateId;   // identifier for the table update object (SBE template ID)
+            _header.Version = SbeTableUpdate.Schema_Version; // this can be overriden if we want to support different versions of the table update object (advanced functionality)
             offset += MessageHeader.Size;
             
-            // TODO: Write repeating updates on add
-
             _update.WrapForEncode(_buffer, offset);
             _update.Type = MapType(tableUpdate.Action);
             _update.RowId = tableUpdate.RowIndex;
             offset += _update.Size;
 
-            if (_update.Type == OperationType.Update)
+            if (tableUpdate.Action == TableUpdate.TableUpdateAction.Update)
             {
-                _update.FieldId = encodeState.ColumnsToFieldIds[tableUpdate.Column.ColumnId];
+                int fieldId;
+                if (!encodeState.ColumnsToFieldIds.TryGetValue(tableUpdate.Column.ColumnId, out fieldId))
+                {
+                    return;
+                }
+
+                _update.FieldId = fieldId;
                 offset += WriteUpdateValue(table, tableUpdate, _buffer, offset);
             }
 
             _outputStream.Write(_byteArray, 0, offset);
+
+            // Write all the columns after each add.
+            if (tableUpdate.Action == TableUpdate.TableUpdateAction.Add)
+            {
+                Debug.WriteLine("Sent row {0}", _update.RowId);
+                foreach (var columnId in encodeState.ColumnsToFieldIds.Keys)
+                {
+                    OnTableUpdate(new TableUpdate(TableUpdate.TableUpdateAction.Update, tableUpdate.RowIndex, table.Columns[columnId]),
+                                  table,
+                                  encodeState);
+                }
+            }
         }
 
         private int WriteUpdateValue(IReactiveTable table, TableUpdate tableUpdate, DirectBuffer buffer, int offset)
@@ -84,7 +107,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             }
             if (column.Type == typeof(string))
             {
-                var stringValue = table.GetValue<string>(column.ColumnId, tableUpdate.RowIndex);
+                var stringValue = table.GetValue<string>(column.ColumnId, tableUpdate.RowIndex) ?? string.Empty;
                 // Set the length
                 var length = (ushort) stringValue.Length;
                 buffer.Uint16PutLittleEndian(offset, length);
@@ -115,8 +138,10 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             }
             if (column.Type == typeof(decimal))
             {
-                //var decimalVal = table.GetValue<decimal>(column.ColumnId, tableUpdate.RowIndex);
-                throw new NotImplementedException();
+                var decimalVal = table.GetValue<decimal>(column.ColumnId, tableUpdate.RowIndex);
+                _decimalGetBytes(decimalVal, _decimalBuffer);
+                buffer.SetBytes(offset, _decimalBuffer, 0, _decimalBuffer.Length);
+                return _decimalBuffer.Length;
             }
             if (column.Type == typeof(DateTime))
             {
@@ -146,6 +171,11 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                 return sizeof(char);
             }
             return 0;
+        }
+
+        unsafe static void WriteDecimal(decimal d, byte[] buffer, int bufferOffset)
+        {
+            
         }
 
         private static OperationType MapType(TableUpdate.TableUpdateAction action)
