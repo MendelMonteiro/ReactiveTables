@@ -74,7 +74,7 @@ namespace ReactiveTables.Framework.Sorting
         {
             for (int i = 0; i < _sorter.RowCount; i++)
             {
-                var delete = new TableUpdate(TableUpdate.TableUpdateAction.Delete, i);
+                var delete = new TableUpdate(TableUpdateAction.Delete, i);
                 _subject.OnNext(delete);
             }
         }
@@ -143,7 +143,7 @@ namespace ReactiveTables.Framework.Sorting
         public void ReplayRows(IObserver<TableUpdate> observer)
         {
             var rowAdds = new List<TableUpdate>(_sorter.RowCount);
-            rowAdds.AddRange(_sorter.GetAllRows().Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+            rowAdds.AddRange(_sorter.GetAllRows().Select(row => new TableUpdate(TableUpdateAction.Add, row)));
             foreach (var rowAdd in rowAdds)
             {
                 observer.OnNext(rowAdd);
@@ -274,18 +274,18 @@ namespace ReactiveTables.Framework.Sorting
             int sortedRowId = -1;
             switch (update.Action)
             {
-                case TableUpdate.TableUpdateAction.Add:
+                case TableUpdateAction.Add:
                     _keysToRows.Add(keyValuePair);
                     _rowIdsToValues.Add(update.RowIndex, sortColValue);
                     needToResort = true;
                     break;
-                case TableUpdate.TableUpdateAction.Delete:
+                case TableUpdateAction.Delete:
                     sortedRowId = _keysToRows.BinarySearch(keyValuePair, _keyComparer);
                     _keysToRows.RemoveAt(sortedRowId);
                     _rowIdsToValues.Remove(update.RowIndex);
                     needToResort = true;
                     break;
-                case TableUpdate.TableUpdateAction.Update:
+                case TableUpdateAction.Update:
                     {
                             // Sort column updating
                         if (update.Column.ColumnId == _sortColumnId)

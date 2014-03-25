@@ -27,15 +27,15 @@ namespace ReactiveTables.Demo.Utils
 
         private static ListChangedEventArgs GetListChangedEventArgs(TableUpdate update)
         {
-            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            if (update.Action == TableUpdateAction.Add)
             {
                 return new ListChangedEventArgs(ListChangedType.ItemAdded, update.RowIndex);
             }
-            if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            if (update.Action == TableUpdateAction.Delete)
             {
                 return new ListChangedEventArgs(ListChangedType.ItemDeleted, update.RowIndex);
             }
-            if (update.Action == TableUpdate.TableUpdateAction.Update)
+            if (update.Action == TableUpdateAction.Update)
             {
                 return new ListChangedEventArgs(ListChangedType.ItemChanged, update.RowIndex);
             }

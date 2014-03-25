@@ -41,11 +41,11 @@ namespace ReactiveTables.Demo
 
         private void OnNext(TableUpdate update)
         {
-            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            if (update.Action == TableUpdateAction.Add)
             {
                 PersonAccounts.Add(new PersonAccountViewModel(_personAccounts, update.RowIndex));
             }
-            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            else if (update.Action == TableUpdateAction.Delete)
             {
                 PersonAccounts.RemoveAt(PersonAccounts.GetIndexForKey(update.RowIndex));
             }

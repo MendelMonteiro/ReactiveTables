@@ -279,7 +279,7 @@ namespace ReactiveTables.Framework.Synchronisation
             lock (_shared)
             {
                 rowIndex = _rowManager.AddRow();
-                TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
+                TableUpdate update = new TableUpdate(TableUpdateAction.Add, rowIndex);
                 _rowUpdatesAdd.Enqueue(update);
             }
             return rowIndex;
@@ -290,7 +290,7 @@ namespace ReactiveTables.Framework.Synchronisation
             lock (_shared)
             {
                 _rowManager.DeleteRow(rowIndex);
-                TableUpdate update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
+                TableUpdate update = new TableUpdate(TableUpdateAction.Delete, rowIndex);
                 _rowUpdatesDelete.Enqueue(update);
             }
         }

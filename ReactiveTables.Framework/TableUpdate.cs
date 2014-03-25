@@ -19,21 +19,21 @@ using ReactiveTables.Framework.Columns;
 namespace ReactiveTables.Framework
 {
     /// <summary>
+    /// The action being performed to the row
+    /// </summary>
+    [Flags]
+    public enum TableUpdateAction : short
+    {
+        Add = 1,
+        Update = 2,
+        Delete = 4,
+    }
+
+    /// <summary>
     /// Represents an update to a <see cref="ReactiveTable"/>
     /// </summary>
     public struct TableUpdate
     {
-        /// <summary>
-        /// The action being performed to the row
-        /// </summary>
-        [Flags]
-        public enum TableUpdateAction : short
-        {
-            Add = 1,
-            Update = 2,
-            Delete = 4,
-        }
-
         private readonly TableUpdateAction _action;
         private readonly int _rowIndex;
         private readonly IReactiveColumn _column;

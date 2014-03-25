@@ -146,7 +146,7 @@ namespace ReactiveTables.Framework
                 column.Value.AddField(rowIndex);
             }
 
-            var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, rowIndex);
+            var rowUpdate = new TableUpdate(TableUpdateAction.Add, rowIndex);
             _subject.OnNext(rowUpdate);
             return rowIndex;
         }
@@ -159,7 +159,7 @@ namespace ReactiveTables.Framework
                 column.Value.RemoveField(rowIndex);
             }
 
-            var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Delete, rowIndex);
+            var rowUpdate = new TableUpdate(TableUpdateAction.Delete, rowIndex);
             _subject.OnNext(rowUpdate);
         }
 
@@ -171,7 +171,7 @@ namespace ReactiveTables.Framework
         public void ReplayRows(IObserver<TableUpdate> observer)
         {
             var rowAdds = new List<TableUpdate>(_rowManager.RowCount);
-            rowAdds.AddRange(_rowManager.GetRows().Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+            rowAdds.AddRange(_rowManager.GetRows().Select(row => new TableUpdate(TableUpdateAction.Add, row)));
 
             foreach (var rowAdd in rowAdds)
             {

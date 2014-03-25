@@ -101,7 +101,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
                 {
                     // Updated values - reevaluate grouping
                 }
-                else if (tableUpdate.Action == TableUpdate.TableUpdateAction.Delete)
+                else if (tableUpdate.Action == TableUpdateAction.Delete)
                 {
                     // Deleted row - reevaluate grouping, subtracting value from current group
                 }
@@ -114,7 +114,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
                 {
                     // Updated values - reevaluate grouping
                 }
-                else if (tableUpdate.Action == TableUpdate.TableUpdateAction.Delete)
+                else if (tableUpdate.Action == TableUpdateAction.Delete)
                 {
                     // Deleted row - reevaluate grouping, subtracting value from current group
                 }

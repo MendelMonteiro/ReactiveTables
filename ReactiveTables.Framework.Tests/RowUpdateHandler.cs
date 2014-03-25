@@ -34,11 +34,11 @@ namespace ReactiveTables.Framework.Tests
         public void OnRowUpdate(TableUpdate update)
         {
             RowsUpdated.Add(update.RowIndex);
-            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            if (update.Action == TableUpdateAction.Add)
             {
                 CurrentRowCount++;
             }
-            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            else if (update.Action == TableUpdateAction.Delete)
             {
                 CurrentRowCount--;
             }

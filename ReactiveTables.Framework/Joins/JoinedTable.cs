@@ -162,7 +162,7 @@ namespace ReactiveTables.Framework.Joins
         public void ReplayRows(IObserver<TableUpdate> observer)
         {
             var rowAdds = new List<TableUpdate>(_joiner.RowCount);
-            rowAdds.AddRange(_joiner.GetRows().Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+            rowAdds.AddRange(_joiner.GetRows().Select(row => new TableUpdate(TableUpdateAction.Add, row)));
 
             foreach (var rowAdd in rowAdds)
             {

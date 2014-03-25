@@ -82,7 +82,7 @@ namespace ReactiveTables.Demo.Syncfusion
         {
             if (tableUpdate.IsRowUpdate())
             {
-                Model.RowCount += tableUpdate.Action == TableUpdate.TableUpdateAction.Add ? 1 : -1;
+                Model.RowCount += tableUpdate.Action == TableUpdateAction.Add ? 1 : -1;
             }
             else
             {

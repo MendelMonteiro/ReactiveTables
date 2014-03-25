@@ -65,7 +65,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             _update.RowId = tableUpdate.RowIndex;
             offset += _update.Size;
 
-            if (tableUpdate.Action == TableUpdate.TableUpdateAction.Update)
+            if (tableUpdate.Action == TableUpdateAction.Update)
             {
                 int fieldId;
                 if (!encodeState.ColumnsToFieldIds.TryGetValue(tableUpdate.Column.ColumnId, out fieldId))
@@ -80,12 +80,12 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             _outputStream.Write(_byteArray, 0, offset);
 
             // Write all the columns after each add.
-            if (tableUpdate.Action == TableUpdate.TableUpdateAction.Add)
+            if (tableUpdate.Action == TableUpdateAction.Add)
             {
                 Debug.WriteLine("Sent row {0}", _update.RowId);
                 foreach (var columnId in encodeState.ColumnsToFieldIds.Keys)
                 {
-                    OnTableUpdate(new TableUpdate(TableUpdate.TableUpdateAction.Update, tableUpdate.RowIndex, table.Columns[columnId]),
+                    OnTableUpdate(new TableUpdate(TableUpdateAction.Update, tableUpdate.RowIndex, table.Columns[columnId]),
                                   table,
                                   encodeState);
                 }
@@ -178,15 +178,15 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             
         }
 
-        private static OperationType MapType(TableUpdate.TableUpdateAction action)
+        private static OperationType MapType(TableUpdateAction action)
         {
             switch (action)
             {
-                case TableUpdate.TableUpdateAction.Add:
+                case TableUpdateAction.Add:
                     return OperationType.Add;
-                case TableUpdate.TableUpdateAction.Update:
+                case TableUpdateAction.Update:
                     return OperationType.Update;
-                case TableUpdate.TableUpdateAction.Delete:
+                case TableUpdateAction.Delete:
                     return OperationType.Delete;
                 default:
                     throw new ArgumentOutOfRangeException("action");

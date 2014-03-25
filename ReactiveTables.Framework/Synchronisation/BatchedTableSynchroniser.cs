@@ -59,11 +59,11 @@ namespace ReactiveTables.Framework.Synchronisation
                     {
                         foreach (var update in updates.Where(TableUpdate.IsRowUpdate))
                         {
-                            if (update.Action == TableUpdate.TableUpdateAction.Add)
+                            if (update.Action == TableUpdateAction.Add)
                             {
                                 _targetTable.AddRow();
                             }
-                            else if (update.Action == TableUpdate.TableUpdateAction.Delete)
+                            else if (update.Action == TableUpdateAction.Delete)
                             {
                                 _targetTable.DeleteRow(update.RowIndex);
                             }

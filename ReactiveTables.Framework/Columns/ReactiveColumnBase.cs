@@ -36,7 +36,7 @@ namespace ReactiveTables.Framework.Columns
 
         internal void NotifyObserversOnNext(int index)
         {
-            UpdateSubject.OnNext(new TableUpdate(TableUpdate.TableUpdateAction.Update, index, this));
+            UpdateSubject.OnNext(new TableUpdate(TableUpdateAction.Update, index, this));
         }
 
         public abstract void AddField(int rowIndex);

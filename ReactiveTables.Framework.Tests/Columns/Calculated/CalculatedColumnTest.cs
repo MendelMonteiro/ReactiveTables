@@ -28,10 +28,10 @@ namespace ReactiveTables.Framework.Tests.Columns.Calculated
             
             Assert.AreEqual("The int value is 42", table.GetValue<string>(calculatedColumnId, row1));
             Assert.AreEqual(3, updates.Count);
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Add));
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Update &&
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Add));
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Update &&
                                                         u.Column.ColumnId == TestTableColumns.IdColumn));
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Update &&
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Update &&
                                                         u.Column.ColumnId == calculatedColumnId));
         }
 
@@ -55,13 +55,13 @@ namespace ReactiveTables.Framework.Tests.Columns.Calculated
             
             Assert.AreEqual("The int value is 42", table.GetValue<string>(calculatedColumnId, row1));
             Assert.AreEqual(5, updates.Count);
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Add));
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Update &&
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Add));
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Update &&
                                                         u.Column.ColumnId == TestTableColumns.IdColumn));
-            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Update &&
+            Assert.AreEqual(1, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Update &&
                                                         u.Column.ColumnId == TestTableColumns.StringColumn));
             // One after each update
-            Assert.AreEqual(2, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdate.TableUpdateAction.Update &&
+            Assert.AreEqual(2, updates.Count(u => u.RowIndex == row1 && u.Action == TableUpdateAction.Update &&
                                                         u.Column.ColumnId == calculatedColumnId));
         }
     }

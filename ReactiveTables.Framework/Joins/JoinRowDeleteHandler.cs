@@ -50,7 +50,7 @@ namespace ReactiveTables.Framework.Joins
 
         public void OnNext(TableUpdate update)
         {
-            if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            if (update.Action == TableUpdateAction.Delete)
             {
                 OnDelete(update);
             }
@@ -143,7 +143,7 @@ namespace ReactiveTables.Framework.Joins
                             _rowsByKey[key].ColRowMappings[i] = mapping;
                         }
                         // Actually delete the row
-                        rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
+                        rowUpdates.Add(new TableUpdate(TableUpdateAction.Delete, joinRowId));
                         _rowManager.DeleteRow(joinRowId);
                     }
                 }
@@ -152,7 +152,7 @@ namespace ReactiveTables.Framework.Joins
                     if (!joinRow.LeftRowId.HasValue && !joinRow.RightRowId.HasValue)
                     {
                         _rows[joinRowId] = null;
-                        rowUpdates.Add(new TableUpdate(TableUpdate.TableUpdateAction.Delete, joinRowId));
+                        rowUpdates.Add(new TableUpdate(TableUpdateAction.Delete, joinRowId));
                         _rowManager.DeleteRow(joinRowId);
                     }
                 }

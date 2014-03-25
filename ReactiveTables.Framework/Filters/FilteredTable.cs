@@ -50,13 +50,13 @@ namespace ReactiveTables.Framework.Filters
         {
             // Row is being deleted
             var sourceRowIndex = tableUpdate.RowIndex;
-            if (tableUpdate.Action == TableUpdate.TableUpdateAction.Delete)
+            if (tableUpdate.Action == TableUpdateAction.Delete)
             {
                 RemoveNotVisibleRow(sourceRowIndex);
                 return;
             }
 
-            bool shouldCheck = tableUpdate.Action == TableUpdate.TableUpdateAction.Add ||
+            bool shouldCheck = tableUpdate.Action == TableUpdateAction.Add ||
                                _predicate.Columns.Contains(tableUpdate.Column.ColumnId);
 
             if (!shouldCheck)
@@ -140,19 +140,19 @@ namespace ReactiveTables.Framework.Filters
 
         private void OnAdd(int filterRow)
         {
-            var update = new TableUpdate(TableUpdate.TableUpdateAction.Add, filterRow);
+            var update = new TableUpdate(TableUpdateAction.Add, filterRow);
             _updateSubject.OnNext(update);
         }
 
         private void OnUpdate(int filterRow, IReactiveColumn column)
         {
-            var update = new TableUpdate(TableUpdate.TableUpdateAction.Update, filterRow, column);
+            var update = new TableUpdate(TableUpdateAction.Update, filterRow, column);
             _updateSubject.OnNext(update);
         }
 
         private void OnDelete(int filterRow)
         {
-            var update = new TableUpdate(TableUpdate.TableUpdateAction.Delete, filterRow);
+            var update = new TableUpdate(TableUpdateAction.Delete, filterRow);
             _updateSubject.OnNext(update);
         }
 
@@ -224,7 +224,7 @@ namespace ReactiveTables.Framework.Filters
         public void ReplayRows(IObserver<TableUpdate> observer)
         {
             var rowAdds = new List<TableUpdate>(_filterRowToSourceRow.Count);
-            rowAdds.AddRange(_filterRowToSourceRow.Keys.Select(row => new TableUpdate(TableUpdate.TableUpdateAction.Add, row)));
+            rowAdds.AddRange(_filterRowToSourceRow.Keys.Select(row => new TableUpdate(TableUpdateAction.Add, row)));
             foreach (var rowAdd in rowAdds)
             {
                 observer.OnNext(rowAdd);

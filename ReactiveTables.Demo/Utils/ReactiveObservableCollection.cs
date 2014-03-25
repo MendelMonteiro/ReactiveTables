@@ -23,7 +23,7 @@ namespace ReactiveTables.Demo.Utils
         {
             var onCollectionChanged = CollectionChanged;
             var onPropertyChanged = PropertyChanged;
-            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            if (update.Action == TableUpdateAction.Add)
             {
                 if (onCollectionChanged != null)
                 {
@@ -31,7 +31,7 @@ namespace ReactiveTables.Demo.Utils
                     onCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, obj, update.RowIndex));
                 }
             }
-            if (update.Action == TableUpdate.TableUpdateAction.Update)
+            if (update.Action == TableUpdateAction.Update)
             {
                 if (onPropertyChanged != null)
                 {
@@ -39,7 +39,7 @@ namespace ReactiveTables.Demo.Utils
 //                    onCollectionChanged(this, new NotifyCollectionChangedEventArgs(Replace));
                 }
             }
-            if (update.Action == TableUpdate.TableUpdateAction.Delete)
+            if (update.Action == TableUpdateAction.Delete)
             {
                 if (onCollectionChanged != null)
                 {

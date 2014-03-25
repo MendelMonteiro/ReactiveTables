@@ -45,16 +45,16 @@ namespace ReactiveTables.Framework.Synchronisation
             _threadMarshaller.Dispatch(
                 () =>
                     {
-                        if (update.Action == TableUpdate.TableUpdateAction.Add)
+                        if (update.Action == TableUpdateAction.Add)
                         {
                             var newRowIndex = _targetTable.AddRow();
                             Debug.Assert(update.RowIndex == newRowIndex);
                         }
-                        else if (update.Action == TableUpdate.TableUpdateAction.Delete)
+                        else if (update.Action == TableUpdateAction.Delete)
                         {
                             _targetTable.DeleteRow(update.RowIndex);
                         }
-                        else if (update.Action == TableUpdate.TableUpdateAction.Update)
+                        else if (update.Action == TableUpdateAction.Update)
                         {
                             // BUG: When this line is called the original update.Column may not contain the same state as when the outside method is called.
                             _targetTable.SetValue(update.Column.ColumnId, update.RowIndex, update.Column, update.RowIndex);

@@ -45,7 +45,7 @@ namespace ReactiveTables.Framework.Columns
 
         private void OnNext(int index)
         {
-            _updateSubject.OnNext(new TableUpdate(TableUpdate.TableUpdateAction.Update, index, _outputColumn));
+            _updateSubject.OnNext(new TableUpdate(TableUpdateAction.Update, index, _outputColumn));
         }
 
         private void OnError(Exception error)

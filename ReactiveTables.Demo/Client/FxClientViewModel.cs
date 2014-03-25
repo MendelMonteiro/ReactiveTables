@@ -35,7 +35,7 @@ namespace ReactiveTables.Demo.Client
             _currenciesSubscription = _dataService.Currencies.ReplayAndSubscribe(
                 update =>
                     {
-                        if (update.Action == TableUpdate.TableUpdateAction.Add)
+                        if (update.Action == TableUpdateAction.Add)
                         {
                             CurrencyPairs.Add(new FxCurrencyPairViewModel(_dataService.Currencies, update.RowIndex));
                         }
@@ -45,7 +45,7 @@ namespace ReactiveTables.Demo.Client
             _fxRatesSubscription = _dataService.FxRates.ReplayAndSubscribe(
                 update =>
                     {
-                        if (update.Action == TableUpdate.TableUpdateAction.Add)
+                        if (update.Action == TableUpdateAction.Add)
                         {
                             FxRates.Add(new FxRateViewModel(_dataService.FxRates, update.RowIndex));
                         }

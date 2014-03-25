@@ -51,14 +51,14 @@ namespace ReactiveTables.Framework.Protobuf
                 }
                 switch (value.Action)
                 {
-                    case TableUpdate.TableUpdateAction.Add:
+                    case TableUpdateAction.Add:
                         WriteAdd(writer, value);
                         WriteUpdates(writer, _table.Columns.Values, value.RowIndex);
                         break;
-                    case TableUpdate.TableUpdateAction.Update:
+                    case TableUpdateAction.Update:
                         WriteUpdate(writer, value.Column, value.RowIndex);
                         break;
-                    case TableUpdate.TableUpdateAction.Delete:
+                    case TableUpdateAction.Delete:
                         WriteDelete(writer, value);
                         break;
                 }

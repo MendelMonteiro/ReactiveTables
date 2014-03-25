@@ -36,7 +36,7 @@ namespace ReactiveTables.Framework
 
         public void OnNext(int rowIndex)
         {
-            var columnUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, rowIndex, _column);
+            var columnUpdate = new TableUpdate(TableUpdateAction.Update, rowIndex, _column);
             _observers.OnNext(columnUpdate);
         }
 

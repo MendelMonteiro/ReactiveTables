@@ -202,18 +202,18 @@ namespace ReactiveTables.Framework.Joins
         private void OnNext(TableUpdate update, JoinSide side)
         {
             // Filter out add/deletes
-            if (update.Action == TableUpdate.TableUpdateAction.Delete) return;
+            if (update.Action == TableUpdateAction.Delete) return;
 
             // If we have an add and which is a replay of the underlying tables then we need to
             // simulate column updates for all columns
-            if (update.Action == TableUpdate.TableUpdateAction.Add)
+            if (update.Action == TableUpdateAction.Add)
             {
                 if (!_replaying) return;
 
                 var columns = GetTableColumns(side);
                 foreach (var column in columns)
                 {
-                    update = new TableUpdate(TableUpdate.TableUpdateAction.Update, update.RowIndex, column);
+                    update = new TableUpdate(TableUpdateAction.Update, update.RowIndex, column);
                     ProcessColumnUpdate(update, column);
                 }
             }
@@ -274,7 +274,7 @@ namespace ReactiveTables.Framework.Joins
                     var row = _rows[joinRow];
                     if (row.HasValue && row.Value.RowId.HasValue && !IsRowUnlinked(row.Value, side))
                     {
-                        var colUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, joinRow, update.Column);
+                        var colUpdate = new TableUpdate(TableUpdateAction.Update, joinRow, update.Column);
                         if (_updateObservers != null) _updateObservers.OnNext(colUpdate);
                         return true;
                     }
@@ -290,7 +290,7 @@ namespace ReactiveTables.Framework.Joins
                 // Update that the new row exists
                 if (updatedRow.Type == RowToUpdate.RowUpdateType.Add)
                 {
-                    var rowUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Add, updatedRow.RowIndex);
+                    var rowUpdate = new TableUpdate(TableUpdateAction.Add, updatedRow.RowIndex);
                     if (_updateObservers != null) _updateObservers.OnNext(rowUpdate);
 
                     // Update all columns for newly added row on the sides that are present.
@@ -311,7 +311,7 @@ namespace ReactiveTables.Framework.Joins
             var table = GetTableForSide(side);
             foreach (var tableColumn in table.Columns)
             {
-                var columnUpdate = new TableUpdate(TableUpdate.TableUpdateAction.Update, rowIndex, tableColumn.Value);
+                var columnUpdate = new TableUpdate(TableUpdateAction.Update, rowIndex, tableColumn.Value);
                 if (_updateObservers != null) _updateObservers.OnNext(columnUpdate);
             }
         }
