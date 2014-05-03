@@ -13,23 +13,36 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ReactiveTables.Framework.Columns
 {
+    /// <summary>
+    /// Maintains a list of deleted rows so that those slots can be re-used when next inserting.
+    /// This allows us to never call List.Remove() thus avoiding a costly operation.
+    /// </summary>
     public class FieldRowManager
     {
         private readonly Queue<int> _deletedRows = new Queue<int>();
+
+        /// <summary>
+        /// The number of rows present
+        /// </summary>
         public int RowCount { get; private set; }
 
+        /// <summary>
+        /// Create a new FieldRowManager
+        /// </summary>
         public FieldRowManager()
         {
             RowCount = 0;
         }
 
+        /// <summary>
+        /// Add a new row
+        /// </summary>
+        /// <returns>The index of the newly added row</returns>
         public int AddRow()
         {
             RowCount++;
@@ -41,6 +54,10 @@ namespace ReactiveTables.Framework.Columns
             return RowCount - 1;
         }
 
+        /// <summary>
+        /// Remove a row at the given index
+        /// </summary>
+        /// <param name="rowIndex"></param>
         public void DeleteRow(int rowIndex)
         {
             RowCount--;
@@ -48,6 +65,10 @@ namespace ReactiveTables.Framework.Columns
             _deletedRows.Enqueue(rowIndex);
         }
 
+        /// <summary>
+        /// Get all the row indeces currently being used
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<int> GetRows()
         {
             var deletedEnum = _deletedRows.GetEnumerator();
@@ -128,6 +149,9 @@ namespace ReactiveTables.Framework.Columns
             return rowIndex - deletedCount;
         }
 
+        /// <summary>
+        /// Reset the state of the manager (no rows present and none deleted)
+        /// </summary>
         public void Reset()
         {
             _deletedRows.Clear();

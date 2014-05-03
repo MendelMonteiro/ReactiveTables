@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
@@ -130,9 +131,9 @@ namespace ReactiveTables.Framework.Synchronisation
 
                 // Create a cloned list so we don't modify the main has list from multiple threads
                 // TODO: need to figure out a way to avoid clone as we're adding GC pressure.
-                colUpdaters = new List<ITableColumnUpdater>(from u in _columnUpdaters.Values
-                                                            where u.UpdateCount > 0 
-                                                            select u.Clone());
+                colUpdaters = (from u in _columnUpdaters.Values
+                              where u.UpdateCount > 0
+                              select u.Clone()).ToList();
 
                 // Clear all the updates in the original version to indicate that there are no updates pending.
                 foreach (var tableColumnUpdater in _columnUpdaters.Values)
@@ -282,6 +283,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 TableUpdate update = new TableUpdate(TableUpdateAction.Add, rowIndex);
                 _rowUpdatesAdd.Enqueue(update);
             }
+            Debug.WriteLine("Added row {0} to batched passthrough", rowIndex);
             return rowIndex;
         }
 

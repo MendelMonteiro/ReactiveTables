@@ -103,6 +103,7 @@
     <Compile Include="Collections\ReactiveListTests.cs" />
     <Compile Include="Columns\Aggregate\CountColumnTests.cs" />
     <Compile Include="Columns\Calculated\CalculatedColumnTest.cs" />
+    <Compile Include="Columns\FieldRowListTests.cs" />
     <Compile Include="Columns\FieldRowManagerTests.cs" />
     <Compile Include="ColumnUpdateHandler.cs" />
     <Compile Include="Comms\Protobuf\ProtobufTableEncoderTest.cs" />

@@ -24,6 +24,7 @@ using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Comms;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Marshalling;
+using ReactiveTables.Framework.Protobuf;
 using ReactiveTables.Framework.SimpleBinaryEncoding;
 using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Framework.Utils;

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 namespace ReactiveTables.Framework.Collections
 {
     /// <summary>
-    /// A dictionary which has values which can be accessed by key or by index (created 
-    /// in order of addition to the dictionary).
+    /// A dictionary which has values which can be accessed by key or by index 
+    /// (created in order of addition to the dictionary).
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
@@ -14,7 +14,6 @@ namespace ReactiveTables.Framework.Collections
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey, TValue>();
         private readonly List<TValue> _list = new List<TValue>();
-
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
@@ -27,11 +26,6 @@ namespace ReactiveTables.Framework.Collections
         }
 
         public void Add(TValue item)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection<TValue>.Clear()
         {
             throw new NotImplementedException();
         }
@@ -51,16 +45,15 @@ namespace ReactiveTables.Framework.Collections
             throw new NotImplementedException();
         }
 
-        int ICollection<TValue>.Count { get { return _dictionary.Count; } }
-
         public void Add(KeyValuePair<TKey, TValue> item)
         {
             throw new NotImplementedException();
         }
 
-        void ICollection<KeyValuePair<TKey, TValue>>.Clear()
+        public void Clear()
         {
             _dictionary.Clear();
+            _list.Clear();
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
@@ -78,7 +71,7 @@ namespace ReactiveTables.Framework.Collections
             throw new NotImplementedException();
         }
 
-        int ICollection<KeyValuePair<TKey, TValue>>.Count { get { return _dictionary.Count; } }
+        public int Count { get { return _dictionary.Count; } }
 
         public bool IsReadOnly { get { return false; } }
 
@@ -113,10 +106,28 @@ namespace ReactiveTables.Framework.Collections
             _list.Add(value);
         }
 
+        public int AddWithIndex(TKey key, TValue value)
+        {
+            Add(key, value);
+            return _list.Count - 1;
+        }
+
         public bool Remove(TKey key)
         {
             _list.Remove(_dictionary[key]);
             return _dictionary.Remove(key);
+        }
+
+        public bool RemoveWithIndex(TKey key, out int index)
+        {
+            index = _list.IndexOf(_dictionary[key]);
+            if (index >= 0)
+            {
+                _list.RemoveAt(index);
+                _dictionary.Remove(key);
+                return true;
+            }
+            return false;
         }
 
         public bool TryGetValue(TKey key, out TValue value)
@@ -124,7 +135,7 @@ namespace ReactiveTables.Framework.Collections
             return _dictionary.TryGetValue(key, out value);
         }
 
-        TValue IList<TValue>.this[int index]
+        public TValue this[int index]
         {
             get { return _list[index]; }
             set { throw new NotImplementedException(); }

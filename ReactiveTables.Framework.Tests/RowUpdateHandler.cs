@@ -47,7 +47,10 @@ namespace ReactiveTables.Framework.Tests
 
         public void OnNext(TableUpdate value)
         {
-            OnRowUpdate(value);
+            if (value.IsRowUpdate())
+            {
+                OnRowUpdate(value);
+            }
         }
 
         public void OnError(Exception error)

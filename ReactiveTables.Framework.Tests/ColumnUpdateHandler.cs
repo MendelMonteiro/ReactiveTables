@@ -18,8 +18,11 @@ namespace ReactiveTables.Framework.Tests
 
         public void OnColumnUpdate(TableUpdate update)
         {
-            LastColumnsUpdated.Add(update.Column.ColumnId);
-            LastRowsUpdated.Add(update.RowIndex);
+            if (update.IsColumnUpdate())
+            {
+                LastColumnsUpdated.Add(update.Column.ColumnId);
+                LastRowsUpdated.Add(update.RowIndex);
+            }
         }
     }
 }

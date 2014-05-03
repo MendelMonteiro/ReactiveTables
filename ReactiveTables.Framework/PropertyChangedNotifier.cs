@@ -42,7 +42,7 @@ namespace ReactiveTables.Framework
         /// <param name="rowIndex">The row being watched</param>
         public void RegisterPropertyNotifiedConsumer(IReactivePropertyNotifiedConsumer consumer, int rowIndex)
         {
-            var consumers = _consumersByRowIndex.AddNewIfNotExists(rowIndex);
+            var consumers = _consumersByRowIndex.GetOrAddNew(rowIndex);
             consumers.Add(consumer);
         }
 

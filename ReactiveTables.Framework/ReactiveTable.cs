@@ -62,28 +62,61 @@ namespace ReactiveTables.Framework
     }
 
     /// <summary>
+    /// Contains functionality common to all tables
+    /// </summary>
+    public abstract class ReactiveTableBase : IReactiveTable
+    {
+        protected readonly Lazy<PropertyChangedNotifier> _changeNotifier;
+
+        public ReactiveTableBase()
+        {
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));            
+        }
+
+        public abstract IReactiveColumn AddColumn(IReactiveColumn column);
+        public abstract T GetValue<T>(string columnId, int rowIndex);
+        public abstract object GetValue(string columnId, int rowIndex);
+        public abstract int RowCount { get; }
+        public abstract IDictionary<string, IReactiveColumn> Columns { get; }
+
+        public abstract IReactiveColumn GetColumnByIndex(int index);
+
+        public PropertyChangedNotifier ChangeNotifier
+        {
+            get { return _changeNotifier.Value; }
+        }
+
+        public abstract void ReplayRows(IObserver<TableUpdate> observer);
+        public abstract int GetRowAt(int position);
+        public abstract int GetPositionOfRow(int rowIndex);
+
+        public abstract IDisposable Subscribe(IObserver<TableUpdate> observer);
+
+        public virtual IReactiveTable Filter(IReactivePredicate predicate)
+        {
+            return new FilteredTable(this, predicate);
+        }
+
+        public virtual IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
+        {
+            return new JoinedTable(this, otherTable, joiner);
+        }
+    }
+
+    /// <summary>
     /// The main writable/readable table.
     /// </summary>
-    public class ReactiveTable : IWritableReactiveTable, IDisposable
+    public class ReactiveTable : ReactiveTableBase, IWritableReactiveTable, IDisposable
     {
         private readonly IndexedDictionary<string, IReactiveColumn> _columns = new IndexedDictionary<string, IReactiveColumn>();
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
 
         private readonly FieldRowManager _rowManager = new FieldRowManager();
-        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
-        public IReactiveColumn GetColumnByIndex(int index)
+        public override IReactiveColumn GetColumnByIndex(int index)
         {
             IList<IReactiveColumn> list = _columns;
             return list[index];
-        }
-
-        public PropertyChangedNotifier ChangeNotifier
-        {
-            get
-            {
-                return _changeNotifier.Value;
-            }
         }
 
         /// <summary>
@@ -91,7 +124,6 @@ namespace ReactiveTables.Framework
         /// </summary>
         public ReactiveTable()
         {
-            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
         /// <summary>
@@ -101,10 +133,9 @@ namespace ReactiveTables.Framework
         public ReactiveTable(IReactiveTable reactiveTable)
         {
             CloneColumns(reactiveTable);
-            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public override IReactiveColumn AddColumn(IReactiveColumn column)
         {
             var columnId = column.ColumnId;
             Columns.Add(columnId, column);
@@ -118,12 +149,12 @@ namespace ReactiveTables.Framework
             return (IReactiveColumn<T>) Columns[columnId];
         }
 
-        public T GetValue<T>(string columnId, int rowIndex)
+        public override T GetValue<T>(string columnId, int rowIndex)
         {
             return GetColumn<T>(columnId).GetValue(rowIndex);
         }
 
-        public object GetValue(string columnId, int rowIndex)
+        public override object GetValue(string columnId, int rowIndex)
         {
             return Columns[columnId].GetValue(rowIndex);
         }
@@ -163,12 +194,7 @@ namespace ReactiveTables.Framework
             _subject.OnNext(rowUpdate);
         }
 
-        public IReactiveTable Filter(IReactivePredicate predicate)
-        {
-            return new FilteredTable(this, predicate);
-        }
-
-        public void ReplayRows(IObserver<TableUpdate> observer)
+        public override void ReplayRows(IObserver<TableUpdate> observer)
         {
             var rowAdds = new List<TableUpdate>(_rowManager.RowCount);
             rowAdds.AddRange(_rowManager.GetRows().Select(row => new TableUpdate(TableUpdateAction.Add, row)));
@@ -179,34 +205,33 @@ namespace ReactiveTables.Framework
             }
         }
 
+        /// <summary>
+        /// Get all row IDs
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<int> GetRows()
         {
             return _rowManager.GetRows();
         }
 
-        public int GetRowAt(int position)
+        public override int GetRowAt(int position)
         {
             return _rowManager.GetRowAt(position);
         }
 
-        public int GetPositionOfRow(int rowIndex)
+        public override int GetPositionOfRow(int rowIndex)
         {
             return _rowManager.GetPositionOfRow(rowIndex);
         }
 
-        public int RowCount
+        public override int RowCount
         {
             get { return _rowManager.RowCount; }
         }
 
-        public IDictionary<string, IReactiveColumn> Columns
+        public override IDictionary<string, IReactiveColumn> Columns
         {
             get { return _columns; }
-        }
-
-        public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
-        {
-            return new JoinedTable(this, otherTable, joiner);
         }
 
         public void CloneColumns(IReactiveTable reactiveTable)
@@ -217,7 +242,7 @@ namespace ReactiveTables.Framework
             }
         }
 
-        public IDisposable Subscribe(IObserver<TableUpdate> observer)
+        public override IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             return _subject.Subscribe(observer);
         }

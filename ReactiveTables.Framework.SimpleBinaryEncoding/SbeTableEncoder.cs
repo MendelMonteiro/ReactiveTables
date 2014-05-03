@@ -54,7 +54,6 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             int offset = 0;
 
             _header.Wrap(_buffer, offset, MessageTemplateVersion);
-            _header.BlockLength = SbeTableUpdate.BlockLength; // size that a table update takes on the wire
             _header.SchemaId = SbeTableUpdate.SchemaId;
             _header.TemplateId = SbeTableUpdate.TemplateId;   // identifier for the table update object (SBE template ID)
             _header.Version = SbeTableUpdate.Schema_Version; // this can be overriden if we want to support different versions of the table update object (advanced functionality)
@@ -77,12 +76,15 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                 offset += WriteUpdateValue(table, tableUpdate, _buffer, offset);
             }
 
+            _header.BlockLength = (ushort) offset; // size that a table update takes on the wire
+            Debug.WriteLine("Writing block length of {0} for row {1}", _header.BlockLength, _update.RowId);
+
             _outputStream.Write(_byteArray, 0, offset);
 
             // Write all the columns after each add.
             if (tableUpdate.Action == TableUpdateAction.Add)
             {
-                Debug.WriteLine("Sent row {0}", _update.RowId);
+                Debug.WriteLine("Sent new row {0}", _update.RowId);
                 foreach (var columnId in encodeState.ColumnsToFieldIds.Keys)
                 {
                     OnTableUpdate(new TableUpdate(TableUpdateAction.Update, tableUpdate.RowIndex, table.Columns[columnId]),

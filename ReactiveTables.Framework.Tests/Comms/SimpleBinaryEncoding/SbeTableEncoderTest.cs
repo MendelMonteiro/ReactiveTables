@@ -91,6 +91,7 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
             var row2 = TableEncoderTester.AddTestRow(table, false);
 
             tableEncoderTester.UpdateTestRow(table, row1, false);
+            tableEncoderTester.UpdateTestRow(table, row2, false);
 
             encoder.Dispose();
             //stream.Flush();
@@ -98,12 +99,13 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
 
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
-            SbeTableDecoder tableDecoder = new SbeTableDecoder(40);
-            var t = Task.Run(() => 
-            tableDecoder.Setup(stream, destTable, new SbeTableDecoderState {FieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary()})
+            // Read in chunks to simulate receiving over a network stream
+            SbeTableDecoder tableDecoder = new SbeTableDecoder(60);
+            var t = Task.Run(() =>
+                             tableDecoder.Setup(stream, destTable, new SbeTableDecoderState {FieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary()})
                 );
 
-            t.Wait(100);
+            t.Wait(200);
             tableDecoder.Stop();
 
             tableEncoderTester.CompareTables(table, destTable);

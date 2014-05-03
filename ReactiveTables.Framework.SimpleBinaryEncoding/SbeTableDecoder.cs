@@ -74,7 +74,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             int read, tornMessageSize = 0;
             while ((read = stream.Read(_byteArray, tornMessageSize, _byteArray.Length - tornMessageSize)) > 0)
             {
-                Debug.WriteLine("Received {0} bytes with {1} bytes from previous read", read, tornMessageSize);
+                Debug.WriteLine("Received {0} bytes - previous read {1} bytes", read, tornMessageSize);
                 read += tornMessageSize;
                 tornMessageSize = 0;
                 int bufferOffset = 0;
@@ -86,43 +86,46 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                         tornMessageSize = MoveTornMessage(read, messageStart);
                         break;
                     }
-                    _header.Wrap(_buffer, bufferOffset, MessageTemplateVersion);
 
+                    _header.Wrap(_buffer, bufferOffset, MessageTemplateVersion);
                     int actingBlockLength = _header.BlockLength;
+                    Debug.Assert(actingBlockLength > 0 && actingBlockLength < 255, "Acting block length too long");
                     int schemaId = _header.SchemaId;
                     int actingVersion = _header.Version;
                     bufferOffset += MessageHeader.Size;
 
-//                    Debug.Assert(actingBlockLength < 256);
-                    if (bufferOffset + SbeTableUpdate.BlockLength > read)
+                    var realUpdateSize = (actingBlockLength - MessageHeader.Size);
+                    if (bufferOffset + realUpdateSize > read)
                     {
                         tornMessageSize = MoveTornMessage(read, messageStart);
                         break;
                     }
+
                     _update.WrapForDecode(_buffer, bufferOffset, SbeTableUpdate.BlockLength, actingVersion);
-
                     var operationType = _update.Type;
-
                     var rowId = _update.RowId;
-                    bufferOffset += _update.Size;
+                    Debug.WriteLine("Reading message with length {0} at offset {2} for rowId {1}", actingBlockLength, rowId, bufferOffset);
+
                     if (operationType == OperationType.Add)
                     {
                         if (rowId >= 0)
                         {
-                            Debug.WriteLine("Received row {0}", rowId);
+                            Debug.WriteLine("Received new row {0}", rowId);
                             remoteToLocalRowIds.Add(rowId, _table.AddRow());
                         }
                     }
                     else if (operationType == OperationType.Update)
                     {
+                        var colValOffset = bufferOffset + _update.Size;
                         var column = _table.Columns[fieldIdsToColumns[_update.FieldId]];
-                        var written = WriteFieldsToTable(_table, column, rowId, _buffer, bufferOffset, read);
+                        var written = WriteFieldsToTable(_table, column, rowId, _buffer, colValOffset, read);
                         if (written == -1)
                         {
                             tornMessageSize = MoveTornMessage(read, messageStart);
                             break;
                         }
-                        bufferOffset += written;
+                        Debug.Assert(written == actingBlockLength - MessageHeader.Size - _update.Size, "Written less than acting block length");
+                        //bufferOffset += written;
                     }
                     else if (operationType == OperationType.Delete)
                     {
@@ -132,6 +135,8 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                             remoteToLocalRowIds.Remove(rowId);
                         }
                     }
+
+                    bufferOffset += actingBlockLength - MessageHeader.Size;
                 }
             }
         }

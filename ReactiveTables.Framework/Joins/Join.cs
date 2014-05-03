@@ -429,7 +429,7 @@ namespace ReactiveTables.Framework.Joins
 
                 // Need to update the reverse mapping for the other side too as it wasn't done before
                 var otherRowId = side == JoinSide.Left ? rowToLink.RightRowId : rowToLink.LeftRowId;
-                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
+                otherColumnRowsToJoinRows.GetOrAddNew(otherRowId.Value).Add(joinedRowId.Value);
             }
             else
             {
@@ -441,7 +441,7 @@ namespace ReactiveTables.Framework.Joins
             _rows[joinedRowId.Value] = rowToLink;
 
             // Update the reverse lookup
-            columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+            columnRowsToJoinRows.GetOrAddNew(columnRowIndex).Add(joinedRowId.Value);
         }
 
         private void AddNewRowMapping(int columnRowIndex,
@@ -464,8 +464,8 @@ namespace ReactiveTables.Framework.Joins
                 AddNewRow(joinRow, updateRows, joinedRowId.Value);
 
                 // Update the reverse lookup
-                columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
-                otherColumnRowsToJoinRows.AddNewIfNotExists(otherRowId.Value).Add(joinedRowId.Value);
+                columnRowsToJoinRows.GetOrAddNew(columnRowIndex).Add(joinedRowId.Value);
+                otherColumnRowsToJoinRows.GetOrAddNew(otherRowId.Value).Add(joinedRowId.Value);
             }
 
             // If there are no matching entries on the other side we still need to add a row and mapping
@@ -506,7 +506,7 @@ namespace ReactiveTables.Framework.Joins
                 AddNewRow(joinRow, updateRows, joinedRowId.Value);
 
                 // Update the reverse lookup
-                columnRowsToJoinRows.AddNewIfNotExists(columnRowIndex).Add(joinedRowId.Value);
+                columnRowsToJoinRows.GetOrAddNew(columnRowIndex).Add(joinedRowId.Value);
             }
         }
 

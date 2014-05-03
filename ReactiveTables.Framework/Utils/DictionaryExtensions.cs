@@ -31,7 +31,7 @@ namespace ReactiveTables.Framework.Utils
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
         /// <returns></returns>
-        public static TValue AddNewIfNotExists<TKey, TValue> (this Dictionary<TKey, TValue> dictionary, TKey key) 
+        public static TValue GetOrAddNew<TKey, TValue> (this IDictionary<TKey, TValue> dictionary, TKey key) 
             where TValue : class, new()
         {
             TValue value;
@@ -51,7 +51,7 @@ namespace ReactiveTables.Framework.Utils
         /// <param name="target"></param>
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
-        public static void CopyTo<TKey, TValue>(this Dictionary<TKey, TValue> source, Dictionary<TKey, TValue> target)
+        public static void CopyTo<TKey, TValue>(this IDictionary<TKey, TValue> source, IDictionary<TKey, TValue> target)
         {
             foreach (var keyValue in source)
             {
@@ -67,7 +67,7 @@ namespace ReactiveTables.Framework.Utils
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
         /// <returns></returns>
-        public static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
+        public static Dictionary<TValue, TKey> InverseUniqueDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
         {
             var inverse = new Dictionary<TValue, TKey>(dictionary.Count);
             foreach (var value in dictionary)

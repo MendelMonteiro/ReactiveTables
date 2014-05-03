@@ -61,7 +61,7 @@ namespace ReactiveTables.Framework.Columns
         void RemoveField(int rowIndex);
 
         /// <summary>
-        /// Get a value from the column
+        /// Get a value from the column - note that this will box the result if it is a value type.
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
@@ -180,6 +180,11 @@ namespace ReactiveTables.Framework.Columns
             if (_index == null) throw new NotSupportedException("No index defined for this column " + ColumnId);
 
             return _index.GetRow(value);
+        }
+
+        public override string ToString()
+        {
+            return ColumnId;
         }
     }
 }

@@ -38,11 +38,48 @@ namespace ReactiveTables.Framework
         private readonly int _rowIndex;
         private readonly IReactiveColumn _column;
 
+        /// <summary>
+        /// Create new table update
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="rowIndex"></param>
+        /// <param name="column"></param>
         public TableUpdate(TableUpdateAction action, int rowIndex, IReactiveColumn column = (IReactiveColumn) null)
         {
             _action = action;
             _rowIndex = rowIndex;
             _column = column;
+        }
+
+        /// <summary>
+        /// Create a new Add update
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
+        public static TableUpdate NewAddUpdate(int rowIndex)
+        {
+            return new TableUpdate(TableUpdateAction.Add, rowIndex);
+        }
+
+        /// <summary>
+        /// Create a new Delete update
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
+        public static TableUpdate NewDeleteUpdate(int rowIndex)
+        {
+            return new TableUpdate(TableUpdateAction.Delete, rowIndex);
+        }
+
+        /// <summary>
+        /// Create a new Column Update (column value is being updated)
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        public static TableUpdate NewColumnUpdate(int rowIndex, IReactiveColumn column)
+        {
+            return new TableUpdate(TableUpdateAction.Update, rowIndex, column);
         }
 
         /// <summary>

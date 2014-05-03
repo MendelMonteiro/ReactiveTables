@@ -34,6 +34,10 @@ namespace ReactiveTables.Framework.Columns
             get { return _type; }
         }
 
+        /// <summary>
+        /// Will be called before table level updates
+        /// </summary>
+        /// <param name="index"></param>
         internal void NotifyObserversOnNext(int index)
         {
             UpdateSubject.OnNext(new TableUpdate(TableUpdateAction.Update, index, this));

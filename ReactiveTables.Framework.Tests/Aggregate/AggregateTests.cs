@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Reactive.Subjects;
+﻿using System;
 using NUnit.Framework;
-using System;
-using System.Linq;
-using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Aggregate;
 
 namespace ReactiveTables.Framework.Tests.Aggregate
 {
@@ -20,16 +17,63 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             // Create group by
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
-            groupedTable.GroupBy(TestTableColumns.StringColumn);
-//            groupedTable.AddAggregatedColumn<int, decimal>("Count", TestTableColumns.StringColumn, );
+
+            groupedTable.GroupByColumn<string>(TestTableColumns.StringColumn);
+
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            groupedTable.Subscribe(rowUpdates);
+
+            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             // Add values
+            var row1 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
 
-            // Modify values
+            var row2 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value2");
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value2", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+
+            var row3 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value1");
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
 
             // Modify grouped columns
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value1");
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+
+            baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value3");
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value3", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
 
             // Remove rows
+            baseTable.DeleteRow(row1);
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+            
+            baseTable.DeleteRow(row2);
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+
+            baseTable.DeleteRow(row3);
+            Assert.AreEqual(0, groupedTable.RowCount);
+            Assert.AreEqual(0, rowUpdates.CurrentRowCount);
+        }
+
+        [Test]
+        public void TestWithCalculatedColumns()
+        {
+
         }
 
         [Test]
@@ -66,59 +110,6 @@ namespace ReactiveTables.Framework.Tests.Aggregate
         public void TestGroupByWithMax()
         {
 
-        }
-    }
-
-    public class AggregatedTable
-    {
-        private readonly HashSet<string> _groupColumns = new HashSet<string>();
-        private readonly Dictionary<string, IReactiveColumn> _aggregateColumns = new Dictionary<string, IReactiveColumn>();
-
-        public AggregatedTable(IReactiveTable sourceTable)
-        {
-            var subject = new Subject<TableUpdate>();
-            sourceTable.Subscribe(OnNext);
-        }
-
-        public void GroupBy(string columnId)
-        {
-            _groupColumns.Add(columnId);
-        }
-
-        public void AddAggregatedColumn<TOutput, TInput>(string columnId, string sourceColumnId,
-                                                         Func<TOutput, IEnumerable<TInput>> evaluator)
-        {
-            var col = new ReactiveColumn<TOutput>(columnId);
-            _aggregateColumns.Add(sourceColumnId, col);
-        }
-
-        private void OnNext(TableUpdate tableUpdate)
-        {
-            if (_groupColumns.Contains(tableUpdate.Column.ColumnId))
-            {
-                var upatedColumn = tableUpdate.Column;
-                if (tableUpdate.IsColumnUpdate())
-                {
-                    // Updated values - reevaluate grouping
-                }
-                else if (tableUpdate.Action == TableUpdateAction.Delete)
-                {
-                    // Deleted row - reevaluate grouping, subtracting value from current group
-                }
-            }
-
-            if (_aggregateColumns.ContainsKey(tableUpdate.Column.ColumnId))
-            {
-                var updateColumn = tableUpdate.Column;
-                if (tableUpdate.IsColumnUpdate())
-                {
-                    // Updated values - reevaluate grouping
-                }
-                else if (tableUpdate.Action == TableUpdateAction.Delete)
-                {
-                    // Deleted row - reevaluate grouping, subtracting value from current group
-                }
-            }
         }
     }
 }
