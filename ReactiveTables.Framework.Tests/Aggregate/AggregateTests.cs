@@ -1,6 +1,8 @@
 ﻿using System;
 using NUnit.Framework;
 using ReactiveTables.Framework.Aggregate;
+using ReactiveTables.Framework.Columns;
+using ReactiveTables.Framework.Columns.Calculated;
 
 namespace ReactiveTables.Framework.Tests.Aggregate
 {
@@ -18,7 +20,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
 
-            groupedTable.GroupByColumn<string>(TestTableColumns.StringColumn);
+            groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
             RowUpdateHandler rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
@@ -73,13 +75,70 @@ namespace ReactiveTables.Framework.Tests.Aggregate
         [Test]
         public void TestWithCalculatedColumns()
         {
+            var baseTable = TestTableHelper.CreateReactiveTable();
+            var groupedTable = new AggregatedTable(baseTable);
 
+            var column = groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
+
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            groupedTable.Subscribe(rowUpdates);
+
+            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            groupedTable.Subscribe(colUpdates.OnColumnUpdate);
+
+            var groupedColumn = (IReactiveColumn<string>)column;
+            const string groupedCalc1 = "Grouped.Calc1";
+            groupedTable.AddColumn(new ReactiveCalculatedColumn1<string, string>(groupedCalc1,
+                                                                                 groupedColumn,
+                                                                                 s => s + "Calc"));
+
+            var row1 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+            Assert.AreEqual("Value1Calc", groupedTable.GetValue<string>(groupedCalc1, colUpdates.LastRowUpdated));
+
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value2");
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value2", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+            Assert.AreEqual("Value2Calc", groupedTable.GetValue<string>(groupedCalc1, colUpdates.LastRowUpdated));
         }
 
         [Test]
         public void TestGroupByMultipleColumns()
         {
+            // Create group by
+            var baseTable = TestTableHelper.CreateReactiveTable();
+            var groupedTable = new AggregatedTable(baseTable);
 
+            groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
+            groupedTable.GroupBy<int>(TestTableColumns.IdColumn);
+            
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            groupedTable.Subscribe(rowUpdates);
+
+            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            groupedTable.Subscribe(colUpdates.OnColumnUpdate);
+
+            // Add values
+            var row1 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+
+            baseTable.SetValue(TestTableColumns.IdColumn, row1, 42);
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+            Assert.AreEqual(42L, groupedTable.GetValue<int>(TestTableColumns.IdColumn, colUpdates.LastRowUpdated));
+
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value2");
+            Assert.AreEqual("Value2", groupedTable.GetValue<string>(TestTableColumns.StringColumn, colUpdates.LastRowUpdated));
+
+            baseTable.SetValue(TestTableColumns.IdColumn, row1, 43);
+            Assert.AreEqual(43, groupedTable.GetValue<int>(TestTableColumns.IdColumn, colUpdates.LastRowUpdated));
         }
 
         [Test]
