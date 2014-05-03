@@ -13,6 +13,8 @@ ReactiveTables.Framework.Comms/bin/.*
 ReactiveTables.Framework.Comms/obj/.*
 ReactiveTables.Framework.Protobuf/bin/.*
 ReactiveTables.Framework.Protobuf/obj/.*
+ReactiveTables.Framework.SimpleBinaryEncoding/bin/.*
+ReactiveTables.Framework.SimpleBinaryEncoding/obj/.*
 ReactiveTables.Framework.PerformanceTests/bin/.*
 ReactiveTables.Framework.PerformanceTests/obj/.*
 .*user
