@@ -19,6 +19,11 @@ using System.Reactive.Subjects;
 
 namespace ReactiveTables.Framework.Columns
 {
+    /// <summary>
+    /// A base implementation of the <see cref="IReactiveColumn{T}"/> interface.
+    /// Mainly handles notification.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class ReactiveColumnBase<T> : IReactiveColumn<T>
     {
 // ReSharper disable StaticFieldInGenericType

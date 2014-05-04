@@ -15,99 +15,13 @@
 
 using System;
 using System.Collections.Generic;
-using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework.Columns
 {
     /// <summary>
-    /// Represents a column - exposes observable changes.
-    /// </summary>
-    public interface IReactiveColumn : IObservable<TableUpdate>, IEquatable<IReactiveColumn>
-    {
-        /// <summary>
-        /// Should be an int?
-        /// </summary>
-        string ColumnId { get; }
-
-        /// <summary>
-        /// The data type represented by the column
-        /// </summary>
-        Type Type { get; }
-
-        /// <summary>
-        /// Add a value to the column
-        /// </summary>
-        /// <param name="rowIndex"></param>
-        void AddField(int rowIndex);
-
-        /// <summary>
-        /// Clone the column
-        /// </summary>
-        /// <returns></returns>
-        IReactiveColumn Clone();
-
-        /// <summary>
-        /// Copy the value from to another column (of the same type)
-        /// </summary>
-        /// <param name="rowIndex"></param>
-        /// <param name="sourceColumn"></param>
-        /// <param name="sourceRowIndex"></param>
-        void CopyValue(int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex);
-
-        /// <summary>
-        /// Remove a value from the column
-        /// </summary>
-        /// <param name="rowIndex"></param>
-        void RemoveField(int rowIndex);
-
-        /// <summary>
-        /// Get a value from the column - note that this will box the result if it is a value type.
-        /// </summary>
-        /// <param name="rowIndex"></param>
-        /// <returns></returns>
-        object GetValue(int rowIndex);
-    }
-
-    /// <summary>
-    /// A typed reactive column
+    /// A reactive column which stores data.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IReactiveColumn<T> : IReactiveColumn
-    {
-        /// <summary>
-        /// Set a value at a particular row in the column
-        /// </summary>
-        /// <param name="rowIndex"></param>
-        /// <param name="value"></param>
-        void SetValue(int rowIndex, T value);
-
-        /// <summary>
-        /// Get a value at a particular row in the column
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        new T GetValue(int index);
-
-        /// <summary>
-        /// Find the first row that contains the given value.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        int Find(T value);
-    }
-
-    /// <summary>
-    /// A joinable reactive column (columns need to be joinable to be used by the <see cref="JoinedTable"/>)
-    /// </summary>
-    public interface IReactiveJoinableColumn
-    {
-        /// <summary>
-        /// Set the current joiner
-        /// </summary>
-        /// <param name="joiner"></param>
-        void SetJoiner(IReactiveTableJoiner joiner);
-    }
-
     public class ReactiveColumn<T> : ReactiveColumnBase<T>
     {
         /// <summary>
@@ -115,6 +29,12 @@ namespace ReactiveTables.Framework.Columns
         /// </summary>
         private readonly IColumnIndex<T> _index;
 
+        /// <summary>
+        /// Create a new column
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="index"></param>
+        /// <param name="initialSize"></param>
         public ReactiveColumn(string columnId, IColumnIndex<T> index = null, int? initialSize = null)
         {
             _index = index;
@@ -122,6 +42,8 @@ namespace ReactiveTables.Framework.Columns
 
             Fields = initialSize == null ? new List<T>() : new List<T>(initialSize.Value);
         }
+
+        private List<T> Fields { get; set; }
 
         public override void AddField(int rowIndex)
         {
@@ -156,8 +78,6 @@ namespace ReactiveTables.Framework.Columns
             }
             Fields[rowIndex] = default(T);
         }
-
-        private List<T> Fields { get; set; }
 
         public override T GetValue(int rowIndex)
         {

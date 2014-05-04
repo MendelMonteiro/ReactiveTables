@@ -69,6 +69,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MiscUtil">
+      <HintPath>..\packages\JonSkeet.MiscUtil.0.1\lib\net35-Client\MiscUtil.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -89,15 +92,21 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggregate\AggregateColumn.cs" />
     <Compile Include="Aggregate\AggregatedTable.cs" />
     <Compile Include="Aggregate\GroupByKey.cs" />
     <Compile Include="Aggregate\HashcodeAccessor.cs" />
     <Compile Include="Aggregate\IHashcodeAccessor.cs" />
+    <Compile Include="Aggregate\Operations\Count.cs" />
+    <Compile Include="Aggregate\Operations\IAccumulator.cs" />
+    <Compile Include="Aggregate\Operations\Max.cs" />
+    <Compile Include="Aggregate\Operations\Sum.cs" />
     <Compile Include="Collections\IndexedDictionary.cs" />
     <Compile Include="Collections\ReactiveList.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Columns\FieldRowList.cs" />
+    <Compile Include="Columns\IReactiveColumn.cs" />
     <Compile Include="Comms\ClientState.cs" />
     <Compile Include="Comms\IReactiveTableProcessor.cs" />
     <Compile Include="Comms\ReactiveTableTcpClient.cs" />
