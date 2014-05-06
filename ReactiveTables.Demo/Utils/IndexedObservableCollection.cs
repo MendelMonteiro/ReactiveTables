@@ -11,6 +11,7 @@ namespace ReactiveTables.Demo.Utils
     /// An observable collection which is accessible via a key
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
     public class IndexedObservableCollection<T, TKey> : ObservableCollection<T>
     {
         private readonly Func<T, TKey> _keySelector;

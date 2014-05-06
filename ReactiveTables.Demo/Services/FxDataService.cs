@@ -17,7 +17,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using ReactiveTables.Demo.Server;

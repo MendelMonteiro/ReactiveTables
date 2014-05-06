@@ -16,8 +16,6 @@
 using System.Reflection;
 using System.Windows;
 using Ninject;
-using Ninject.Modules;
-using ReactiveTables.Demo.Client;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Utils;
 using log4net;
@@ -47,6 +45,7 @@ namespace ReactiveTables.Demo
             _kernel.Bind<MainViewModel>().ToSelf();
             _kernel.Bind<IFxDataService>().To<FxDataService>();
             _kernel.Bind<IBrokerFeedDataService>().To<BrokerFeedDataService>();
+            _kernel.Bind<GroupTestViewModel>().ToSelf();
             
             var locator = (ViewModelLocator) Resources["ViewModelLocator"];
             locator.Kernel = _kernel;

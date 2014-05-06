@@ -72,21 +72,21 @@ namespace ReactiveTables.Demo.Services
             _maxEntries = maxEntries;
             People = new ReactiveTable();
             List<IReactiveColumn> basePersonColumns = new List<IReactiveColumn>
-                                                         {
-                                                             new ReactiveColumn<int>(PersonColumns.IdColumn),
-                                                             new ReactiveColumn<string>(PersonColumns.NameColumn)
-                                                         };
+                                                      {
+                                                          new ReactiveColumn<int>(PersonColumns.IdColumn),
+                                                          new ReactiveColumn<string>(PersonColumns.NameColumn)
+                                                      };
 
-            IWritableReactiveTable peopleWire = SetupPersonTable((IWritableReactiveTable)People, basePersonColumns, dispatcher);
+            IWritableReactiveTable peopleWire = SetupPersonTable((IWritableReactiveTable) People, basePersonColumns, dispatcher);
 
             List<IReactiveColumn> baseAccountColumns = new List<IReactiveColumn>
-                                                           {
-                                                               new ReactiveColumn<int>(AccountColumns.IdColumn),
-                                                               new ReactiveColumn<int>(AccountColumns.PersonId),
-                                                               new ReactiveColumn<decimal>(AccountColumns.AccountBalance)
-                                                           };
+                                                       {
+                                                           new ReactiveColumn<int>(AccountColumns.IdColumn),
+                                                           new ReactiveColumn<int>(AccountColumns.PersonId),
+                                                           new ReactiveColumn<decimal>(AccountColumns.AccountBalance)
+                                                       };
             Accounts = new ReactiveTable();
-            IWritableReactiveTable accountsWire = SetupAccountTable((IWritableReactiveTable)Accounts, baseAccountColumns, dispatcher);
+            IWritableReactiveTable accountsWire = SetupAccountTable((IWritableReactiveTable) Accounts, baseAccountColumns, dispatcher);
 
             AccountPeople = SetupAccountPeopleTable(Accounts, People);
 
@@ -95,11 +95,11 @@ namespace ReactiveTables.Demo.Services
 
             Thread personDataThread = new Thread(StreamPersonData);
             personDataThread.IsBackground = true;
-            personDataThread.Start(new StreamingState{Table = peopleWire, Running = _running, MaxEntries = _maxEntries});
+            personDataThread.Start(new StreamingState {Table = peopleWire, Running = _running, MaxEntries = _maxEntries});
 
             Thread accountDataThread = new Thread(StreamAccountData);
             accountDataThread.IsBackground = true;
-            accountDataThread.Start(new StreamingState { Table = accountsWire, Running = _running, MaxEntries = _maxEntries });
+            accountDataThread.Start(new StreamingState {Table = accountsWire, Running = _running, MaxEntries = _maxEntries});
 
             Thread.Sleep(GuiDisplayDelay);
         }
@@ -112,8 +112,8 @@ namespace ReactiveTables.Demo.Services
 
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       PersonAccountColumns.AccountDetails,
-                                      (IReactiveColumn<string>)people.Columns[PersonColumns.NameColumn],
-                                      (IReactiveColumn<decimal>)accounts.Columns[AccountColumns.AccountBalance],
+                                      (IReactiveColumn<string>) people.Columns[PersonColumns.NameColumn],
+                                      (IReactiveColumn<decimal>) accounts.Columns[AccountColumns.AccountBalance],
                                       (name, balance) => string.Format("{0} has {1} in their account.", name, balance)));
 
             return joinedTable;
@@ -149,8 +149,8 @@ namespace ReactiveTables.Demo.Services
         }
 
         private IWritableReactiveTable SetupPersonTable(IWritableReactiveTable people,
-                                                       List<IReactiveColumn> baseColumns,
-                                                       Dispatcher dispatcher)
+                                                        List<IReactiveColumn> baseColumns,
+                                                        Dispatcher dispatcher)
         {
             baseColumns.ForEach(col => people.AddColumn(col));
 
@@ -161,8 +161,8 @@ namespace ReactiveTables.Demo.Services
 
             people.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                  PersonColumns.IdNameColumn,
-                                 (IReactiveColumn<int>)baseColumns[0],
-                                 (IReactiveColumn<string>)baseColumns[1],
+                                 (IReactiveColumn<int>) baseColumns[0],
+                                 (IReactiveColumn<string>) baseColumns[1],
                                  (idVal, nameVal) => idVal + nameVal));
 
             return peopleWire;
@@ -187,7 +187,7 @@ namespace ReactiveTables.Demo.Services
         /// <param name="o"></param>
         private static void StreamPersonData(object o)
         {
-            var state = (StreamingState)o;
+            var state = (StreamingState) o;
             var running = state.Running;
             IWritableReactiveTable people = state.Table;
             Thread.Sleep(DataDelay);
@@ -228,7 +228,7 @@ namespace ReactiveTables.Demo.Services
                 }
             }
         }
-        
+
         private static void UpdateRandomPerson(IWritableReactiveTable people, int maxId, Random random)
         {
             int id = random.Next(1, maxId);
@@ -242,13 +242,13 @@ namespace ReactiveTables.Demo.Services
         {
             int id = random.Next(1, maxId);
             int rowIndex = id - 1;
-            var currentBalance = random.Next(0, 100000);// accounts.GetValue<decimal>(AccountColumns.AccountBalance, rowIndex);
-            decimal offset = id % 2 == 0 ? 3242 : -7658;
+            var currentBalance = random.Next(0, 100000); // accounts.GetValue<decimal>(AccountColumns.AccountBalance, rowIndex);
+            decimal offset = id%2 == 0 ? 3242 : -7658;
             accounts.SetValue(AccountColumns.AccountBalance, rowIndex, currentBalance + offset);
         }
 
 
-        private class StreamingState 
+        private class StreamingState
         {
             public IWritableReactiveTable Table { get; set; }
             public ManualResetEventSlim Running { get; set; }

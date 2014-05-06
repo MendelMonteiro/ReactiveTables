@@ -173,7 +173,56 @@ namespace ReactiveTables.Framework.Tests.Aggregate
         [Test]
         public void TestGroupByOnExistingValues()
         {
+            // Create group by
+            var baseTable = TestTableHelper.CreateReactiveTable();
 
+            // Add values
+            var row1 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
+
+            var row2 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value2");
+
+            var row3 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value1");
+
+            // Modify grouped columns
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value1");
+            baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value3");
+
+            // Now group it
+            var groupedTable = new AggregatedTable(baseTable);
+            groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
+            var countCol = "CountCol";
+            groupedTable.AddAggregate((IReactiveColumn<string>) baseTable.Columns[TestTableColumns.StringColumn],
+                                      countCol,
+                                      () => new Count<string>());
+
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            groupedTable.Subscribe(rowUpdates);
+            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            groupedTable.Subscribe(colUpdates.OnColumnUpdate);
+            groupedTable.FinishInitialisation();
+
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+            Assert.AreEqual("Value1", groupedTable.GetValue<string>(TestTableColumns.StringColumn, 0));
+            Assert.AreEqual("Value3", groupedTable.GetValue<string>(TestTableColumns.StringColumn, 1));
+            Assert.AreEqual(2, groupedTable.GetValue<int>(countCol, 0));
+            Assert.AreEqual(1, groupedTable.GetValue<int>(countCol, 1));
+
+            // Remove rows
+            baseTable.DeleteRow(row1);
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(2, rowUpdates.CurrentRowCount);
+
+            baseTable.DeleteRow(row2);
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(1, rowUpdates.CurrentRowCount);
+
+            baseTable.DeleteRow(row3);
+            Assert.AreEqual(0, groupedTable.RowCount);
+            Assert.AreEqual(0, rowUpdates.CurrentRowCount);
         }
 
         [Test]

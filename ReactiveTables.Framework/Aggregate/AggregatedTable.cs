@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Subjects;
 using System.Security.Policy;
 using ReactiveTables.Framework.Aggregate.Operations;
@@ -72,6 +73,14 @@ namespace ReactiveTables.Framework.Aggregate
         {
             _sourceTable = sourceTable;
             _token = sourceTable.Subscribe(OnSourceValue);
+        }
+
+        /// <summary>
+        /// Use this when aggregating over tables that have existing data
+        /// </summary>
+        public void FinishInitialisation()
+        {
+            _sourceTable.ReplayRows(Observer.Create<TableUpdate>(OnSourceValue));
         }
 
         public override int RowCount

@@ -160,6 +160,10 @@
     <Compile Include="Client\FxClientSyncfusionViewModel.cs" />
     <Compile Include="Client\FxClientViewModel.cs" />
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
+    <Compile Include="GroupTest.xaml.cs">
+      <DependentUpon>GroupTest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GroupTestViewModel.cs" />
     <Compile Include="Services\AccountBalanceDataService.cs" />
     <Compile Include="Services\BrokerFeedDataService.cs" />
     <Compile Include="Services\FxDataService.cs" />
@@ -168,6 +172,7 @@
     <Compile Include="PersonAccountViewModel.cs" />
     <Compile Include="PeopleViewModel.cs" />
     <Compile Include="MainViewModel.cs" />
+    <Compile Include="Services\GroupedDataService.cs" />
     <Compile Include="Services\ViewModelLocator.cs" />
     <Compile Include="Syncfusion\SyncfusionTest.xaml.cs">
       <DependentUpon>SyncfusionTest.xaml</DependentUpon>
@@ -203,6 +208,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Client\FxClientSyncfusion.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GroupTest.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

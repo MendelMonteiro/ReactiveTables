@@ -1,7 +1,7 @@
 ﻿<Window x:Class="ReactiveTables.Demo.TestLauncher"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TestLauncher" Height="400" Width="300">
+        Title="TestLauncher" Height="500" Width="300">
     <Grid>
         <StackPanel>
             <StackPanel.Resources>
@@ -16,6 +16,7 @@
             <Button Name="SyncfusionButton" Click="SyncfusionButton_Click">Syncfusion demo</Button>
             <Button Name="XceedButton" Click="XceedButton_Click">Xceed demo</Button>
             <Button x:Name="BrokerFeedButton" Click="BrokerFeedButton_OnClick" Content="Broker Feed demo"/>
+            <Button x:Name="GroupTestButton" Click="GroupTestButton_OnClick" Content="Grouping test"/>
         </StackPanel>
     </Grid>
 </Window>

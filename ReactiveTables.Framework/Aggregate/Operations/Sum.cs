@@ -38,16 +38,16 @@ namespace ReactiveTables.Framework.Aggregate.Operations
             TIn existingSourceValue;
             if (_sourceValues.TryGetValue(sourceRowIndex, out existingSourceValue))
             {
-                CurrentValue = Operator<TIn>.Subtract(CurrentValue, existingSourceValue);
+                CurrentValue = Operator.SubtractAlternative(CurrentValue, existingSourceValue);
             }
-            CurrentValue = Operator<TIn>.Add(CurrentValue, value);
+            CurrentValue = Operator.AddAlternative(CurrentValue, value);
             _sourceValues[sourceRowIndex] = value;
         }
 
         public void RemoveValue(int sourceRowIndex)
         {
             var value = _sourceColumn.GetValue(sourceRowIndex);
-            CurrentValue = Operator<TIn>.Subtract(CurrentValue, value);
+            CurrentValue = Operator.SubtractAlternative(CurrentValue, value);
             _sourceValues.Remove(sourceRowIndex);
         }
 

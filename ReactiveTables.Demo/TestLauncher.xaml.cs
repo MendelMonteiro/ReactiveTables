@@ -64,5 +64,11 @@ namespace ReactiveTables.Demo
             BrokerFeed window = new BrokerFeed();
             window.Show();
         }
+
+        private void GroupTestButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            GroupTest window = new GroupTest();
+            window.Show();
+        }
     }
 }

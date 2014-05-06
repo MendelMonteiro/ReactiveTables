@@ -1,0 +1,9 @@
+﻿<Window x:Class="ReactiveTables.Demo.GroupTest"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GroupTest" Height="600" Width="800"
+        DataContext="{Binding Path=GroupTestViewModel, Source={StaticResource ViewModelLocator}}">
+   <Grid>
+        <DataGrid ItemsSource="{Binding Groups}"/>
+    </Grid>
+</Window>
