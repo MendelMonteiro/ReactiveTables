@@ -46,6 +46,7 @@ namespace ReactiveTables.Demo
             _kernel.Bind<IFxDataService>().To<FxDataService>();
             _kernel.Bind<IBrokerFeedDataService>().To<BrokerFeedDataService>();
             _kernel.Bind<GroupTestViewModel>().ToSelf();
+            _kernel.Bind<GroupTestViewModelSyncfusion>().ToSelf();
             
             var locator = (ViewModelLocator) Resources["ViewModelLocator"];
             locator.Kernel = _kernel;

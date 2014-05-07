@@ -12,7 +12,6 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
-
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -31,7 +30,9 @@ namespace ReactiveTables.Framework.Utils
         public static string GetProcessInfo()
         {
             StringBuilder info = new StringBuilder();
-            foreach (var category in PerformanceCounterCategory.GetCategories().Where(c => c.CategoryName.StartsWith(".NET") && c.CategoryType == PerformanceCounterCategoryType.SingleInstance))
+            var categories = PerformanceCounterCategory.GetCategories();
+            foreach (var category in categories.Where(c => c.CategoryName.StartsWith(".NET") &&
+                                                           c.CategoryType == PerformanceCounterCategoryType.SingleInstance))
             {
                 try
                 {

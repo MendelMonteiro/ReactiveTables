@@ -67,7 +67,7 @@ namespace ReactiveTables.Demo
 
         private void GroupTestButton_OnClick(object sender, RoutedEventArgs e)
         {
-            GroupTest window = new GroupTest();
+            GroupTestSyncfusion window = new GroupTestSyncfusion();
             window.Show();
         }
     }

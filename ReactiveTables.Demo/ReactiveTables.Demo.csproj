@@ -163,6 +163,9 @@
     <Compile Include="GroupTest.xaml.cs">
       <DependentUpon>GroupTest.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GroupTestSyncfusion.xaml.cs">
+      <DependentUpon>GroupTestSyncfusion.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GroupTestViewModel.cs" />
     <Compile Include="Services\AccountBalanceDataService.cs" />
     <Compile Include="Services\BrokerFeedDataService.cs" />
@@ -212,6 +215,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="GroupTest.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GroupTestSyncfusion.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

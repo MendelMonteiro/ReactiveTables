@@ -53,6 +53,6 @@ namespace ReactiveTables.Demo.Services
             get { return Kernel.Get<BrokerFeedViewModel>(); }
         }
 
-        public GroupTestViewModel GroupTestViewModel { get { return Kernel.Get<GroupTestViewModel>(); } }
+        public GroupTestViewModelSyncfusion GroupTestViewModel { get { return Kernel.Get<GroupTestViewModelSyncfusion>(); } }
     }
 }

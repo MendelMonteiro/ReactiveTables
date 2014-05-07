@@ -283,7 +283,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 TableUpdate update = new TableUpdate(TableUpdateAction.Add, rowIndex);
                 _rowUpdatesAdd.Enqueue(update);
             }
-            Debug.WriteLine("Added row {0} to batched passthrough", rowIndex);
+            //Debug.WriteLine("Added row {0} to batched passthrough", rowIndex);
             return rowIndex;
         }
 

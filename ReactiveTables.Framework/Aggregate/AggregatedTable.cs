@@ -14,10 +14,8 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
-using System.Security.Policy;
 using ReactiveTables.Framework.Aggregate.Operations;
 using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
@@ -31,6 +29,8 @@ namespace ReactiveTables.Framework.Aggregate
     {
         private readonly IReactiveTable _sourceTable;
 
+        private readonly IndexedDictionary<string, IReactiveColumn> _allColumns = new IndexedDictionary<string, IReactiveColumn>(); 
+
         /// <summary>
         /// Columns the source table is grouped by
         /// </summary>
@@ -39,7 +39,7 @@ namespace ReactiveTables.Framework.Aggregate
         /// <summary>
         /// A way of getting the hashcode for each group column
         /// </summary>
-        private readonly List<IHashcodeAccessor> _hashcodeAccessors = new List<IHashcodeAccessor>();
+        private readonly List<IHashcodeAccessor> _keyColumns = new List<IHashcodeAccessor>();
 
         /// <summary>
         /// The source rows grouped by <see cref="GroupByKey"/>
@@ -88,10 +88,7 @@ namespace ReactiveTables.Framework.Aggregate
             get { return _groupedRows.Count; }
         }
 
-        public override IDictionary<string, IReactiveColumn> Columns
-        {
-            get { return _groupColumns; }
-        }
+        public override IDictionary<string, IReactiveColumn> Columns { get { return _allColumns; } }
 
         /// <summary>
         /// Group the source table by the given column
@@ -109,9 +106,10 @@ namespace ReactiveTables.Framework.Aggregate
                                             "columnId");
             }
 
-            var hashcodeAccessor = new HashcodeAccessor<T>(column);
-            _hashcodeAccessors.Add(hashcodeAccessor);
+            var keyColumn = new HashcodeAccessor<T>(column);
+            _keyColumns.Add(keyColumn);
             _groupColumns.Add(columnId, column);
+            _allColumns.Add(columnId, column);
 
             return column;
         }
@@ -125,7 +123,7 @@ namespace ReactiveTables.Framework.Aggregate
             if (tableUpdate.Action == TableUpdateAction.Add)
             {
                 // New source row added
-                var key = new GroupByKey(_hashcodeAccessors, sourceIndex);
+                var key = new GroupByKey(_keyColumns, sourceIndex);
                 groupedIndex = AddItemToGroup(key, sourceIndex);
                 _sourceRowsToKeys.Add(sourceIndex, key);
                 groupChanged = true;
@@ -148,7 +146,7 @@ namespace ReactiveTables.Framework.Aggregate
                 // Source row changing group
                 var key = _sourceRowsToKeys[sourceIndex];
                 // TODO: figure out how to do this without allocations
-                var newKey = new GroupByKey(_hashcodeAccessors, sourceIndex);
+                var newKey = new GroupByKey(_keyColumns, sourceIndex);
 
                 // Move the rowIndex from the old key to the new key
                 var group = _groupedRows[key];
@@ -159,7 +157,7 @@ namespace ReactiveTables.Framework.Aggregate
                 // Replace the rowIndex to key mapping
                 _sourceRowsToKeys[sourceIndex] = newKey;
 
-                var column = _hashcodeAccessors.Find(accessor => accessor.ColumnId == columnUpdated.ColumnId);
+                var column = _keyColumns.Find(keyCol => keyCol.ColumnId == columnUpdated.ColumnId);
                 column.NotifyObserversOnNext(groupedIndex);
                 _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) column));
                 Console.WriteLine("Grouped column updated");
@@ -172,7 +170,7 @@ namespace ReactiveTables.Framework.Aggregate
                 Console.WriteLine("Non grouped column updated");
             }
 
-            // Aggregated column has changed
+            // Aggregated column has changed or group changed which forces re-calc.
             foreach (var aggregateColumn in _aggregateColumns)
             {
                 if (groupChanged ||
@@ -202,9 +200,9 @@ namespace ReactiveTables.Framework.Aggregate
                 // Notify of new row appearing
                 _updates.OnNext(TableUpdate.NewAddUpdate(groupedIndex));
                 // Make sure all the column values are sent too
-                foreach (var accessor in _hashcodeAccessors)
+                foreach (var keyColumn in _keyColumns)
                 {
-                    _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) accessor));
+                    _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) keyColumn));
                 }
             }
             else
@@ -257,12 +255,14 @@ namespace ReactiveTables.Framework.Aggregate
 
         public void AddAggregate<TIn, TOut>(IReactiveColumn<TIn> sourceColumn, string columnId, Func<IAccumulator<TIn, TOut>> accumulator)
         {
-            _aggregateColumns.Add(new AggregateColumn<TIn, TOut>(sourceColumn, columnId, accumulator));
+            var column = new AggregateColumn<TIn, TOut>(sourceColumn, columnId, accumulator);
+            _aggregateColumns.Add(column);
+            _allColumns.Add(columnId, column);
         }
 
         public override T GetValue<T>(string columnId, int rowIndex)
         {
-            var sourceColumn = _hashcodeAccessors.Find(accessor => accessor.ColumnId == columnId);
+            var sourceColumn = _keyColumns.Find(keyCol => keyCol.ColumnId == columnId);
             if (sourceColumn != null)
             {
                 IReactiveColumn<T> column = (IReactiveColumn<T>) sourceColumn;
@@ -288,11 +288,11 @@ namespace ReactiveTables.Framework.Aggregate
 
         public override object GetValue(string columnId, int rowIndex)
         {
-            var hashcodeAccessor = _hashcodeAccessors.Find(accessor => accessor.ColumnId == columnId);
-            if (hashcodeAccessor != null)
+            var keyColumn = _keyColumns.Find(keyCol => keyCol.ColumnId == columnId);
+            if (keyColumn != null)
             {
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
-                return hashcodeAccessor.GetValue(sourceRowIndex);
+                return keyColumn.GetValue(sourceRowIndex);
             }
             IReactiveColumn localColumn;
             if (_localColumns.TryGetValue(columnId, out localColumn))
@@ -323,7 +323,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         public override IReactiveColumn GetColumnByIndex(int index)
         {
-            return (IReactiveColumn) _hashcodeAccessors[index];
+            return _allColumns[index];
         }
 
         public override void ReplayRows(IObserver<TableUpdate> observer)

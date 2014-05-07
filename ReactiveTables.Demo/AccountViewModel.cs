@@ -33,6 +33,8 @@ namespace ReactiveTables.Demo
             _accounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
+        public int RowIndex { get { return _rowIndex; } }
+
         public int AccountId
         {
             get { return _accounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }

@@ -3,7 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="GroupTest" Height="600" Width="800"
         DataContext="{Binding Path=GroupTestViewModel, Source={StaticResource ViewModelLocator}}">
-   <Grid>
-        <DataGrid ItemsSource="{Binding Groups}"/>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DataGrid ItemsSource="{Binding Accounts}" Grid.ColumnSpan="1"/>
+        <DataGrid ItemsSource="{Binding Groups}" Grid.Column="1" />
     </Grid>
 </Window>

@@ -1,0 +1,17 @@
+﻿<Window x:Class="ReactiveTables.Demo.GroupTestSyncfusion"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="clr-namespace:ReactiveTables.Demo.Syncfusion"
+        Title="GroupTestSyncfusion" Height="600" Width="800"
+        DataContext="{Binding Path=GroupTestViewModel, Source={StaticResource ViewModelLocator}}">
+    <Grid>
+        <ScrollViewer 
+            CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+            <syncfusion:SyncfusionTestGridControl x:Name="Grid" 
+                                                      ViewModel="{Binding}" 
+                                                      ColumnCount="{Binding Path=ColumnCount}" />
+        </ScrollViewer>
+    </Grid>
+</Window>

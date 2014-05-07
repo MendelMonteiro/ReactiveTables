@@ -137,7 +137,7 @@ namespace ReactiveTables.Framework.Comms
             catch (Exception exception)
             {
                 Console.WriteLine(exception);
-                throw;
+                //throw;
             }
         }
     }

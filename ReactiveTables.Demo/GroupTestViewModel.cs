@@ -15,29 +15,47 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
+using System.Diagnostics;
 using ReactiveTables.Demo.Services;
+using ReactiveTables.Demo.Syncfusion;
 using ReactiveTables.Demo.Utils;
 using ReactiveTables.Framework;
 using ReactiveTables.Framework.Aggregate;
 using ReactiveTables.Framework.Aggregate.Operations;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.UI;
-using ReactiveTables.Framework.Utils;
 
 namespace ReactiveTables.Demo
 {
+    class GroupTestViewModelSyncfusion : SyncfusionViewModelBase
+    {
+        public GroupTestViewModelSyncfusion(IAccountBalanceDataService service)
+        {
+            var accountsTable = service.Accounts;
+            AggregatedTable groupedAccounts = new AggregatedTable(accountsTable);
+            groupedAccounts.GroupBy<int>(AccountColumns.PersonId);
+            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.Columns[AccountColumns.AccountBalance];
+            groupedAccounts.AddAggregate(balanceColumn, GroupTestViewModel.SumColumnId, () => new Sum<decimal>());
+            groupedAccounts.AddAggregate(balanceColumn, GroupTestViewModel.CountColumnId, () => new Count<decimal>());
+            groupedAccounts.FinishInitialisation();
+            SetTable(groupedAccounts);
+        }
+    }
+
     internal class GroupTestViewModel : ReactiveViewModelBase, IDisposable
     {
         private readonly AggregatedTable _groupedAccounts;
-        private const string SumColumnId = "Sum";
+        public const string SumColumnId = "Sum";
+        public const string CountColumnId = "Count";
 
         public GroupTestViewModel(IAccountBalanceDataService service)
         {
-            _groupedAccounts = new AggregatedTable(service.Accounts);
+            var accountsTable = service.Accounts;
+            _groupedAccounts = new AggregatedTable(accountsTable);
             _groupedAccounts.GroupBy<int>(AccountColumns.PersonId);
-            var balanceColumn = (IReactiveColumn<decimal>)service.Accounts.Columns[AccountColumns.AccountBalance];
+            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.Columns[AccountColumns.AccountBalance];
             _groupedAccounts.AddAggregate(balanceColumn, SumColumnId, () => new Sum<decimal>());
+            _groupedAccounts.AddAggregate(balanceColumn, CountColumnId, () => new Count<decimal>());
             _groupedAccounts.FinishInitialisation();
 
             var groups = new IndexedObservableCollection<BalanceGroup, int>(g => g.RowIndex);
@@ -53,10 +71,37 @@ namespace ReactiveTables.Demo
                         groups.RemoveAt(groups.GetIndexForKey(update.RowIndex));
                     }
                 });
+
+            var accounts = new IndexedObservableCollection<AccountViewModel, int>(a => a.RowIndex);
+            accountsTable.ReplayAndSubscribe(
+                update =>
+                {
+                    if (update.Action == TableUpdateAction.Add)
+                    {
+                        var accountViewModel = new AccountViewModel(accountsTable, update.RowIndex);
+                        accounts.Add(accountViewModel);
+                        Debug.WriteLine("{1},Adding,,{0},", update.RowIndex, DateTime.Now.ToLongTimeString());
+                    }
+                    else if (update.Action == TableUpdateAction.Delete)
+                    {
+                        var indexForKey = accounts.GetIndexForKey(update.RowIndex);
+                        var accountViewModel = accounts[indexForKey];
+                        accounts.RemoveAt(indexForKey);
+                        Debug.WriteLine("{1},Removing,{0}", accountViewModel.PersonId, DateTime.Now.ToLongTimeString());
+                    }
+                    else
+                    {
+                        var indexForKey = accounts.GetIndexForKey(update.RowIndex);
+                        var accountViewModel = accounts[indexForKey];
+                        Debug.WriteLine("{1},Modifying,{0},{2},{3}",
+                                        accountViewModel.PersonId, DateTime.Now.ToLongTimeString(), update.RowIndex, update.Column.ColumnId);
+                    }
+                });
             Groups = groups;
+            Accounts = accounts;
         }
 
-        public IReactiveTable GroupedAccounts { get { return _groupedAccounts; } }
+        public ObservableCollection<AccountViewModel> Accounts { get; private set; }
         public ObservableCollection<BalanceGroup> Groups { get; private set; }
 
         internal class BalanceGroup : ReactiveViewModelBase, IDisposable
@@ -75,6 +120,8 @@ namespace ReactiveTables.Demo
             public int PersonId { get { return _groups.GetValue<int>(AccountColumns.PersonId, _rowIndex); } }
 
             public decimal BalanceSum { get { return _groups.GetValue<decimal>(SumColumnId, _rowIndex); } }
+
+            public int Accounts { get { return _groups.GetValue<int>(CountColumnId, _rowIndex); } }
 
             public int RowIndex { get { return _rowIndex; } }
 

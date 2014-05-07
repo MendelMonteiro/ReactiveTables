@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Linq;
 using NUnit.Framework;
 using ReactiveTables.Framework.Aggregate;
 using ReactiveTables.Framework.Aggregate.Operations;
@@ -24,6 +25,22 @@ namespace ReactiveTables.Framework.Tests.Aggregate
     [TestFixture]
     public class AggregateTests
     {
+        [Test]
+        public void TestColumnsAdded()
+        {
+            var baseTable = TestTableHelper.CreateReactiveTable();
+            var groupedTable = new AggregatedTable(baseTable);
+
+            groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
+            groupedTable.AddAggregate((IReactiveColumn<string>) groupedTable.Columns[TestTableColumns.StringColumn],
+                                      "Test",
+                                      () => new Count<string>());
+
+            Assert.AreEqual(2, groupedTable.Columns.Count);
+            Assert.AreEqual(TestTableColumns.StringColumn, groupedTable.Columns.Keys.First());
+            Assert.AreEqual("Test", groupedTable.Columns.Keys.Skip(1).First());
+        }
+
         /// <summary>
         /// Test a grouped column by using a standard table which has one groupable column
         /// and one value column upon which we can perform aggregate functions.
@@ -240,10 +257,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.GroupBy<int>(TestTableColumns.IdColumn);
 
             var countColumn = "Aggregate.Count";
-            groupedTable.AddAggregate<string, int>((IReactiveColumn<string>) baseTable.Columns[TestTableColumns.StringColumn],
-                                                   countColumn,
-//                                                   (s, c, b) => b ? c + 1 : c - 1);
-                                                   () => new Count<string>());
+            groupedTable.AddAggregate((IReactiveColumn<string>) baseTable.Columns[TestTableColumns.StringColumn],
+                                      countColumn,
+                                      () => new Count<string>());
 
             var row1 = baseTable.AddRow();
             baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
@@ -283,36 +299,51 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             var sumColumn = "Aggregate.Sum";
             groupedTable.AddAggregate<int, int>((IReactiveColumn<int>) baseTable.Columns[TestTableColumns.IdColumn],
                                                 sumColumn,
-//                                                   (i, c, b) => b ? c += i : c -= i);
                                                 () => new Sum<int>());
+
+            var sumColumn2 = "Aggregate.DecimalSum";
+            groupedTable.AddAggregate((IReactiveColumn<decimal>) baseTable.Columns[TestTableColumns.DecimalColumn],
+                                                sumColumn2,
+                                                () => new Sum<decimal>());
 
             var row1 = baseTable.AddRow();
             baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
             baseTable.SetValue(TestTableColumns.IdColumn, row1, 10);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row1, 2.5m);
             Assert.AreEqual(1, groupedTable.RowCount);
             Assert.AreEqual(10, groupedTable.GetValue<int>(sumColumn, 0));
+            Assert.AreEqual(2.5m, groupedTable.GetValue<decimal>(sumColumn2, 0));
 
             var row2 = baseTable.AddRow();
             baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value1");
             baseTable.SetValue(TestTableColumns.IdColumn, row2, 20);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row2, 4.5m);
             Assert.AreEqual(1, groupedTable.RowCount);
             Assert.AreEqual(30, groupedTable.GetValue<int>(sumColumn, 0));
+            Assert.AreEqual(7m, groupedTable.GetValue<decimal>(sumColumn2, 0));
 
             var row3 = baseTable.AddRow();
             baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value2");
             baseTable.SetValue(TestTableColumns.IdColumn, row3, 15);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row3, 1.5m);
             Assert.AreEqual(2, groupedTable.RowCount);
             Assert.AreEqual(30, groupedTable.GetValue<int>(sumColumn, 0));
             Assert.AreEqual(15, groupedTable.GetValue<int>(sumColumn, 1));
+            Assert.AreEqual(7m, groupedTable.GetValue<decimal>(sumColumn2, 0));
+            Assert.AreEqual(1.5m, groupedTable.GetValue<decimal>(sumColumn2, 1));
 
             baseTable.SetValue(TestTableColumns.IdColumn, row2, 25);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row2, 5.5m);
             Assert.AreEqual(2, groupedTable.RowCount);
             Assert.AreEqual(35, groupedTable.GetValue<int>(sumColumn, 0));
+            Assert.AreEqual(8m, groupedTable.GetValue<decimal>(sumColumn2, 0));
 
             // Now change the membership in the groups
             baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value2");
             Assert.AreEqual(10, groupedTable.GetValue<int>(sumColumn, 0));
             Assert.AreEqual(40, groupedTable.GetValue<int>(sumColumn, 1));
+            Assert.AreEqual(2.5m, groupedTable.GetValue<decimal>(sumColumn2, 0));
+            Assert.AreEqual(7m, groupedTable.GetValue<decimal>(sumColumn2, 1));
         }
 
         [Test]
