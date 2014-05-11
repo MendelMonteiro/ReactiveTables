@@ -29,5 +29,12 @@ namespace ReactiveTables.Demo
             Grid.AddColumn<int>(GroupTestViewModel.CountColumnId);
             Grid.AddColumn<decimal>(GroupTestViewModel.SumColumnId);
         }
+        
+        protected override void OnClosed(System.EventArgs e)
+        {
+            var viewModel = (GroupTestViewModelSyncfusion)DataContext;
+            viewModel.Dispose();
+            base.OnClosed(e);
+        }
     }
 }

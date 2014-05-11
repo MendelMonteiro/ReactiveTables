@@ -14,10 +14,8 @@
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Sorting;
@@ -57,7 +55,8 @@ namespace ReactiveTables.Demo.Syncfusion
         public decimal BalanceBelowFilter
         {
             get { return _balanceBelowFilter; }
-            set { 
+            set
+            {
                 SetProperty(ref _balanceBelowFilter, value);
                 _accountFilter.PredicateChanged();
             }

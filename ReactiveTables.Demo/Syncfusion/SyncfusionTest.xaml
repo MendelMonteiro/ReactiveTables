@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Syncfusion="clr-namespace:ReactiveTables.Demo.Syncfusion"
-        xmlns:System="clr-namespace:System;assembly=mscorlib"
         Title="Syncfusion Test" Height="600" Width="800"
         WindowState="Maximized"
         DataContext="{Binding Path=SyncfusionTestViewModel, Source={StaticResource ViewModelLocator}}">

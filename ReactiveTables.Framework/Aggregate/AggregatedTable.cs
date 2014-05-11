@@ -124,7 +124,12 @@ namespace ReactiveTables.Framework.Aggregate
             {
                 // New source row added
                 var key = new GroupByKey(_keyColumns, sourceIndex);
-                groupedIndex = AddItemToGroup(key, sourceIndex);
+                bool notifyOfAdd;
+                groupedIndex = AddItemToGroup(key, sourceIndex, out notifyOfAdd);
+                if (notifyOfAdd)
+                {
+                    NotifyOfGroupAdd(groupedIndex);                    
+                }
                 _sourceRowsToKeys.Add(sourceIndex, key);
                 groupChanged = true;
             }
@@ -135,7 +140,10 @@ namespace ReactiveTables.Framework.Aggregate
                 var group = _groupedRows[key];
                 groupedIndex = _keyPositions[key];
 
-                RemoveItemFromGroup(@group, sourceIndex, key, groupedIndex);
+                if (RemoveItemFromGroup(@group, sourceIndex, key, groupedIndex))
+                {
+                    NotifyOfGroupDelete(groupedIndex);
+                }
 
                 _sourceRowsToKeys.Remove(sourceIndex);
                 groupChanged = true;
@@ -151,8 +159,10 @@ namespace ReactiveTables.Framework.Aggregate
                 // Move the rowIndex from the old key to the new key
                 var group = _groupedRows[key];
                 var oldGroupIndex = _keyPositions[key];
-                RemoveItemFromGroup(@group, sourceIndex, key, oldGroupIndex);
-                groupedIndex = AddItemToGroup(newKey, sourceIndex);
+                var notifyOfDelete = RemoveItemFromGroup(@group, sourceIndex, key, oldGroupIndex);
+                bool notifyOfAdd;
+                groupedIndex = AddItemToGroup(newKey, sourceIndex, out notifyOfAdd);
+                NotifyOnGroupChange(notifyOfAdd, notifyOfDelete, oldGroupIndex, groupedIndex);
 
                 // Replace the rowIndex to key mapping
                 _sourceRowsToKeys[sourceIndex] = newKey;
@@ -182,8 +192,37 @@ namespace ReactiveTables.Framework.Aggregate
             }
         }
 
-        private int AddItemToGroup(GroupByKey key, int rowIndex)
+        /// <summary>
+        /// Limit the number of row updates when the group index does not change.
+        /// </summary>
+        /// <param name="notifyOfAdd"></param>
+        /// <param name="notifyOfDelete"></param>
+        /// <param name="oldGroupIndex"></param>
+        /// <param name="groupedIndex"></param>
+        private void NotifyOnGroupChange(bool notifyOfAdd, bool notifyOfDelete, int oldGroupIndex, int groupedIndex)
         {
+            if (notifyOfAdd || notifyOfDelete)
+            {
+                if (!notifyOfAdd)
+                {
+                    NotifyOfGroupDelete(oldGroupIndex);
+                }
+                if (!notifyOfDelete)
+                {
+                    NotifyOfGroupAdd(groupedIndex);
+                }
+
+                if (notifyOfAdd && notifyOfDelete && oldGroupIndex != groupedIndex)
+                {
+                    NotifyOfGroupDelete(oldGroupIndex);
+                    NotifyOfGroupAdd(groupedIndex);
+                }
+            }
+        }
+
+        private int AddItemToGroup(GroupByKey key, int rowIndex, out bool notify)
+        {
+            notify = false;
             List<int> rowsInGroup;
             int groupedIndex;
             if (!_groupedRows.TryGetValue(key, out rowsInGroup))
@@ -197,8 +236,7 @@ namespace ReactiveTables.Framework.Aggregate
                     aggregateColumn.AddField(groupedIndex);
                 }
 
-                // Notify of new row appearing
-                _updates.OnNext(TableUpdate.NewAddUpdate(groupedIndex));
+                notify = true;
                 // Make sure all the column values are sent too
                 foreach (var keyColumn in _keyColumns)
                 {
@@ -213,17 +251,24 @@ namespace ReactiveTables.Framework.Aggregate
             return groupedIndex;
         }
 
-        private void RemoveItemFromGroup(List<int> @group, int rowIndex, GroupByKey key, int groupedIndex)
+        private void NotifyOfGroupAdd(int groupedIndex)
+        {
+// Notify of new row appearing
+            _updates.OnNext(TableUpdate.NewAddUpdate(groupedIndex));
+        }
+
+        private bool RemoveItemFromGroup(List<int> @group, int rowIndex, GroupByKey key, int groupedIndex)
         {
             group.Remove(rowIndex);
-            RemoveEmptyGroup(group, key, groupedIndex);
+            var notifyRequired = RemoveEmptyGroup(group, key, groupedIndex);
             foreach (var aggregateColumn in _aggregateColumns)
             {
                 aggregateColumn.RemoveOldValue(rowIndex, groupedIndex);
             }
+            return notifyRequired;
         }
 
-        private void RemoveEmptyGroup(List<int> @group, GroupByKey key, int groupedIndex)
+        private bool RemoveEmptyGroup(List<int> @group, GroupByKey key, int groupedIndex)
         {
             if (group.Count == 0)
             {
@@ -234,9 +279,15 @@ namespace ReactiveTables.Framework.Aggregate
                     aggregateColumn.AddField(groupedIndex);
                 }
 
-                // Notify of grouped row being removed
-                _updates.OnNext(TableUpdate.NewDeleteUpdate(groupedIndex));
+                return true;
             }
+            return false;
+        }
+
+        private void NotifyOfGroupDelete(int groupedIndex)
+        {
+// Notify of grouped row being removed
+            _updates.OnNext(TableUpdate.NewDeleteUpdate(groupedIndex));
         }
 
         public override IReactiveColumn AddColumn(IReactiveColumn column)

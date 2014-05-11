@@ -24,16 +24,19 @@ namespace ReactiveTables.Framework.Tests
         public int CurrentRowCount { get; private set; }
         public int LastRowUpdated { get; private set; }
         public List<int> RowsUpdated { get; private set; }
+        public List<TableUpdate> RowUpdates { get; private set; }
 
         public RowUpdateHandler()
         {
             RowsUpdated = new List<int>();
+            RowUpdates = new List<TableUpdate>();
             LastRowUpdated = -1;
         }
 
         public void OnRowUpdate(TableUpdate update)
         {
             RowsUpdated.Add(update.RowIndex);
+            RowUpdates.Add(update);
             if (update.Action == TableUpdateAction.Add)
             {
                 CurrentRowCount++;

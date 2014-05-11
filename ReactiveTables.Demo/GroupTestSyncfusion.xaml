@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="clr-namespace:ReactiveTables.Demo.Syncfusion"
         Title="GroupTestSyncfusion" Height="600" Width="800"
-        DataContext="{Binding Path=GroupTestViewModel, Source={StaticResource ViewModelLocator}}">
+        DataContext="{Binding Path=GroupTestSyncfusionViewModel, Source={StaticResource ViewModelLocator}}">
     <Grid>
         <ScrollViewer 
             CanContentScroll="True"
