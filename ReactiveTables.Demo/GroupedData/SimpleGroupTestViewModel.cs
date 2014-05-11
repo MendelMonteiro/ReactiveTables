@@ -61,12 +61,22 @@ namespace ReactiveTables.Demo.GroupedData
 
         private void LoadData()
         {
-            AddRow("Mendel", 42);
-            AddRow("Marie", 43);
-            AddRow("Mendel", 44);
-            AddRow("Marie", 45);
-            AddRow("Mendel", 46);
-            AddRow("Marie", 45);
+            for (int i = 0; i < 100; i++)
+            {
+                LoadBatch(i);
+            }
+        }
+
+        private void LoadBatch(int batchNumber)
+        {
+            var name1 = "Mendel" + batchNumber;
+            var name2 = "Marie" + batchNumber;
+            AddRow(name1, 42);
+            AddRow(name2, 43);
+            AddRow(name1, 44);
+            AddRow(name2, 45);
+            AddRow(name1, 46);
+            AddRow(name2, 45);
         }
 
         private void AddRow(string groupVal, int value)

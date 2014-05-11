@@ -8,16 +8,19 @@ namespace ReactiveTables.Framework.Aggregate.Operations
     {
         private readonly Count<TIn> _count;
         private readonly Sum<TIn> _sum;
-        private readonly Func<TIn, double> _sumToDouble;
+        private static readonly Func<TIn, double> _sumToDouble;
+
+        static Average()
+        {
+            var sum = Expression.Parameter(typeof(TIn));
+            var sumToDoubleExp = Expression.Convert(sum, typeof(double));
+            _sumToDouble = Expression.Lambda<Func<TIn, double>>(sumToDoubleExp, sum).Compile();            
+        }
 
         public Average()
         {
             _count = new Count<TIn>();
             _sum = new Sum<TIn>();
-
-            var sum = Expression.Parameter(typeof(TIn));
-            var sumToDoubleExp = Expression.Convert(sum, typeof(double));
-            _sumToDouble = Expression.Lambda<Func<TIn, double>>(sumToDoubleExp, sum).Compile();
         }
 
         public void SetSourceColumn(IReactiveColumn<TIn> sourceColumn)

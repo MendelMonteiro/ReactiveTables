@@ -170,14 +170,14 @@ namespace ReactiveTables.Framework.Aggregate
                 var column = _keyColumns.Find(keyCol => keyCol.ColumnId == columnUpdated.ColumnId);
                 column.NotifyObserversOnNext(groupedIndex);
                 _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) column));
-                Console.WriteLine("Grouped column updated");
+//                Console.WriteLine("Grouped column updated");
                 groupChanged = true;
             }
             else
             {
                 var key = _sourceRowsToKeys[sourceIndex];
                 groupedIndex = _keyPositions[key];
-                Console.WriteLine("Non grouped column updated");
+//                Console.WriteLine("Non grouped column updated");
             }
 
             // Aggregated column has changed or group changed which forces re-calc.
@@ -272,7 +272,7 @@ namespace ReactiveTables.Framework.Aggregate
         {
             if (group.Count == 0)
             {
-                _groupedRows.Remove(key);
+                _groupedRows.RemoveAt(groupedIndex);
                 _keyPositions.Remove(key);
                 foreach (var aggregateColumn in _aggregateColumns)
                 {

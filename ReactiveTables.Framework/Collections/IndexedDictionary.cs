@@ -15,6 +15,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ReactiveTables.Framework.Collections
 {
@@ -27,7 +28,7 @@ namespace ReactiveTables.Framework.Collections
     class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey, TValue>();
-        private readonly List<TValue> _list = new List<TValue>();
+        private readonly List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey, TValue>>();
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
@@ -36,7 +37,7 @@ namespace ReactiveTables.Framework.Collections
 
         IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator()
         {
-            return _list.GetEnumerator();
+            return _list.Select(i => i.Value).GetEnumerator();
         }
 
         public void Add(TValue item)
@@ -91,7 +92,7 @@ namespace ReactiveTables.Framework.Collections
 
         public int IndexOf(TValue item)
         {
-            return _list.IndexOf(item);
+            return _list.FindIndex(i => item.Equals(i.Value));
         }
 
         public void Insert(int index, TValue item)
@@ -101,7 +102,9 @@ namespace ReactiveTables.Framework.Collections
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            var item = _list[index];
+            _list.RemoveAt(index);
+            _dictionary.Remove(item.Key);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -117,7 +120,7 @@ namespace ReactiveTables.Framework.Collections
         public void Add(TKey key, TValue value)
         {
             _dictionary.Add(key, value);
-            _list.Add(value);
+            _list.Add(new KeyValuePair<TKey, TValue>(key, value));
         }
 
         public int AddWithIndex(TKey key, TValue value)
@@ -126,15 +129,20 @@ namespace ReactiveTables.Framework.Collections
             return _list.Count - 1;
         }
 
+        /// <summary>
+        /// This is an O(N) operation - use wisely
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool Remove(TKey key)
         {
-            _list.Remove(_dictionary[key]);
+            _list.Remove(new KeyValuePair<TKey, TValue>(key, _dictionary[key]));
             return _dictionary.Remove(key);
         }
 
         public bool RemoveWithIndex(TKey key, out int index)
         {
-            index = _list.IndexOf(_dictionary[key]);
+            index = _list.IndexOf(new KeyValuePair<TKey, TValue>(key, _dictionary[key]));
             if (index >= 0)
             {
                 _list.RemoveAt(index);
@@ -151,7 +159,7 @@ namespace ReactiveTables.Framework.Collections
 
         public TValue this[int index]
         {
-            get { return _list[index]; }
+            get { return _list[index].Value; }
             set { throw new NotImplementedException(); }
         }
 
@@ -162,11 +170,12 @@ namespace ReactiveTables.Framework.Collections
             {
                 if (_dictionary.ContainsKey(key))
                 {
-                    _list[_list.IndexOf(_dictionary[key])] = value;
+                    var index = _list.IndexOf(new KeyValuePair<TKey, TValue>(key, _dictionary[key]));
+                    _list[index] = new KeyValuePair<TKey, TValue>(key, value);
                 }
                 else
                 {
-                    _list.Add(value);
+                    _list.Add(new KeyValuePair<TKey, TValue>(key, value));
                 }
                 _dictionary[key] = value;
             }

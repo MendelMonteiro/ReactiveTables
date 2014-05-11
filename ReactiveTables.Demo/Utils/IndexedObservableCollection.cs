@@ -64,7 +64,8 @@ namespace ReactiveTables.Demo.Utils
 
         protected override void RemoveItem(int index)
         {
-            _keysToIndeces.Remove(_keySelector(this[index]));
+            var key = _keySelector(this[index]);
+            _keysToIndeces.Remove(key);
             base.RemoveItem(index);
         }
     }
