@@ -332,6 +332,12 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             Assert.AreEqual(2, groupedTable.RowCount);
             Assert.AreEqual(1, groupedTable.GetValue<int>(countColumn, 0));
             Assert.AreEqual(2, groupedTable.GetValue<int>(countColumn, 1));
+
+            // Change it to the same value again and check that nothing changes
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value2");
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(1, groupedTable.GetValue<int>(countColumn, 0));
+            Assert.AreEqual(2, groupedTable.GetValue<int>(countColumn, 1));
         }
 
         [Test]
@@ -407,6 +413,69 @@ namespace ReactiveTables.Framework.Tests.Aggregate
         public void TestGroupByWithMax()
         {
 
+        }
+
+        [Test]
+        public void TestGroupByWithAverage()
+        {
+            // Create group by
+            var baseTable = TestTableHelper.CreateReactiveTable();
+            var groupedTable = new AggregatedTable(baseTable);
+            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            groupedTable.Subscribe(rowUpdates);
+            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            groupedTable.Subscribe(colUpdates.OnColumnUpdate);
+
+            groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
+
+            var avgColumn = "Aggregate.Sum";
+            groupedTable.AddAggregate((IReactiveColumn<int>) baseTable.Columns[TestTableColumns.IdColumn],
+                                      avgColumn,
+                                      () => new Average<int>());
+
+            var avgColumn2 = "Aggregate.DecimalSum";
+            groupedTable.AddAggregate((IReactiveColumn<decimal>) baseTable.Columns[TestTableColumns.DecimalColumn],
+                                      avgColumn2,
+                                      () => new Average<decimal>());
+
+            var row1 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
+            baseTable.SetValue(TestTableColumns.IdColumn, row1, 10);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row1, 2.5m);
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(10.0, groupedTable.GetValue<double>(avgColumn, 0));
+            Assert.AreEqual(2.5, groupedTable.GetValue<double>(avgColumn2, 0));
+
+            var row2 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value1");
+            baseTable.SetValue(TestTableColumns.IdColumn, row2, 20);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row2, 4.5m);
+            Assert.AreEqual(1, groupedTable.RowCount);
+            Assert.AreEqual(15.0, groupedTable.GetValue<double>(avgColumn, 0));
+            Assert.AreEqual(3.5, groupedTable.GetValue<double>(avgColumn2, 0));
+
+            var row3 = baseTable.AddRow();
+            baseTable.SetValue(TestTableColumns.StringColumn, row3, "Value2");
+            baseTable.SetValue(TestTableColumns.IdColumn, row3, 15);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row3, 1.5m);
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(15.0, groupedTable.GetValue<double>(avgColumn, 0));
+            Assert.AreEqual(15.0, groupedTable.GetValue<double>(avgColumn, 1));
+            Assert.AreEqual(3.5, groupedTable.GetValue<double>(avgColumn2, 0));
+            Assert.AreEqual(1.5, groupedTable.GetValue<double>(avgColumn2, 1));
+
+            baseTable.SetValue(TestTableColumns.IdColumn, row2, 25);
+            baseTable.SetValue(TestTableColumns.DecimalColumn, row2, 5.5m);
+            Assert.AreEqual(2, groupedTable.RowCount);
+            Assert.AreEqual(17.5, groupedTable.GetValue<double>(avgColumn, 0));
+            Assert.AreEqual(4.0, groupedTable.GetValue<double>(avgColumn2, 0));
+
+            // Now change the membership in the groups
+            baseTable.SetValue(TestTableColumns.StringColumn, row2, "Value2");
+            Assert.AreEqual(10, groupedTable.GetValue<double>(avgColumn, 0));
+            Assert.AreEqual(20, groupedTable.GetValue<double>(avgColumn, 1));
+            Assert.AreEqual(2.5, groupedTable.GetValue<double>(avgColumn2, 0));
+            Assert.AreEqual(3.5, groupedTable.GetValue<double>(avgColumn2, 1));
         }
     }
 }

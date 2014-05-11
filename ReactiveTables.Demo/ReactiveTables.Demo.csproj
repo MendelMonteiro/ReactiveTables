@@ -160,13 +160,17 @@
     <Compile Include="Client\FxClientSyncfusionViewModel.cs" />
     <Compile Include="Client\FxClientViewModel.cs" />
     <Compile Include="Client\FxCurrencyPairViewModel.cs" />
-    <Compile Include="GroupTest.xaml.cs">
+    <Compile Include="GroupedData\GroupTest.xaml.cs">
       <DependentUpon>GroupTest.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GroupTestSyncfusion.xaml.cs">
+    <Compile Include="GroupedData\GroupTestSyncfusion.xaml.cs">
       <DependentUpon>GroupTestSyncfusion.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GroupTestViewModel.cs" />
+    <Compile Include="GroupedData\GroupTestViewModel.cs" />
+    <Compile Include="GroupedData\SimpleGroupTest.xaml.cs">
+      <DependentUpon>SimpleGroupTest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GroupedData\SimpleGroupTestViewModel.cs" />
     <Compile Include="Services\AccountBalanceDataService.cs" />
     <Compile Include="Services\BrokerFeedDataService.cs" />
     <Compile Include="Services\FxDataService.cs" />
@@ -214,11 +218,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GroupTest.xaml">
+    <Page Include="GroupedData\GroupTest.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GroupTestSyncfusion.xaml">
+    <Page Include="GroupedData\GroupTestSyncfusion.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GroupedData\SimpleGroupTest.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

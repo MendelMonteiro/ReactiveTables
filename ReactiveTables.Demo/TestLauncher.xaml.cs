@@ -15,6 +15,7 @@
 
 using System.Windows;
 using ReactiveTables.Demo.Client;
+using ReactiveTables.Demo.GroupedData;
 using ReactiveTables.Demo.Syncfusion;
 
 namespace ReactiveTables.Demo
@@ -67,8 +68,9 @@ namespace ReactiveTables.Demo
 
         private void GroupTestButton_OnClick(object sender, RoutedEventArgs e)
         {
-            GroupTest window = new GroupTest();
+//            GroupTest window = new GroupTest();
             //GroupTestSyncfusion window = new GroupTestSyncfusion();
+            SimpleGroupTest window = new SimpleGroupTest();
             window.Show();
         }
     }

@@ -16,6 +16,7 @@
 using System.Reflection;
 using System.Windows;
 using Ninject;
+using ReactiveTables.Demo.GroupedData;
 using ReactiveTables.Demo.Services;
 using ReactiveTables.Framework.Utils;
 using log4net;

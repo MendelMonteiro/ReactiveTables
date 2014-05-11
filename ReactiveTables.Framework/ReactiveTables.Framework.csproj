@@ -97,9 +97,10 @@
     <Compile Include="Aggregate\GroupByKey.cs" />
     <Compile Include="Aggregate\HashcodeAccessor.cs" />
     <Compile Include="Aggregate\IHashcodeAccessor.cs" />
+    <Compile Include="Aggregate\Operations\Average.cs" />
     <Compile Include="Aggregate\Operations\Count.cs" />
     <Compile Include="Aggregate\Operations\IAccumulator.cs" />
-    <Compile Include="Aggregate\Operations\Max.cs" />
+    <Compile Include="Aggregate\Operations\MinOrMax.cs" />
     <Compile Include="Aggregate\Operations\Sum.cs" />
     <Compile Include="Collections\IndexedDictionary.cs" />
     <Compile Include="Collections\ReactiveList.cs" />

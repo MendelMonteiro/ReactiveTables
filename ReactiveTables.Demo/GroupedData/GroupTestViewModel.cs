@@ -25,7 +25,7 @@ using ReactiveTables.Framework.Aggregate.Operations;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.UI;
 
-namespace ReactiveTables.Demo
+namespace ReactiveTables.Demo.GroupedData
 {
     class GroupTestViewModelSyncfusion : SyncfusionViewModelBase
     {

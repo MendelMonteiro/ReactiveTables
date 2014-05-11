@@ -12,9 +12,10 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+
 using System.Windows;
 
-namespace ReactiveTables.Demo
+namespace ReactiveTables.Demo.GroupedData
 {
     /// <summary>
     /// Interaction logic for GroupTestSyncfusion.xaml

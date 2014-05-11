@@ -12,24 +12,30 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
+
+using System.Collections.Generic;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Aggregate.Operations
 {
     public class Count<TIn> : IAccumulator<TIn, int>
     {
+        private readonly HashSet<int> _sourceRows = new HashSet<int>();
+
         public void SetSourceColumn(IReactiveColumn<TIn> sourceColumn)
         {
         }
 
         public void AddValue(int sourceRowIndex)
         {
-            CurrentValue++;
+            _sourceRows.Add(sourceRowIndex);
+            CurrentValue = _sourceRows.Count;
         }
 
         public void RemoveValue(int sourceRowIndex)
         {
-            CurrentValue--;
+            _sourceRows.Remove(sourceRowIndex);
+            CurrentValue = _sourceRows.Count;
         }
 
         public int CurrentValue { get; private set; }

@@ -15,6 +15,7 @@
 
 using Ninject;
 using ReactiveTables.Demo.Client;
+using ReactiveTables.Demo.GroupedData;
 using ReactiveTables.Demo.Syncfusion;
 
 namespace ReactiveTables.Demo.Services
