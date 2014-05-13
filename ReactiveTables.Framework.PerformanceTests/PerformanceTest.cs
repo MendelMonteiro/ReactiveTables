@@ -29,7 +29,7 @@ namespace ReactiveTables.Framework.PerformanceTests
         {
             try
             {
-                PerformanceTest test = new PerformanceTest(() => new OneSimpleTableTest(null));
+                PerformanceTest test = new PerformanceTest(() => new GroupedTableTest());
                 int seconds;
                 if (args.Length < 1 || !int.TryParse(args[0], out seconds)) seconds = 30;
                 int iterationPause;
@@ -109,7 +109,7 @@ namespace ReactiveTables.Framework.PerformanceTests
                 logWriter.Close();
             }
 
-            Console.WriteLine("Table size: {0:N0}", test.Metric);
+            Console.WriteLine("Items processed: {0:N0}", test.Metric);
         }
     }
 

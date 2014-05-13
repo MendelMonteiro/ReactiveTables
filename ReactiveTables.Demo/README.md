@@ -3,7 +3,7 @@
 
 The demo project illustrates all the current functionality included in the ReactiveTables framework and the ReactiveTables.Protobuf add-on.
 
-The sub-demo projects are set up as follows:
+The demo sub-projects are set up as follows:
 
 1. The real time demo
     - This demo is the simplest demo, it demonstrates how to bind to a normal WPF DataGrid using the INotifyProperty changed interface.  It also shows how to consume data from other threads using the ReactiveBatchedPassThroughTable.  Note that the performance of this demo is constrained by the performance of the DataGrid.

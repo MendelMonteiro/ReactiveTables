@@ -17,6 +17,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using NUnit.Framework;
+using ReactiveTables.Framework.Aggregate;
+using ReactiveTables.Framework.Aggregate.Operations;
+using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Marshalling;
 using ReactiveTables.Framework.Synchronisation;
 using ReactiveTables.Framework.Utils;
@@ -131,6 +134,57 @@ namespace ReactiveTables.Framework.PerformanceTests
 
             Console.WriteLine("Performance stats: ");
             ProcessInfoDumper.Dump();
+        }
+
+        [Test]
+        public void TestGrouping()
+        {
+            var table1 = new ReactiveTable();
+            string GroupColumnId = "GroupCol";
+            var groupColumn = new ReactiveColumn<string>(GroupColumnId);
+            table1.AddColumn(groupColumn);
+            string ValueColumnId = "ValueCol";
+            var reactiveColumn = new ReactiveColumn<int>(ValueColumnId);
+            var valueColumn = reactiveColumn;
+            table1.AddColumn(valueColumn);
+            //            ReactiveTable table2 = new ReactiveTable();
+            //            table2.AddColumn(new ReactiveColumn<string>("GroupColumn2"));
+            //            table2.AddColumn(new ReactiveColumn<int>("ValueColumn2"));
+
+            var groupedTable = new AggregatedTable(table1);
+            groupedTable.GroupBy<string>(groupColumn.ColumnId);
+            string CountColumnId = "Count";
+            groupedTable.AddAggregate(groupColumn, CountColumnId, () => new Count<string>());
+            string SumColumnId = "Sum";
+            groupedTable.AddAggregate(valueColumn, SumColumnId, () => new Sum<int>());
+            string AverageColumnId = "Average";
+            groupedTable.AddAggregate(valueColumn, AverageColumnId, () => new Average<int>());
+            string MinColumnId = "Min";
+            groupedTable.AddAggregate(valueColumn, MinColumnId, () => new Min<int>());
+            string MaxColumnId = "Max";
+            groupedTable.AddAggregate(valueColumn, MaxColumnId, () => new Max<int>());
+
+            RunTest(
+                count =>
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        var name1 = "Mendel" + i;
+                        var name2 = "Marie" + i;
+                        AddRow(name1, 42, table1, GroupColumnId, ValueColumnId);
+                        AddRow(name2, 43, table1, GroupColumnId, ValueColumnId);
+                        AddRow(name1, 44, table1, GroupColumnId, ValueColumnId);
+                        AddRow(name2, 45, table1, GroupColumnId, ValueColumnId);
+                        AddRow(name1, 46, table1, GroupColumnId, ValueColumnId);
+                        AddRow(name2, 45, table1, GroupColumnId, ValueColumnId);
+                    }
+                }, 10000);
+        }
+        private void AddRow(string groupVal, int value, IWritableReactiveTable table1, string GroupColumnId, string ValueColumnId)
+        {
+            var row1 = table1.AddRow();
+            table1.SetValue(GroupColumnId, row1, groupVal);
+            table1.SetValue(ValueColumnId, row1, value);
         }
     }
 }

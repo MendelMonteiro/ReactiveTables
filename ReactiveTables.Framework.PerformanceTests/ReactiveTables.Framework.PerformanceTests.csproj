@@ -81,6 +81,7 @@
     <Compile Include="TableTestHelper.cs" />
     <Compile Include="Tests\CalculatedColumnTableTest.cs" />
     <Compile Include="Tests\FullJoinedTablesTest.cs" />
+    <Compile Include="Tests\GroupedTableTest.cs" />
     <Compile Include="Tests\ITest.cs" />
     <Compile Include="Tests\OneWideTableTest.cs" />
     <Compile Include="Tests\OneSimpleTableTest.cs" />

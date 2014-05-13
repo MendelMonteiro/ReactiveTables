@@ -167,7 +167,7 @@ namespace ReactiveTables.Framework.Aggregate
                 // Replace the rowIndex to key mapping
                 _sourceRowsToKeys[sourceIndex] = newKey;
 
-                var column = _keyColumns.Find(keyCol => keyCol.ColumnId == columnUpdated.ColumnId);
+                var column = FindKeyColumn(columnUpdated.ColumnId, _keyColumns);
                 column.NotifyObserversOnNext(groupedIndex);
                 _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) column));
 //                Console.WriteLine("Grouped column updated");
@@ -313,7 +313,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         public override T GetValue<T>(string columnId, int rowIndex)
         {
-            var sourceColumn = _keyColumns.Find(keyCol => keyCol.ColumnId == columnId);
+            var sourceColumn = FindKeyColumn(columnId, _keyColumns);
             if (sourceColumn != null)
             {
                 IReactiveColumn<T> column = (IReactiveColumn<T>) sourceColumn;
@@ -327,7 +327,7 @@ namespace ReactiveTables.Framework.Aggregate
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
                 return localTyped.GetValue(sourceRowIndex);
             }
-            var aggregateColumn = _aggregateColumns.Find(c => c.ColumnId == columnId);
+            var aggregateColumn = FindAggregateColumn(columnId, _aggregateColumns);
             if (aggregateColumn != null)
             {
                 var aggregateTyped = (IReactiveColumn<T>) aggregateColumn;
@@ -337,9 +337,41 @@ namespace ReactiveTables.Framework.Aggregate
             throw new ArgumentException(string.Format("Column {0} does not existing in the table", columnId), "columnId");
         }
 
+        /// <summary>
+        /// Avoid using a closure and thus an allocation
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="aggregateColumns"></param>
+        /// <returns></returns>
+        private static IAggregateColumn FindAggregateColumn(string columnId, IEnumerable<IAggregateColumn> aggregateColumns)
+        {
+            foreach (var column in aggregateColumns)
+            {
+                if (column.ColumnId == columnId)
+                    return column;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Avoid using a closure and thus an allocation
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="keyColumns"></param>
+        /// <returns></returns>
+        private static IHashcodeAccessor FindKeyColumn(string columnId, IEnumerable<IHashcodeAccessor> keyColumns)
+        {
+            foreach (var column in keyColumns)
+            {
+                if (column.ColumnId == columnId)
+                    return column;
+            }
+            return null;
+        }
+
         public override object GetValue(string columnId, int rowIndex)
         {
-            var keyColumn = _keyColumns.Find(keyCol => keyCol.ColumnId == columnId);
+            var keyColumn = FindKeyColumn(columnId, _keyColumns);
             if (keyColumn != null)
             {
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
@@ -351,7 +383,7 @@ namespace ReactiveTables.Framework.Aggregate
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
                 return localColumn.GetValue(sourceRowIndex);
             }
-            var aggregateColumn = _aggregateColumns.Find(c => c.ColumnId == columnId);
+            var aggregateColumn = FindAggregateColumn(columnId, _aggregateColumns);
             if (aggregateColumn != null)
             {
                 return aggregateColumn.GetValue(rowIndex);
@@ -359,6 +391,7 @@ namespace ReactiveTables.Framework.Aggregate
 
             throw new ArgumentException(string.Format("Column {0} does not existing in the table", columnId), "columnId");
         }
+
 
         private int GetSourceRowIndex(int rowIndex)
         {
