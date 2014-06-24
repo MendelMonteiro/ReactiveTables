@@ -1,10 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ReactiveTables.Framework.Columns;
 
-namespace ReactiveTables.Framework.Columns
+namespace ReactiveTables.Framework.Collections
 {
-    internal class FieldRowList<T> : /*IEnumerable<int>,*/ IEnumerable<T>
+    /// <summary>
+    /// A list which does not delete from the underlying list instead leaving blank entries
+    /// which are subsequently re-used for new adds.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal class FieldRowList<T> : IList<T>
     {
         private readonly FieldRowManager _rowManager = new FieldRowManager();
         private readonly List<T> _list = new List<T>();
@@ -34,15 +41,51 @@ namespace ReactiveTables.Framework.Columns
             return index;
         }
 
+        void ICollection<T>.Add(T item)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Clear()
         {
             _rowManager.Reset();
             _list.Clear();
         }
 
+        public bool Contains(T item)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            int i = 0;
+            foreach (var row in _rowManager.GetRows())
+            {
+                array[i++] = _list[row];
+            }
+        }
+
+        public bool Remove(T item)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public int Count
         {
             get { return _rowManager.RowCount; }
+        }
+
+        public bool IsReadOnly { get { return false; } }
+
+        public int IndexOf(T item)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Insert(int index, T item)
+        {
+            throw new System.NotImplementedException();
         }
 
         public void RemoveAt(int index)

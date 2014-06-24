@@ -8,7 +8,7 @@ namespace ReactiveTables.Framework.Collections
     /// A list class optimised for adds, removeAt and minimal GC (no inserts, no removes)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ReactiveList<T> : IList<T>
+    class ReactiveList<T> : IList<T>
     {
         private T[] _items;
         private int _size;

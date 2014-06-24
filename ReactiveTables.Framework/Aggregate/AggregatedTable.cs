@@ -253,7 +253,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         private void NotifyOfGroupAdd(int groupedIndex)
         {
-// Notify of new row appearing
+            // Notify of new row appearing
             _updates.OnNext(TableUpdate.NewAddUpdate(groupedIndex));
         }
 
@@ -272,11 +272,15 @@ namespace ReactiveTables.Framework.Aggregate
         {
             if (group.Count == 0)
             {
+                // Remove the group
                 _groupedRows.RemoveAt(groupedIndex);
+//                _groupedRows.Remove(key);
                 _keyPositions.Remove(key);
+
+                // Remove the field from the aggregate column
                 foreach (var aggregateColumn in _aggregateColumns)
                 {
-                    aggregateColumn.AddField(groupedIndex);
+                    aggregateColumn.RemoveField(groupedIndex);
                 }
 
                 return true;
@@ -286,7 +290,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         private void NotifyOfGroupDelete(int groupedIndex)
         {
-// Notify of grouped row being removed
+            // Notify of grouped row being removed
             _updates.OnNext(TableUpdate.NewDeleteUpdate(groupedIndex));
         }
 
@@ -391,8 +395,7 @@ namespace ReactiveTables.Framework.Aggregate
 
             throw new ArgumentException(string.Format("Column {0} does not existing in the table", columnId), "columnId");
         }
-
-
+        
         private int GetSourceRowIndex(int rowIndex)
         {
             // Doesn't matter which sub row we choose as we know they all have the same value

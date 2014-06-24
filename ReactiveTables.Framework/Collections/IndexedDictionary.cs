@@ -22,13 +22,16 @@ namespace ReactiveTables.Framework.Collections
     /// <summary>
     /// A dictionary which has values which can be accessed by key or by index 
     /// (created in order of addition to the dictionary).
+    /// Note that this uses <see cref="FieldRowList{T}"/> and therefore exhibits the same behaviour
+    /// of leaving gaps in the list instead of re-shuffling to make the list contiguous upon deletes.
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey, TValue>();
-        private readonly List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey, TValue>>();
+//        private readonly List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey, TValue>>();
+        private readonly FieldRowList<KeyValuePair<TKey, TValue>> _list = new FieldRowList<KeyValuePair<TKey, TValue>>();
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
@@ -92,19 +95,13 @@ namespace ReactiveTables.Framework.Collections
 
         public int IndexOf(TValue item)
         {
-            return _list.FindIndex(i => item.Equals(i.Value));
+            throw new NotImplementedException();
+//            return _list.FindIndex(i => item.Equals(i.Value));
         }
 
         public void Insert(int index, TValue item)
         {
             throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            var item = _list[index];
-            _list.RemoveAt(index);
-            _dictionary.Remove(item.Key);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -119,14 +116,13 @@ namespace ReactiveTables.Framework.Collections
 
         public void Add(TKey key, TValue value)
         {
-            _dictionary.Add(key, value);
-            _list.Add(new KeyValuePair<TKey, TValue>(key, value));
+            AddWithIndex(key, value);
         }
 
         public int AddWithIndex(TKey key, TValue value)
         {
-            Add(key, value);
-            return _list.Count - 1;
+            _dictionary.Add(key, value);
+            return _list.Add(new KeyValuePair<TKey, TValue>(key, value));
         }
 
         /// <summary>
@@ -140,6 +136,23 @@ namespace ReactiveTables.Framework.Collections
             return _dictionary.Remove(key);
         }
 
+        /// <summary>
+        /// This is an O(1) operation
+        /// </summary>
+        /// <param name="index"></param>
+        public void RemoveAt(int index)
+        {
+            var item = _list[index];
+            _list.RemoveAt(index);
+            _dictionary.Remove(item.Key);
+        }
+
+        /// <summary>
+        /// O(N) operation
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public bool RemoveWithIndex(TKey key, out int index)
         {
             index = _list.IndexOf(new KeyValuePair<TKey, TValue>(key, _dictionary[key]));

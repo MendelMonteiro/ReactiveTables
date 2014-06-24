@@ -40,6 +40,7 @@ namespace ReactiveTables.Framework.Protobuf
 
         public void OnNext(TableUpdate value)
         {
+            // TODO: Find way to re-utilise the proto writers (object pool?)
             using (var writer = new ProtoWriter(_outputStream, null, null))
             {
                 SubItemToken outerToken = new SubItemToken();

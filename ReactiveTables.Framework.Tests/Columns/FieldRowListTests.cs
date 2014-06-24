@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Tests.Columns

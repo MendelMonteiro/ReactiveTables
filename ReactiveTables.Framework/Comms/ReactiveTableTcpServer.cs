@@ -17,6 +17,8 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,8 +26,9 @@ using System.Threading.Tasks;
 namespace ReactiveTables.Framework.Comms
 {
     /// <summary>
-    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableProcessor{TTable}"/> to the
-    /// client.  TODO: Should implement much more efficient tcp connection to be able to handle many clients connecting.
+    /// Handles a client connection and streaming the data encoded by the <see cref="IReactiveTableProcessor{TTable}"/> 
+    /// to the client.
+    /// TODO: Should implement much more efficient tcp connection to be able to handle many clients connecting.
     /// </summary>
     public class ReactiveTableTcpServer<TTable> where TTable : IReactiveTable
     {
@@ -62,14 +65,83 @@ namespace ReactiveTables.Framework.Comms
             TcpListener listener = new TcpListener(_endPoint);
             listener.Start();
 
-            listener.BeginAcceptTcpClient(AcceptClient, new ClientState
-                                                            {
-                                                                Listener = listener,
-                                                                EncoderState = encoderState
-                                                            });
+            AcceptClient(listener, encoderState);
+            //listener.BeginAcceptTcpClient(AcceptClient, clientState);
             _finished.Wait();
 
             listener.Stop();
+        }
+
+        private void AcceptClient(TcpListener listener, object encoderState)
+        {
+            var clientState = new ClientState
+                              {
+                                  Listener = listener,
+                                  EncoderState = encoderState
+                              };
+            var accept = Task.Factory.FromAsync<TcpClient>(listener.BeginAcceptTcpClient,
+                                                           listener.EndAcceptTcpClient,
+                                                           clientState);
+
+            accept.ContinueWith(task =>
+                                {
+                                    var asyncState = (ClientState)task.AsyncState;
+                                    OnAcceptConnection(task.Result, asyncState);
+                                    AcceptClient(asyncState.Listener, asyncState.EncoderState);
+                                },
+                                TaskContinuationOptions.OnlyOnRanToCompletion);
+        }
+
+        private void OnAcceptConnection(TcpClient client, object asyncState)
+        {
+            var outputStream = client.GetStream();
+
+            var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
+            var output = _getOutputTable(session);
+            using (var encoder = _getEncoder())
+            {
+                try
+                {
+                    var state = (ClientState)asyncState;
+                    encoder.Setup(outputStream, output, state.EncoderState);
+
+                    outputStream.Flush();
+                    int millisecondsTimeout = _testAction == null ? -1 : 50;
+                    while (client.Connected && !_finished.Wait(millisecondsTimeout))
+                    {
+                        // Run the test action every 50 milliseconds if it has been set.
+                        if (_testAction != null) _testAction();
+                    }
+                }
+                catch (EndOfStreamException)
+                {
+                    Console.WriteLine("Client Disconnected");
+                }
+                catch (SocketException sex)
+                {
+                    if (sex.ErrorCode == (int)SocketError.ConnectionAborted)
+                    {
+                        Console.WriteLine("Client Disconnected");
+                    }
+                    else throw;
+                }
+                catch (IOException ioex)
+                {
+                    var sex = ioex.InnerException as SocketException;
+                    if (sex != null)
+                    {
+                        if (sex.ErrorCode == (int)SocketError.ConnectionAborted || sex.ErrorCode == (int)SocketError.ConnectionReset)
+                        {
+                            Console.WriteLine("Client Disconnected");
+                        }
+                        else throw;
+                    }
+                    else throw;
+                }
+            }
+
+            outputStream.Close();
+            client.Close();
         }
 
         /// <summary>
@@ -85,54 +157,8 @@ namespace ReactiveTables.Framework.Comms
                 var client = state.Listener.EndAcceptTcpClient(ar);
                 // Start waiting for the next client
                 state.Listener.BeginAcceptTcpClient(AcceptClient, state);
-
-                var outputStream = client.GetStream();
-            
-                var session = new ReactiveClientSession { RemoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint };
-                var output = _getOutputTable(session);
-                using (var encoder = _getEncoder())
-                {
-                    try
-                    {
-                        encoder.Setup(outputStream, output, state.EncoderState);
-
-                        outputStream.Flush();
-                        int millisecondsTimeout = _testAction == null ? -1 : 50;
-                        while (client.Connected && !_finished.Wait(millisecondsTimeout))
-                        {
-                            // Run the test action every 50 milliseconds if it has been set.
-                            if (_testAction != null) _testAction();
-                        }
-                    }
-                    catch (EndOfStreamException)
-                    {
-                        Console.WriteLine("Client Disconnected");
-                    }
-                    catch (SocketException sex)
-                    {
-                        if (sex.ErrorCode == (int) SocketError.ConnectionAborted)
-                        {
-                            Console.WriteLine("Client Disconnected");
-                        }
-                        else throw;
-                    }
-                    catch (IOException ioex)
-                    {
-                        var sex = ioex.InnerException as SocketException;
-                        if (sex != null)
-                        {
-                            if (sex.ErrorCode == (int) SocketError.ConnectionAborted || sex.ErrorCode == (int)SocketError.ConnectionReset)
-                            {
-                                Console.WriteLine("Client Disconnected");
-                            }
-                            else throw;
-                        }
-                        else throw;
-                    }
-                }
-
-                outputStream.Close();
-                client.Close();
+                
+                OnAcceptConnection(client, ar.AsyncState);
             }
             catch (Exception exception)
             {
