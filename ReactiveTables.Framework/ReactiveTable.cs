@@ -182,16 +182,22 @@ namespace ReactiveTables.Framework
             return rowIndex;
         }
 
+        /// <summary>
+        /// Delete the given row from the underlying columns and notify consumers
+        /// </summary>
+        /// <param name="rowIndex"></param>
         public void DeleteRow(int rowIndex)
         {
+            // First notify (don't delete first so that consumers can still use the value being deleted)
+            var rowUpdate = new TableUpdate(TableUpdateAction.Delete, rowIndex);
+            _subject.OnNext(rowUpdate);
+
+            // And then delete from the underlying store
             _rowManager.DeleteRow(rowIndex);
             foreach (var column in Columns)
             {
                 column.Value.RemoveField(rowIndex);
             }
-
-            var rowUpdate = new TableUpdate(TableUpdateAction.Delete, rowIndex);
-            _subject.OnNext(rowUpdate);
         }
 
         public override void ReplayRows(IObserver<TableUpdate> observer)

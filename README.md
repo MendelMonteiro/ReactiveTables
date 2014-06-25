@@ -15,7 +15,13 @@ Install-Package ReactiveTables.Framework
 
 The source for ReactiveTables is available from the [BitBucket](https://bitbucket.org/mendelmonteiro/reactivetables) page.
 
-## Usage examples
+## What can I use ReactiveTables for?
+
+- Do you need to display data in a WinForms/WPF app that is updating in real-time without pausing for garbage collections?
+
+- How about running sql like statements over large quantities of data on the server?
+
+## How do I use ReactiveTables?
 
 See the Demo project available along with the [source code](https://bitbucket.org/mendelmonteiro/reactivetables/src) for more in depth examples.
 

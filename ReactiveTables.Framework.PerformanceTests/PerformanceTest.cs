@@ -29,7 +29,7 @@ namespace ReactiveTables.Framework.PerformanceTests
         {
             try
             {
-                PerformanceTest test = new PerformanceTest(() => new GroupedTableTest());
+                PerformanceTest test = new PerformanceTest(() => new GroupedTableTest(70000));
                 int seconds;
                 if (args.Length < 1 || !int.TryParse(args[0], out seconds)) seconds = 30;
                 int iterationPause;
