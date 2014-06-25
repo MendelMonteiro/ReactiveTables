@@ -18,23 +18,19 @@ using System.Collections.Generic;
 
 namespace ReactiveTables.Framework.Utils
 {
+    /// <summary>
+    /// Extensions for general collection types
+    /// </summary>
     public static class CollectionExtensions
     {
-        public static int IndexOf<T>(this IEnumerable<T> collection, T item)
-        {
-            var i = 0;
-            foreach (var foo in collection)
-            {
-                if (foo.Equals(item))
-                {
-                    return i;
-                }
-                i++;
-            }
-            return -1;
-        }
-
-        public static int IndexOf<T>(this IEnumerable<T> collection, Predicate<T> predicate)
+        /// <summary>
+        /// Limited to IList so as not to enumerate over types that would create allocations.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static int IndexOf<T>(this IList<T> collection, Predicate<T> predicate)
         {
             var i = 0;
             foreach (var foo in collection)

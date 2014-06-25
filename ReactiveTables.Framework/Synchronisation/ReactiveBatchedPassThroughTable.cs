@@ -15,8 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Marshalling;
@@ -130,10 +128,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 if (_rowUpdatesDelete.Count > 0) rowUpdatesDelete = _rowUpdatesDelete.DequeueAllToList();
 
                 // Create a cloned list so we don't modify the main has list from multiple threads
-                // TODO: need to figure out a way to avoid clone as we're adding GC pressure.
-                colUpdaters = (from u in _columnUpdaters.Values
-                              where u.UpdateCount > 0
-                              select u.Clone()).ToList();
+                colUpdaters = GetTableColumnUpdaters();
 
                 // Clear all the updates in the original version to indicate that there are no updates pending.
                 foreach (var tableColumnUpdater in _columnUpdaters.Values)
@@ -150,6 +145,20 @@ namespace ReactiveTables.Framework.Synchronisation
 
             // Don't make dispatch granular so that we don't generate as many messages on the pump
             _marshaller.Dispatch(() => CopyChanges(rowUpdatesAdd, colUpdaters, rowUpdatesDelete));
+        }
+
+        private List<ITableColumnUpdater> GetTableColumnUpdaters()
+        {
+            var colUpdaters = new List<ITableColumnUpdater>();
+            foreach (var u in _columnUpdaters.Values)
+            {
+                if (u.UpdateCount > 0)
+                {
+                    // TODO: need to figure out a way to avoid clone as we're adding GC pressure.
+                    colUpdaters.Add(u.Clone());
+                }
+            }
+            return colUpdaters;
         }
 
         /// <summary>

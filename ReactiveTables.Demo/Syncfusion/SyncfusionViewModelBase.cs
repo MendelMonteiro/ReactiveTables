@@ -36,6 +36,7 @@ namespace ReactiveTables.Demo.Syncfusion
         private IWritableReactiveTable _writableTable;
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
         private IDisposable _token;
+        private List<string> _columnIds; 
 
         protected void SetTable(IReactiveTable table)
         {
@@ -50,6 +51,8 @@ namespace ReactiveTables.Demo.Syncfusion
 
             // TODO: This should look up a dictionary of column id's to friendly column names
             ColumnNames = table.Columns.Select(c => c.Value.ColumnId.Substring(c.Value.ColumnId.LastIndexOf('.') + 1)).ToList();
+
+            _columnIds = table.Columns.Select(c => c.Key).ToList();
         }
 
         public IList<string> ColumnNames { get; private set; }
@@ -105,7 +108,7 @@ namespace ReactiveTables.Demo.Syncfusion
         public virtual int GetColPosition(string columnId)
         {
             // TODO: Nasty - should keep a list of columns that are actually used by the grid and a map of their indeces
-            return _table.Columns.Keys.IndexOf(columnId);
+            return _columnIds.IndexOf(columnId);
         }
 
         public virtual string GetColumnId(int columnIndex)
