@@ -21,12 +21,14 @@ namespace ReactiveTables.Framework
     class ColumnList
     {
         private readonly List<IReactiveColumn> _columns = new List<IReactiveColumn>();
+        private readonly Dictionary<string, int> _columnIdsToIndeces = new Dictionary<string, int>();  
 
         public IReadOnlyList<IReactiveColumn> Columns { get { return _columns; } }
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
             _columns.Add(column);
+            _columnIdsToIndeces.Add(column.ColumnId, _columns.Count - 1);
             // TODO: fire events for existing rows
             return column;
         }
@@ -39,7 +41,14 @@ namespace ReactiveTables.Framework
 
         public bool GetColumnByName(string columnId, out IReactiveColumn outColumn)
         {
-            for (int i = 0; i < _columns.Count; i++)
+            int index;
+            if (_columnIdsToIndeces.TryGetValue(columnId, out index))
+            {
+                outColumn = _columns[index];
+                return true;
+            }
+
+            /*for (int i = 0; i < _columns.Count; i++)
             {
                 var column = _columns[i];
                 if (column.ColumnId == columnId)
@@ -47,7 +56,7 @@ namespace ReactiveTables.Framework
                     outColumn = column;
                     return true;
                 }
-            }
+            }*/
             outColumn = null;
             return false;
         }

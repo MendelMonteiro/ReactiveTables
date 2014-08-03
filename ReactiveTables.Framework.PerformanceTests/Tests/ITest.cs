@@ -15,7 +15,7 @@
 
 namespace ReactiveTables.Framework.PerformanceTests.Tests
 {
-    internal interface ITest
+    public interface ITest
     {
         void Iterate();
         long Metric { get; }

@@ -17,7 +17,7 @@ using System.Diagnostics;
 
 namespace ReactiveTables.Framework.PerformanceTests
 {
-    internal struct SystemState
+    public struct SystemState
     {
         private static readonly PerformanceCounter _allBytes;
         private static readonly PerformanceCounter _gen0Collections;

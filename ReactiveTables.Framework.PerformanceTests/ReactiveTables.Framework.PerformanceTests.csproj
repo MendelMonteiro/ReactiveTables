@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <PlatformTarget>x86</PlatformTarget>
@@ -78,8 +79,10 @@
   <ItemGroup>
     <Compile Include="IterationPerformanceTest.cs" />
     <Compile Include="LogWriter.cs" />
+    <Compile Include="PerformanceTestBase.cs" />
     <Compile Include="SystemState.cs" />
     <Compile Include="TestLauncher.cs" />
+    <Compile Include="Tests\OneTableWriteAndUpdateTest.cs" />
     <Compile Include="TimedPerformanceTest.cs" />
     <Compile Include="PerformanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

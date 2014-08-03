@@ -13,29 +13,43 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using ReactiveTables.Framework.PerformanceTests.Tests;
 
 namespace ReactiveTables.Framework.PerformanceTests
 {
-    class IterationPerformanceTest
+    class IterationPerformanceTest : PerformanceTestBase
     {
-        private readonly ITest _test;
-
-        internal IterationPerformanceTest(ITest test)
+        internal IterationPerformanceTest(Func<ITest> test)
+            : base(test)
         {
-            _test = test;
         }
 
-        public void Run(int iterations)
+        public void Run(int iterations, int iterationPause)
         {
-            for (int i = 0; 0 < iterations; i++)
+            Run(() => RunTest(100000, 0, new MemoryStream()),
+                fileStream => RunTest(iterations, iterationPause, fileStream));
+        }
+
+        private void RunTest(int iterations, int iterationPause, Stream logStream)
+        {
+            var test = Test();
+
+            var watch = new Stopwatch();
+            watch.Start();
+            for (int i = 0; i < iterations; i++)
             {
-                _test.Iterate();                
+                test.Iterate();
+
+//                if (iterationPause > 0) Thread.Sleep(iterationPause);
             }
+
+            watch.Stop();
+            double opsPerMs = iterations/(double)watch.ElapsedMilliseconds;
+            Console.WriteLine("Operations: {0:N0} in {1:N0}ms - {2:N} ops/ms",
+                              iterations, watch.ElapsedMilliseconds, opsPerMs);
         }
     }
 }

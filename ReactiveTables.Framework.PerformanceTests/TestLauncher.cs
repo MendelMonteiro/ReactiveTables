@@ -13,10 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ReactiveTables.Framework.PerformanceTests.Tests;
 
 namespace ReactiveTables.Framework.PerformanceTests
@@ -27,13 +23,13 @@ namespace ReactiveTables.Framework.PerformanceTests
         {
             try
             {
-                TimedPerformanceTest test = new TimedPerformanceTest(() => new OneSimpleTableTest());
-                int seconds;
-                if (args.Length < 1 || !int.TryParse(args[0], out seconds)) seconds = 30;
+                IterationPerformanceTest test = new IterationPerformanceTest(() => new OneTableWriteAndUpdateTest());
+                int limit;
+                if (args.Length < 1 || !int.TryParse(args[0], out limit)) limit = 3000;
                 int iterationPause;
                 if (args.Length < 2 || !int.TryParse(args[1], out iterationPause)) iterationPause = 0;
 
-                test.Run(seconds, iterationPause);
+                test.Run(limit, iterationPause);
             }
             catch (Exception ex)
             {
