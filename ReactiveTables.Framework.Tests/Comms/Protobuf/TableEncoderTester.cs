@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Framework.Tests.Comms.Protobuf
 {
@@ -57,11 +58,14 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             Assert.AreEqual(expectedTable.Columns.Count, table.Columns.Count);
             foreach (var column in expectedTable.Columns)
             {
-                Assert.IsTrue(table.Columns.ContainsKey(column.Key));
+                IReactiveColumn col;
+                Assert.IsTrue(table.GetColumnByName(column.ColumnId, out col));
                 for (int i = 0; i < expectedTable.RowCount; i++)
                 {
                     // Cheating a little by relying on the fact that i know the row id starts at 0.
-                    Assert.AreEqual(expectedTable.GetValue(column.Key, i), table.GetValue(column.Key, i), string.Format("For column {0}", column.Key));
+                    Assert.AreEqual(expectedTable.GetValue(column.ColumnId, i),
+                                    table.GetValue(column.ColumnId, i),
+                                    string.Format("For column {0}", column.ColumnId));
                 }
             }
         }

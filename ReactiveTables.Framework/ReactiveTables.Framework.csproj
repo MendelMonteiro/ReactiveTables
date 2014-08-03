@@ -105,6 +105,7 @@
     <Compile Include="Aggregate\Operations\Sum.cs" />
     <Compile Include="Collections\IndexedDictionary.cs" />
     <Compile Include="Collections\ReactiveList.cs" />
+    <Compile Include="ColumnList.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Collections\FieldRowList.cs" />

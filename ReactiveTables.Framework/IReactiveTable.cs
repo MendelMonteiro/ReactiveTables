@@ -11,12 +11,6 @@ namespace ReactiveTables.Framework
     public interface IReactiveTable : IObservable<TableUpdate>
     {
         /// <summary>
-        /// Add a column to the table
-        /// </summary>
-        /// <param name="column"></param>
-        IReactiveColumn AddColumn(IReactiveColumn column);
-
-        /// <summary>
         /// Typed version
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -37,11 +31,6 @@ namespace ReactiveTables.Framework
         /// How many rows there are
         /// </summary>
         int RowCount { get; }
-
-        /// <summary>
-        /// All the columns
-        /// </summary>
-        IDictionary<string, IReactiveColumn> Columns { get; }
 
         /// <summary>
         /// All the columns - addressable by index
@@ -88,11 +77,39 @@ namespace ReactiveTables.Framework
         /// <returns>The position</returns>
         int GetPositionOfRow(int rowIndex);
 
+
+        /// <summary>
+        /// All the columns
+        /// </summary>
+        IReadOnlyList<IReactiveColumn> Columns { get; }
+
         /// <summary>
         /// Schedule tasks to be run after any current observable notifications.
         /// Use this when subscribing to a tbale as the result of an observable notification.
         /// </summary>
         /// <param name="action"></param>
 //        void ScheduleTask(Action action);
+
+        /// <summary>
+        /// Get the column by the column name
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <returns></returns>
+        IReactiveColumn GetColumnByName(string columnId);
+
+        /// <summary>
+        /// Returns whether the column is defined in the table or not.
+        /// </summary>
+        /// <param name="columnId"></param>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        bool GetColumnByName(string columnId, out IReactiveColumn column);
+
+        /// <summary>
+        /// Add a column to the table
+        /// </summary>
+        /// <param name="column"></param>
+        /// <param name="subscribe">Should the tbale subscribe to the column</param>
+        IReactiveColumn AddColumn(IReactiveColumn column, bool subscribe = true);
     }
 }

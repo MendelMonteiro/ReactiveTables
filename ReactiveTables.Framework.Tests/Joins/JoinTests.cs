@@ -763,8 +763,8 @@ namespace ReactiveTables.Framework.Tests.Joins
             const string columnId = "CalcCol";
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       columnId,
-                                      (IReactiveColumn<string>) leftTable.Columns[TestLeftColumns.StringColumn],
-                                      (IReactiveColumn<decimal>) rightTable.Columns[TestRightColumns.DecimalColumn],
+                                      (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
+                                      (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];
@@ -823,8 +823,8 @@ namespace ReactiveTables.Framework.Tests.Joins
             const string columnId = "CalcCol";
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       columnId,
-                                      (IReactiveColumn<string>) leftTable.Columns[TestLeftColumns.StringColumn],
-                                      (IReactiveColumn<decimal>) rightTable.Columns[TestRightColumns.DecimalColumn],
+                                      (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
+                                      (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];
@@ -939,8 +939,8 @@ namespace ReactiveTables.Framework.Tests.Joins
             const string columnId = "CalcCol";
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       columnId,
-                                      (IReactiveColumn<string>) leftTable.Columns[TestLeftColumns.StringColumn],
-                                      (IReactiveColumn<decimal>) rightTable.Columns[TestRightColumns.DecimalColumn],
+                                      (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
+                                      (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             Assert.AreEqual("hello - 9876", joinedTable.GetValue<string>(columnId, 0));
@@ -1009,8 +1009,8 @@ namespace ReactiveTables.Framework.Tests.Joins
             const string columnId = "CalcCol";
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       columnId,
-                                      (IReactiveColumn<string>) leftTable.Columns[TestLeftColumns.StringColumn],
-                                      (IReactiveColumn<decimal>) rightTable.Columns[TestRightColumns.DecimalColumn],
+                                      (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
+                                      (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
                                       (str, dec) => string.Format("{0} - {1}", str, dec)));
 
             int[] rowsUpdated = new int[1];

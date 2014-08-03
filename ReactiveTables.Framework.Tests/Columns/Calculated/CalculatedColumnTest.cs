@@ -17,7 +17,7 @@ namespace ReactiveTables.Framework.Tests.Columns.Calculated
             const string calculatedColumnId = "CalculatedColumn";
             table.AddColumn(new ReactiveCalculatedColumn1<string, int>(
                                 calculatedColumnId,
-                                (IReactiveColumn<int>) table.Columns[TestTableColumns.IdColumn],
+                                (IReactiveColumn<int>) table.GetColumnByName(TestTableColumns.IdColumn),
                                 i => "The int value is " + i));
 
             var updates = new List<TableUpdate>();
@@ -42,8 +42,8 @@ namespace ReactiveTables.Framework.Tests.Columns.Calculated
             const string calculatedColumnId = "CalculatedColumn";
             table.AddColumn(new ReactiveCalculatedColumn2<string, int, string>(
                                 calculatedColumnId,
-                                (IReactiveColumn<int>) table.Columns[TestTableColumns.IdColumn],
-                                (IReactiveColumn<string>) table.Columns[TestTableColumns.StringColumn],
+                                (IReactiveColumn<int>) table.GetColumnByName(TestTableColumns.IdColumn),
+                                (IReactiveColumn<string>) table.GetColumnByName(TestTableColumns.StringColumn),
                                 (i, s) => "The int " + s + " is " + i));
 
             var updates = new List<TableUpdate>();

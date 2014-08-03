@@ -24,8 +24,6 @@ namespace ReactiveTables.Framework.Filters
         private readonly Subject<TableUpdate> _updateSubject = new Subject<TableUpdate>(); 
         private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
-        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
-
         public PropertyChangedNotifier ChangeNotifier
         {
             get { return _changeNotifier.Value; }
@@ -173,7 +171,7 @@ namespace ReactiveTables.Framework.Filters
             return _updateSubject.Subscribe(observer);
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true)
         {
             // TODO: Maybe we should delegate to the source table
             throw new NotImplementedException();
@@ -205,6 +203,8 @@ namespace ReactiveTables.Framework.Filters
         {
             get { return _rowManager.RowCount; }
         }
+
+        public IReadOnlyList<IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
@@ -239,6 +239,16 @@ namespace ReactiveTables.Framework.Filters
         public int GetPositionOfRow(int rowIndex)
         {
             return _rowManager.GetPositionOfRow(rowIndex);
+        }
+
+        public IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _sourceTable.GetColumnByName(columnId);
+        }
+
+        public bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _sourceTable.GetColumnByName(columnId, out column);
         }
 
         public void Dispose()

@@ -21,7 +21,7 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
     {
         private readonly ReactiveTable _table;
 
-        public OneSimpleTableTest(int? initialSize)
+        public OneSimpleTableTest(int? initialSize = null)
         {
             _table = new ReactiveTable();
             _table.AddColumn(new ReactiveColumn<int>("IdCol", initialSize: initialSize));

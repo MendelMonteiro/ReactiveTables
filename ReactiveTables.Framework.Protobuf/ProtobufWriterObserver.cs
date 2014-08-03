@@ -54,7 +54,7 @@ namespace ReactiveTables.Framework.Protobuf
                 {
                     case TableUpdateAction.Add:
                         WriteAdd(writer, value);
-                        WriteUpdates(writer, _table.Columns.Values, value.RowIndex);
+                        WriteUpdates(writer, _table.Columns, value.RowIndex);
                         break;
                     case TableUpdateAction.Update:
                         WriteUpdate(writer, value.Column, value.RowIndex);

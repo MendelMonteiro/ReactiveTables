@@ -87,7 +87,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                 Debug.WriteLine("Sent new row {0}", _update.RowId);
                 foreach (var columnId in encodeState.ColumnsToFieldIds.Keys)
                 {
-                    OnTableUpdate(new TableUpdate(TableUpdateAction.Update, tableUpdate.RowIndex, table.Columns[columnId]),
+                    OnTableUpdate(new TableUpdate(TableUpdateAction.Update, tableUpdate.RowIndex, table.GetColumnByName(columnId)),
                                   table,
                                   encodeState);
                 }

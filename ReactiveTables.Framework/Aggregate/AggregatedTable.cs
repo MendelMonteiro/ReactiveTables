@@ -29,8 +29,8 @@ namespace ReactiveTables.Framework.Aggregate
     {
         private readonly IReactiveTable _sourceTable;
 
-        private readonly IndexedDictionary<string, IReactiveColumn> _allColumns = new IndexedDictionary<string, IReactiveColumn>(); 
-
+        private readonly ColumnList _allColumns = new ColumnList(); 
+        
         /// <summary>
         /// Columns the source table is grouped by
         /// </summary>
@@ -88,7 +88,7 @@ namespace ReactiveTables.Framework.Aggregate
             get { return _groupedRows.Count; }
         }
 
-        public override IDictionary<string, IReactiveColumn> Columns { get { return _allColumns; } }
+        public override IReadOnlyList<IReactiveColumn> Columns { get { return _allColumns.Columns; } }
 
         /// <summary>
         /// Group the source table by the given column
@@ -99,7 +99,7 @@ namespace ReactiveTables.Framework.Aggregate
         /// <exception cref="ArgumentException"></exception>
         public IReactiveColumn GroupBy<T>(string columnId)
         {
-            var column = (IReactiveColumn<T>) _sourceTable.Columns[columnId];
+            var column = (IReactiveColumn<T>) _sourceTable.GetColumnByName(columnId);
             if (_groupColumns.ContainsKey(column.ColumnId))
             {
                 throw new ArgumentException(string.Format("Column {0} is already in group by statement", column.ColumnId),
@@ -109,7 +109,7 @@ namespace ReactiveTables.Framework.Aggregate
             var keyColumn = new HashcodeAccessor<T>(column);
             _keyColumns.Add(keyColumn);
             _groupColumns.Add(columnId, column);
-            _allColumns.Add(columnId, column);
+            _allColumns.AddColumn(column);
 
             return column;
         }
@@ -294,7 +294,7 @@ namespace ReactiveTables.Framework.Aggregate
             _updates.OnNext(TableUpdate.NewDeleteUpdate(groupedIndex));
         }
 
-        public override IReactiveColumn AddColumn(IReactiveColumn column)
+        public override IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true)
         {
             // Handle calculated columns
             _localColumns.Add(column.ColumnId, column);
@@ -312,7 +312,7 @@ namespace ReactiveTables.Framework.Aggregate
         {
             var column = new AggregateColumn<TIn, TOut>(sourceColumn, columnId, accumulator);
             _aggregateColumns.Add(column);
-            _allColumns.Add(columnId, column);
+            _allColumns.AddColumn(column);
         }
 
         public override T GetValue<T>(string columnId, int rowIndex)
@@ -403,6 +403,11 @@ namespace ReactiveTables.Framework.Aggregate
             return sourceRowIndex;
         }
 
+        public override bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _allColumns.GetColumnByName(columnId, out column);
+        }
+
         public override IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             return _updates.Subscribe(observer);
@@ -410,7 +415,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         public override IReactiveColumn GetColumnByIndex(int index)
         {
-            return _allColumns[index];
+            return _allColumns.GetColumnByIndex(index);
         }
 
         public override void ReplayRows(IObserver<TableUpdate> observer)
@@ -431,6 +436,11 @@ namespace ReactiveTables.Framework.Aggregate
         {
             // TODO: use row manager to avoid deletes in _groupedRows
             return rowIndex;
+        }
+
+        public override IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _allColumns.GetColumnByName(columnId);
         }
 
         public void Dispose()

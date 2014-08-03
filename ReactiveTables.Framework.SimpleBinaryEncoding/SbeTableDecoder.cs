@@ -117,7 +117,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                     else if (operationType == OperationType.Update)
                     {
                         var colValOffset = bufferOffset + _update.Size;
-                        var column = _table.Columns[fieldIdsToColumns[_update.FieldId]];
+                        var column = _table.GetColumnByName(fieldIdsToColumns[_update.FieldId]);
                         var written = WriteFieldsToTable(_table, column, rowId, _buffer, colValOffset, read);
                         if (written == -1)
                         {

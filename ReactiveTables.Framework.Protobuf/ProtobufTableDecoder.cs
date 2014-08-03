@@ -154,7 +154,7 @@ namespace ReactiveTables.Framework.Protobuf
             while ((fieldId = reader.ReadFieldHeader()) != 0)
             {
                 var columnId = fieldIdsToColumns[fieldId];
-                var column = table.Columns[columnId];
+                var column = table.GetColumnByName(columnId);
 
                 if (column.Type == typeof (int))
                 {

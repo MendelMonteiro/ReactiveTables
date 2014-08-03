@@ -22,7 +22,7 @@ namespace ReactiveTables.Framework.Sorting
     /// <summary>
     /// A table that can be sorted by a given column
     /// </summary>
-    public class SortedTable : IReactiveTable, ISortedTable, IDisposable 
+    public class SortedTable : IReactiveTable, ISortedTable, IDisposable
     {
         /// <summary>
         /// Used to notify outside observers
@@ -99,7 +99,7 @@ namespace ReactiveTables.Framework.Sorting
             return _subject.Subscribe(observer);
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true)
         {
             throw new NotImplementedException();
         }
@@ -118,7 +118,7 @@ namespace ReactiveTables.Framework.Sorting
 
         public int RowCount { get { return _sorter.RowCount; } }
 
-        public IDictionary<string, IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
@@ -162,6 +162,16 @@ namespace ReactiveTables.Framework.Sorting
         public int GetPositionOfRow(int rowIndex)
         {
             return rowIndex;
+        }
+
+        public IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _sourceTable.GetColumnByName(columnId);
+        }
+
+        public bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _sourceTable.GetColumnByName(columnId, out column);
         }
 
         public void Dispose()

@@ -50,9 +50,9 @@ namespace ReactiveTables.Demo.Syncfusion
             }
 
             // TODO: This should look up a dictionary of column id's to friendly column names
-            ColumnNames = table.Columns.Select(c => c.Value.ColumnId.Substring(c.Value.ColumnId.LastIndexOf('.') + 1)).ToList();
+            ColumnNames = table.Columns.Select(c => c.ColumnId.Substring(c.ColumnId.LastIndexOf('.') + 1)).ToList();
 
-            _columnIds = table.Columns.Select(c => c.Key).ToList();
+            _columnIds = table.Columns.Select(c => c.ColumnId).ToList();
         }
 
         public IList<string> ColumnNames { get; private set; }

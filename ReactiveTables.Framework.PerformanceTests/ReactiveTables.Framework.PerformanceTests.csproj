@@ -40,7 +40,7 @@
     <OutputPath>bin\x86\Release\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ReactiveTables.Framework.PerformanceTests.PerformanceTest</StartupObject>
+    <StartupObject>ReactiveTables.Framework.PerformanceTests.TestLauncher</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -76,7 +76,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PerformanceTest.cs" />
+    <Compile Include="IterationPerformanceTest.cs" />
+    <Compile Include="LogWriter.cs" />
+    <Compile Include="SystemState.cs" />
+    <Compile Include="TestLauncher.cs" />
+    <Compile Include="TimedPerformanceTest.cs" />
     <Compile Include="PerformanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableTestHelper.cs" />

@@ -112,8 +112,8 @@ namespace ReactiveTables.Demo.Services
 
             joinedTable.AddColumn(new ReactiveCalculatedColumn2<string, string, decimal>(
                                       PersonAccountColumns.AccountDetails,
-                                      (IReactiveColumn<string>) people.Columns[PersonColumns.NameColumn],
-                                      (IReactiveColumn<decimal>) accounts.Columns[AccountColumns.AccountBalance],
+                                      (IReactiveColumn<string>) people.GetColumnByName(PersonColumns.NameColumn),
+                                      (IReactiveColumn<decimal>) accounts.GetColumnByName(AccountColumns.AccountBalance),
                                       (name, balance) => string.Format("{0} has {1} in their account.", name, balance)));
 
             return joinedTable;

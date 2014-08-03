@@ -34,7 +34,7 @@ namespace ReactiveTables.Demo.GroupedData
             var accountsTable = service.Accounts;
             AggregatedTable groupedAccounts = new AggregatedTable(accountsTable);
             groupedAccounts.GroupBy<int>(AccountColumns.PersonId);
-            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.Columns[AccountColumns.AccountBalance];
+            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.GetColumnByName(AccountColumns.AccountBalance);
             groupedAccounts.AddAggregate(balanceColumn, GroupTestViewModel.SumColumnId, () => new Sum<decimal>());
             groupedAccounts.AddAggregate(balanceColumn, GroupTestViewModel.CountColumnId, () => new Count<decimal>());
             groupedAccounts.FinishInitialisation();
@@ -53,7 +53,7 @@ namespace ReactiveTables.Demo.GroupedData
             var accountsTable = service.Accounts;
             _groupedAccounts = new AggregatedTable(accountsTable);
             _groupedAccounts.GroupBy<int>(AccountColumns.PersonId);
-            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.Columns[AccountColumns.AccountBalance];
+            var balanceColumn = (IReactiveColumn<decimal>)accountsTable.GetColumnByName(AccountColumns.AccountBalance);
             _groupedAccounts.AddAggregate(balanceColumn, SumColumnId, () => new Sum<decimal>());
             _groupedAccounts.AddAggregate(balanceColumn, CountColumnId, () => new Count<decimal>());
             _groupedAccounts.FinishInitialisation();

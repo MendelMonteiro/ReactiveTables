@@ -55,10 +55,8 @@ namespace ReactiveTables.Framework.Synchronisation
             get { return _rowManager.RowCount; }
         }
 
-        public IDictionary<string, IReactiveColumn> Columns
-        {
-            get { return _targetTable.Columns; }
-        }
+//        public IDictionary<string, IReactiveColumn> Columns { get { return _targetTable.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns { get { return _targetTable.Columns; } }
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
@@ -211,7 +209,7 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true)
         {
             throw new NotImplementedException();
         }
@@ -251,6 +249,16 @@ namespace ReactiveTables.Framework.Synchronisation
         public int GetPositionOfRow(int rowIndex)
         {
             return _rowManager.GetPositionOfRow(rowIndex);
+        }
+
+        public IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _targetTable.GetColumnByName(columnId);
+        }
+
+        public bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _targetTable.GetColumnByName(columnId, out column);
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)

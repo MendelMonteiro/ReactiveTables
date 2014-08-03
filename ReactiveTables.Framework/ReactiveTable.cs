@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 using ReactiveTables.Framework.Joins;
@@ -73,11 +72,12 @@ namespace ReactiveTables.Framework
             _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));            
         }
 
-        public abstract IReactiveColumn AddColumn(IReactiveColumn column);
+        public abstract IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true);
         public abstract T GetValue<T>(string columnId, int rowIndex);
         public abstract object GetValue(string columnId, int rowIndex);
         public abstract int RowCount { get; }
-        public abstract IDictionary<string, IReactiveColumn> Columns { get; }
+//        public abstract IDictionary<string, IReactiveColumn> Columns { get; }
+        public abstract IReadOnlyList<IReactiveColumn> Columns { get; }
 
         public abstract IReactiveColumn GetColumnByIndex(int index);
 
@@ -89,6 +89,8 @@ namespace ReactiveTables.Framework
         public abstract void ReplayRows(IObserver<TableUpdate> observer);
         public abstract int GetRowAt(int position);
         public abstract int GetPositionOfRow(int rowIndex);
+        public abstract IReactiveColumn GetColumnByName(string columnId);
+        public abstract bool GetColumnByName(string columnId, out IReactiveColumn column);
 
         public abstract IDisposable Subscribe(IObserver<TableUpdate> observer);
 
@@ -108,16 +110,9 @@ namespace ReactiveTables.Framework
     /// </summary>
     public class ReactiveTable : ReactiveTableBase, IWritableReactiveTable, IDisposable
     {
-        private readonly IndexedDictionary<string, IReactiveColumn> _columns = new IndexedDictionary<string, IReactiveColumn>();
         private readonly Subject<TableUpdate> _subject = new Subject<TableUpdate>();
-
+        private readonly ColumnList _columns = new ColumnList();
         private readonly FieldRowManager _rowManager = new FieldRowManager();
-
-        public override IReactiveColumn GetColumnByIndex(int index)
-        {
-            IList<IReactiveColumn> list = _columns;
-            return list[index];
-        }
 
         /// <summary>
         /// Create a ReactiveTable
@@ -135,18 +130,19 @@ namespace ReactiveTables.Framework
             CloneColumns(reactiveTable);
         }
 
-        public override IReactiveColumn AddColumn(IReactiveColumn column)
-        {
-            var columnId = column.ColumnId;
-            Columns.Add(columnId, column);
-            column.Subscribe(_subject);
-            // TODO: fire events for existing rows
-            return column;
-        }
 
         private IReactiveColumn<T> GetColumn<T>(string columnId)
         {
-            return (IReactiveColumn<T>) Columns[columnId];
+            return (IReactiveColumn<T>) GetColumnByName(columnId);
+        }
+
+        public override IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true)
+        {
+            if (shouldSubscribe)
+            {
+                column.Subscribe(_subject);
+            }
+            return _columns.AddColumn(column);
         }
 
         public override T GetValue<T>(string columnId, int rowIndex)
@@ -156,7 +152,7 @@ namespace ReactiveTables.Framework
 
         public override object GetValue(string columnId, int rowIndex)
         {
-            return Columns[columnId].GetValue(rowIndex);
+            return GetColumnByName(columnId).GetValue(rowIndex);
         }
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
@@ -166,15 +162,17 @@ namespace ReactiveTables.Framework
 
         public void SetValue(string columnId, int rowIndex, IReactiveColumn sourceColumn, int sourceRowIndex)
         {
-            _columns[columnId].CopyValue(rowIndex, sourceColumn, sourceRowIndex);
+            GetColumnByName(columnId).CopyValue(rowIndex, sourceColumn, sourceRowIndex);
         }
+
 
         public int AddRow()
         {
             int rowIndex = _rowManager.AddRow();
-            foreach (var column in Columns)
+            for (int index = 0; index < Columns.Count; index++)
             {
-                column.Value.AddField(rowIndex);
+                var column = Columns[index];
+                column.AddField(rowIndex);
             }
 
             var rowUpdate = new TableUpdate(TableUpdateAction.Add, rowIndex);
@@ -196,7 +194,7 @@ namespace ReactiveTables.Framework
             _rowManager.DeleteRow(rowIndex);
             foreach (var column in Columns)
             {
-                column.Value.RemoveField(rowIndex);
+                column.RemoveField(rowIndex);
             }
         }
 
@@ -230,21 +228,33 @@ namespace ReactiveTables.Framework
             return _rowManager.GetPositionOfRow(rowIndex);
         }
 
+        public override IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _columns.GetColumnByName(columnId);
+        }
+
+        public override bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _columns.GetColumnByName(columnId, out column);
+        }
+
         public override int RowCount
         {
             get { return _rowManager.RowCount; }
         }
 
-        public override IDictionary<string, IReactiveColumn> Columns
+        public override IReadOnlyList<IReactiveColumn> Columns { get { return _columns.Columns; } }
+
+        public override IReactiveColumn GetColumnByIndex(int index)
         {
-            get { return _columns; }
+            return _columns.GetColumnByIndex(index);
         }
 
         public void CloneColumns(IReactiveTable reactiveTable)
         {
             foreach (var column in reactiveTable.Columns)
             {
-                AddColumn(column.Value.Clone());
+                AddColumn(column.Clone());
             }
         }
 
@@ -268,7 +278,7 @@ namespace ReactiveTables.Framework
 
         public void Dispose()
         {
-            foreach (var reactiveColumn in Columns.Values)
+            foreach (var reactiveColumn in Columns)
             {
                 var disposable = reactiveColumn as IDisposable;
                 if (disposable != null)

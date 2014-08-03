@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using ReactiveTables.Framework.Collections;
 using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.Filters;
 
@@ -36,7 +35,7 @@ namespace ReactiveTables.Framework.Joins
         private readonly Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>> _tokens =
             new Dictionary<IObserver<TableUpdate>, Tuple<IDisposable, IDisposable>>();
 
-        private readonly IndexedDictionary<string, IReactiveColumn> _columns;
+        private readonly ColumnList _columns = new ColumnList();
         private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
         /// <summary>
@@ -52,7 +51,6 @@ namespace ReactiveTables.Framework.Joins
             _joiner = joiner;
 
             _joiner.SetObserver(_calculatedColumnSubject);
-            _columns = new IndexedDictionary<string, IReactiveColumn>();
             _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
             AddBaseTableColumns(leftTable);
             AddBaseTableColumns(rightTable);
@@ -63,7 +61,7 @@ namespace ReactiveTables.Framework.Joins
         {
             foreach (var column in table.Columns)
             {
-                Columns.Add(column.Value.ColumnId, column.Value);
+                _columns.AddColumn(column);
             }
         }
 
@@ -72,10 +70,10 @@ namespace ReactiveTables.Framework.Joins
             return _calculatedColumnSubject.Subscribe(observer);
         }
 
-        public IReactiveColumn AddColumn(IReactiveColumn column)
+        public IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe)
         {
             // Add calc'ed columns
-            Columns.Add(column.ColumnId, column);
+            _columns.AddColumn(column);
             
             var joinableCol = column as IReactiveJoinableColumn;
             if (joinableCol != null) joinableCol.SetJoiner(_joiner);
@@ -90,11 +88,11 @@ namespace ReactiveTables.Framework.Joins
             IReactiveColumn column;
             // Use the joiner for when the column is defined directly on them
             // if the table is a joined table delegate the joining to it.
-            if (_leftTable.Columns.TryGetValue(columnId, out column))
+            if (_leftTable.GetColumnByName(columnId, out column))
             {
                 return _leftTable.GetValue<T>(columnId, _joiner.GetRowIndex(column, rowIndex));
             }
-            if (_rightTable.Columns.TryGetValue(columnId, out column))
+            if (_rightTable.GetColumnByName(columnId, out column))
             {
                 return _rightTable.GetValue<T>(columnId, _joiner.GetRowIndex(column, rowIndex));
             }
@@ -107,21 +105,21 @@ namespace ReactiveTables.Framework.Joins
             IReactiveColumn column;
             // Use the joiner for when the column is defined directly on them
             // if the table is a joined table delegate the joining to it.
-            if (_leftTable.Columns.TryGetValue(columnId, out column))
+            if (_leftTable.GetColumnByName(columnId, out column))
             {
                 return _leftTable.GetValue(columnId, _joiner.GetRowIndex(column, rowIndex));
             }
-            if (_rightTable.Columns.TryGetValue(columnId, out column))
+            if (_rightTable.GetColumnByName(columnId, out column))
             {
                 return _rightTable.GetValue(columnId, _joiner.GetRowIndex(column, rowIndex));
             }
             // Otherwise return calc'ed columns
-            return Columns[columnId].GetValue(rowIndex);
+            return _columns.GetColumnByName(columnId).GetValue(rowIndex);
         }
 
         private IReactiveColumn<T> GetColumn<T>(string columnId)
         {
-            return (IReactiveColumn<T>) Columns[columnId];
+            return (IReactiveColumn<T>) _columns.GetColumnByName(columnId);
         }
 
         public int RowCount
@@ -133,15 +131,11 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        public IDictionary<string, IReactiveColumn> Columns
-        {
-            get { return _columns; }
-        }
+        public IReadOnlyList<IReactiveColumn> Columns { get { return _columns.Columns; } }
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
-            IList<IReactiveColumn> reactiveColumns = _columns;
-            return reactiveColumns[index];
+            return _columns.GetColumnByIndex(index);
         }
 
         public PropertyChangedNotifier ChangeNotifier
@@ -178,6 +172,16 @@ namespace ReactiveTables.Framework.Joins
         public int GetPositionOfRow(int rowIndex)
         {
             return _joiner.GetPositionOfRow(rowIndex);
+        }
+
+        public IReactiveColumn GetColumnByName(string columnId)
+        {
+            return _columns.GetColumnByName(columnId);
+        }
+
+        public bool GetColumnByName(string columnId, out IReactiveColumn column)
+        {
+            return _columns.GetColumnByName(columnId, out column);
         }
 
         public void Dispose()

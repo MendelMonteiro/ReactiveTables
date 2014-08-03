@@ -129,8 +129,8 @@ namespace ReactiveTables.Framework.Joins
             _rightTable = rightTable;
             _joinType = joinType;
 
-            _leftColumn = leftTable.Columns[leftIdColumn];
-            _rightColumn = rightTable.Columns[rightIdColumn];
+            _leftColumn = leftTable.GetColumnByName(leftIdColumn);
+            _rightColumn = rightTable.GetColumnByName(rightIdColumn);
 
             _leftColToken = leftTable.ReplayAndSubscribe(OnNextLeft);
             _rightColToken = rightTable.ReplayAndSubscribe(OnNextRight);
@@ -151,15 +151,17 @@ namespace ReactiveTables.Framework.Joins
             if (joinRowIndex >= _rows.Count) return -1;
 
             Row? row = _rows[joinRowIndex];
-            if (_leftTable.Columns.ContainsKey(column.ColumnId)
-                && _leftTable.Columns[column.ColumnId] == column
+            IReactiveColumn leftColumn;
+            if (_leftTable.GetColumnByName(column.ColumnId, out leftColumn)
+                && leftColumn.Equals(column)
                 && row.HasValue)
             {
                 return row.Value.LeftRowId.GetValueOrDefault(-1);
             }
 
-            if (_rightTable.Columns.ContainsKey(column.ColumnId)
-                && _rightTable.Columns[column.ColumnId] == column
+            IReactiveColumn rightColumn;
+            if (_rightTable.GetColumnByName(column.ColumnId, out rightColumn)
+                && rightColumn.Equals(column)
                 && row.HasValue)
             {
                 return row.Value.RightRowId.GetValueOrDefault(-1);
@@ -224,21 +226,21 @@ namespace ReactiveTables.Framework.Joins
             }
         }
 
-        private IList<IReactiveColumn> GetTableColumns(JoinSide side)
+        private IEnumerable<IReactiveColumn> GetTableColumns(JoinSide side)
         {
             var table = GetTableForSide(side);
-            return table.Columns.Values.ToList();
+            return table.Columns;
         }
 
         private void ProcessColumnUpdate(TableUpdate update, IReactiveColumn column)
         {
             JoinSide side;
             int columnRowIndex = update.RowIndex;
-            if (column == _leftColumn)
+            if (column.Equals(_leftColumn))
             {
                 side = JoinSide.Left;
             }
-            else if (column == _rightColumn)
+            else if (column.Equals(_rightColumn))
             {
                 side = JoinSide.Right;
             }
@@ -266,7 +268,8 @@ namespace ReactiveTables.Framework.Joins
                                             JoinSide side)
         {
             HashSet<int> joinRows;
-            if (table.Columns.ContainsKey(update.Column.ColumnId)
+            IReactiveColumn updateColumn;
+            if (table.GetColumnByName(update.Column.ColumnId, out updateColumn)
                 && columnRowsToJoinRows.TryGetValue(columnRowIndex, out joinRows))
             {
                 foreach (var joinRow in joinRows)
@@ -311,7 +314,7 @@ namespace ReactiveTables.Framework.Joins
             var table = GetTableForSide(side);
             foreach (var tableColumn in table.Columns)
             {
-                var columnUpdate = new TableUpdate(TableUpdateAction.Update, rowIndex, tableColumn.Value);
+                var columnUpdate = new TableUpdate(TableUpdateAction.Update, rowIndex, tableColumn);
                 if (_updateObservers != null) _updateObservers.OnNext(columnUpdate);
             }
         }
