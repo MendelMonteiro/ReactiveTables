@@ -175,10 +175,10 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             return 0;
         }
 
-        unsafe static void WriteDecimal(decimal d, byte[] buffer, int bufferOffset)
+        /*unsafe static void WriteDecimal(decimal d, byte[] buffer, int bufferOffset)
         {
             
-        }
+        }*/
 
         private static OperationType MapType(TableUpdateAction action)
         {
