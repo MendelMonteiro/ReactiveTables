@@ -39,6 +39,10 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _joinedTable = _table.Join(_table2, new Join<int>(_table, "IdCol", _table2, "IdCol2"));
         }
 
+        public void Prepare(int limit)
+        {
+        }
+
         public void Iterate()
         {
             var id = _table.AddRow();

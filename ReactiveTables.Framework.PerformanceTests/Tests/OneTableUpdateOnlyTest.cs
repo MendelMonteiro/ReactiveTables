@@ -17,40 +17,37 @@ using System.Runtime.CompilerServices;
 
 namespace ReactiveTables.Framework.PerformanceTests.Tests
 {
-    class OneTableWriteAndUpdateTest : TestBase, ITest
+    class OneTableUpdateOnlyTest : TestBase, ITest
     {
         private int _iterationCount;
+        private int _limit;
 
-        public OneTableWriteAndUpdateTest(int? initialSize = null)
+        public OneTableUpdateOnlyTest(int? initialSize = null)
             : base(initialSize)
         {
         }
 
         public void Prepare(int limit)
         {
+            _limit = limit;
+            for (int i = 0; i < limit; i++)
+            {
+                AddEntry(_iterationCount);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public void Iterate()
         {
             _iterationCount++;
-            var id = AddEntry(_iterationCount);
-
-            if (id > 0)
+            // Wrap around
+            if (_iterationCount >= _limit)
             {
-                var previousRow = id-1;
-                UpdateEntry(previousRow);
-
-                if (id > 1)
-                {
-                    DeleteEntry(previousRow - 1);
-                }
+                _iterationCount = 0;
             }
+            UpdateEntry(_iterationCount);
         }
 
-        public long Metric
-        {
-            get { return Table.RowCount; }
-        }
+        public long Metric { get { return Table.RowCount; } }
     }
 }

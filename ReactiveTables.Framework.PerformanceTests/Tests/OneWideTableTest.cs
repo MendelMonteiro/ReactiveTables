@@ -35,6 +35,10 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _table.AddColumn(new ReactiveColumn<DateTime>("ValueCol6"));
         }
 
+        public void Prepare(int limit)
+        {
+        }
+
         public void Iterate()
         {
             var id = _table.AddRow();

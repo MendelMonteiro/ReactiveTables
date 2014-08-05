@@ -15,7 +15,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using ReactiveTables.Framework.PerformanceTests.Tests;
 
 namespace ReactiveTables.Framework.PerformanceTests
@@ -37,12 +36,13 @@ namespace ReactiveTables.Framework.PerformanceTests
         {
             var test = Test();
 
+            test.Prepare(iterations);
+
             var watch = new Stopwatch();
             watch.Start();
             for (int i = 0; i < iterations; i++)
             {
                 test.Iterate();
-
 //                if (iterationPause > 0) Thread.Sleep(iterationPause);
             }
 

@@ -37,6 +37,10 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             groupedTable.AddAggregate(valueColumn, MaxColumnId, () => new Max<int>());
         }
 
+        public void Prepare(int limit)
+        {
+        }
+
         public void Iterate()
         {
             _batchNumber++;

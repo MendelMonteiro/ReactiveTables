@@ -17,17 +17,18 @@ using ReactiveTables.Framework.PerformanceTests.Tests;
 
 namespace ReactiveTables.Framework.PerformanceTests
 {
-    class TestLauncher
+    static class TestLauncher
     {
         public static void Main(string[] args)
         {
             try
             {
-                IterationPerformanceTest test = new IterationPerformanceTest(() => new OneTableWriteAndUpdateTest());
                 int limit;
                 if (args.Length < 1 || !int.TryParse(args[0], out limit)) limit = 3000;
                 int iterationPause;
                 if (args.Length < 2 || !int.TryParse(args[1], out iterationPause)) iterationPause = 0;
+
+                var test = new IterationPerformanceTest(() => new OneTableAddAndDeleteTest(limit));
 
                 test.Run(limit, iterationPause);
             }

@@ -39,6 +39,10 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
                                  "CalcCol2", idCol, textCol, (id, text) => text + id));
         }
 
+        public void Prepare(int limit)
+        {
+        }
+
         public void Iterate()
         {
             var id = _table.AddRow();

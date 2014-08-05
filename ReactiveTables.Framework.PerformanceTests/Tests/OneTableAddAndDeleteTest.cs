@@ -13,44 +13,39 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Runtime.CompilerServices;
-
 namespace ReactiveTables.Framework.PerformanceTests.Tests
 {
-    class OneTableWriteAndUpdateTest : TestBase, ITest
+    class OneTableAddAndDeleteTest : TestBase, ITest
     {
-        private int _iterationCount;
+        private int _limit;
+        private int _count;
+        private int _halfWay;
 
-        public OneTableWriteAndUpdateTest(int? initialSize = null)
+        public OneTableAddAndDeleteTest(int? initialSize = null)
             : base(initialSize)
         {
         }
 
         public void Prepare(int limit)
         {
+            _limit = limit;
+            _halfWay = _limit / 2;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public void Iterate()
         {
-            _iterationCount++;
-            var id = AddEntry(_iterationCount);
-
-            if (id > 0)
+            if (_count < _halfWay)
             {
-                var previousRow = id-1;
-                UpdateEntry(previousRow);
-
-                if (id > 1)
-                {
-                    DeleteEntry(previousRow - 1);
-                }
+                _count++;
+                AddEntry(_count);
+            }
+            else
+            {
+                UpdateEntry(_count - _halfWay);
+                _count++;
             }
         }
 
-        public long Metric
-        {
-            get { return Table.RowCount; }
-        }
+        public long Metric { get { return Table.RowCount; } }
     }
 }

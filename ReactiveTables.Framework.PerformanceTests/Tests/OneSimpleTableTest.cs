@@ -29,6 +29,10 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _table.AddColumn(new ReactiveColumn<decimal>("ValueCol", initialSize: initialSize));
         }
 
+        public void Prepare(int limit)
+        {
+        }
+
         public void Iterate()
         {
             var id = _table.AddRow();
