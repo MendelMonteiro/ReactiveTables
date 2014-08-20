@@ -65,7 +65,7 @@ namespace ReactiveTables.Framework
     /// </summary>
     public abstract class ReactiveTableBase : IReactiveTable
     {
-        protected readonly Lazy<PropertyChangedNotifier> _changeNotifier;
+        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
         public ReactiveTableBase()
         {
