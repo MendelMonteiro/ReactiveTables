@@ -70,7 +70,7 @@ var filteredTable = table.Filter(new DelegatePredicate1<double>(
 
 In multi-threaded real-time GUIs there's always so much code necessary to keep you  model collections up to date and then there's the question of when to marshal your updates to the GUI thread - wouldn't it be great if you could just do that once in a generic manner that would work for all your types of models?  
 
-
+Are you tired of writing INPC properties that depend on other properties of the same ViewModel and then remembering to call NotifyPropertyChanged("DependentProp") whenever you modify the source property?
 
 # FAQ
 
