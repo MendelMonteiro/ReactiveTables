@@ -24,6 +24,7 @@ namespace ReactiveTables.Framework.Aggregate
 {
     /// <summary>
     /// A table which shows an aggregated view of another source table
+    /// TODO: add allocation tests and remove allocations
     /// </summary>
     public class AggregatedTable : ReactiveTableBase, IDisposable
     {
@@ -225,7 +226,12 @@ namespace ReactiveTables.Framework.Aggregate
             notify = false;
             List<int> rowsInGroup;
             int groupedIndex;
-            if (!_groupedRows.TryGetValue(key, out rowsInGroup))
+            if (_groupedRows.TryGetValue(key, out rowsInGroup))
+            {
+                groupedIndex = _keyPositions[key];
+                rowsInGroup.Add(rowIndex);
+            }
+            else
             {
                 rowsInGroup = new List<int>();
                 groupedIndex = _groupedRows.AddWithIndex(key, rowsInGroup);
@@ -242,11 +248,6 @@ namespace ReactiveTables.Framework.Aggregate
                 {
                     _updates.OnNext(TableUpdate.NewColumnUpdate(groupedIndex, (IReactiveColumn) keyColumn));
                 }
-            }
-            else
-            {
-                groupedIndex = _keyPositions[key];
-                rowsInGroup.Add(rowIndex);
             }
             return groupedIndex;
         }
@@ -399,7 +400,8 @@ namespace ReactiveTables.Framework.Aggregate
         private int GetSourceRowIndex(int rowIndex)
         {
             // Doesn't matter which sub row we choose as we know they all have the same value
-            var sourceRowIndex = _groupedRows[rowIndex][0];
+            var groupedRow = _groupedRows[rowIndex];
+            var sourceRowIndex = groupedRow[0];
             return sourceRowIndex;
         }
 

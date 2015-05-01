@@ -32,7 +32,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             var groupedTable = new AggregatedTable(baseTable);
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
-            groupedTable.AddAggregate((IReactiveColumn<string>) groupedTable.GetColumnByName(TestTableColumns.StringColumn),
+            groupedTable.AddAggregate((IReactiveColumn<string>)groupedTable.GetColumnByName(TestTableColumns.StringColumn),
                                       "Test",
                                       () => new Count<string>());
 
@@ -146,7 +146,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             baseTable.DeleteRow(row1);
             Assert.AreEqual(2, groupedTable.RowCount);
             Assert.AreEqual(2, rowUpdates.CurrentRowCount);
-            
+
             baseTable.DeleteRow(row2);
             Assert.AreEqual(1, groupedTable.RowCount);
             Assert.AreEqual(1, rowUpdates.CurrentRowCount);
@@ -175,7 +175,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.AddColumn(new ReactiveCalculatedColumn1<string, string>(groupedCalc1,
                                                                                  groupedColumn,
                                                                                  s => s + "Calc"));
-            
+
             var row1 = baseTable.AddRow();
             baseTable.SetValue(TestTableColumns.StringColumn, row1, "Value1");
             Assert.AreEqual(1, groupedTable.RowCount);
@@ -213,7 +213,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
             groupedTable.GroupBy<int>(TestTableColumns.IdColumn);
-            
+
             RowUpdateHandler rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
 
@@ -263,7 +263,7 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             var groupedTable = new AggregatedTable(baseTable);
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
             var countCol = "CountCol";
-            groupedTable.AddAggregate((IReactiveColumn<string>) baseTable.GetColumnByName(TestTableColumns.StringColumn),
+            groupedTable.AddAggregate((IReactiveColumn<string>)baseTable.GetColumnByName(TestTableColumns.StringColumn),
                                       countCol,
                                       () => new Count<string>());
 
@@ -304,11 +304,11 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.Subscribe(rowUpdates);
             ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
-            
+
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
             var countColumn = "Aggregate.Count";
-            groupedTable.AddAggregate((IReactiveColumn<string>) baseTable.GetColumnByName(TestTableColumns.StringColumn),
+            groupedTable.AddAggregate((IReactiveColumn<string>)baseTable.GetColumnByName(TestTableColumns.StringColumn),
                                       countColumn,
                                       () => new Count<string>());
 
@@ -350,16 +350,16 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.Subscribe(rowUpdates);
             ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
-            
+
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
             var sumColumn = "Aggregate.Sum";
-            groupedTable.AddAggregate<int, int>((IReactiveColumn<int>) baseTable.GetColumnByName(TestTableColumns.IdColumn),
-                                                sumColumn,
-                                                () => new Sum<int>());
+            groupedTable.AddAggregate((IReactiveColumn<int>) baseTable.GetColumnByName(TestTableColumns.IdColumn),
+                                      sumColumn,
+                                      () => new Sum<int>());
 
             var sumColumn2 = "Aggregate.DecimalSum";
-            groupedTable.AddAggregate((IReactiveColumn<decimal>) baseTable.GetColumnByName(TestTableColumns.DecimalColumn),
+            groupedTable.AddAggregate((IReactiveColumn<decimal>)baseTable.GetColumnByName(TestTableColumns.DecimalColumn),
                                                 sumColumn2,
                                                 () => new Sum<decimal>());
 
@@ -429,12 +429,12 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
             var avgColumn = "Aggregate.Sum";
-            groupedTable.AddAggregate((IReactiveColumn<int>) baseTable.GetColumnByName(TestTableColumns.IdColumn),
+            groupedTable.AddAggregate((IReactiveColumn<int>)baseTable.GetColumnByName(TestTableColumns.IdColumn),
                                       avgColumn,
                                       () => new Average<int>());
 
             var avgColumn2 = "Aggregate.DecimalSum";
-            groupedTable.AddAggregate((IReactiveColumn<decimal>) baseTable.GetColumnByName(TestTableColumns.DecimalColumn),
+            groupedTable.AddAggregate((IReactiveColumn<decimal>)baseTable.GetColumnByName(TestTableColumns.DecimalColumn),
                                       avgColumn2,
                                       () => new Average<decimal>());
 

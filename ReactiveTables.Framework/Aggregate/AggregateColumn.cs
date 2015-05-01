@@ -33,6 +33,7 @@ namespace ReactiveTables.Framework.Aggregate
         private readonly IReactiveColumn<TIn> _sourceColumn;
         private readonly Func<IAccumulator<TIn, TOut>> _accumulatorFactory;
         private readonly List<bool> _initialised = new List<bool>();
+        // TODO: Remove un-needed accumulators
         private readonly Dictionary<int, IAccumulator<TIn, TOut>> _accumulators = new Dictionary<int, IAccumulator<TIn, TOut>>();
 
         public AggregateColumn(IReactiveColumn<TIn> sourceColumn, string columnId, 
