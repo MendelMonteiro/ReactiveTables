@@ -61,7 +61,6 @@ namespace ReactiveTables.Framework.Columns
         public void DeleteRow(int rowIndex)
         {
             RowCount--;
-            Debug.Assert(!_deletedRows.Contains(rowIndex));
             _deletedRows.Enqueue(rowIndex);
         }
 
