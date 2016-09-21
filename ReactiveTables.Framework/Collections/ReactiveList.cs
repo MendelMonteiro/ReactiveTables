@@ -49,7 +49,7 @@ namespace ReactiveTables.Framework.Collections
                 }
                 else
                 {
-                    int nextIndex = ResizeArray();
+                    var nextIndex = ResizeArray();
                     _items[nextIndex] = item;
                 }
             }
@@ -58,7 +58,7 @@ namespace ReactiveTables.Framework.Collections
 
         private int ResizeArray()
         {
-            T[] newArray = new T[_items.Length * _growthFactor];
+            var newArray = new T[_items.Length * _growthFactor];
 
             // Figure out segments to copy and copy each segment to new array so as to be contiguous
             int oldIndex = 0, newIndex = 0;
@@ -66,7 +66,7 @@ namespace ReactiveTables.Framework.Collections
             {
                 foreach (var deletedIndex in _deletedIndices)
                 {
-                    int segmentLength = deletedIndex.Key - oldIndex;
+                    var segmentLength = deletedIndex.Key - oldIndex;
                     if (segmentLength > 0)
                     {
                         Array.Copy(_items, oldIndex, newArray, newIndex, segmentLength);
@@ -108,7 +108,7 @@ namespace ReactiveTables.Framework.Collections
             throw new System.NotImplementedException();
         }
 
-        public int Count { get { return _size; } }
+        public int Count => _size;
         public bool IsReadOnly { get; private set; }
         public int IndexOf(T item)
         {
@@ -144,9 +144,9 @@ namespace ReactiveTables.Framework.Collections
         {
             if (_deletedIndices == null || _deletedIndices.Count == 0) return index;
 
-            int deletedPos = 0;
-            int internalIndex = _deletedIndices.Keys[deletedPos++];
-            int deletedCount = 0;
+            var deletedPos = 0;
+            var internalIndex = _deletedIndices.Keys[deletedPos++];
+            var deletedCount = 0;
             while (internalIndex < index)
             {
                 deletedCount++;
@@ -180,10 +180,7 @@ namespace ReactiveTables.Framework.Collections
 
             public T Current { get; private set; }
 
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
+            object IEnumerator.Current => Current;
         }
     }
 }

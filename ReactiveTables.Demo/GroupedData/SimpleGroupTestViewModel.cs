@@ -61,7 +61,7 @@ namespace ReactiveTables.Demo.GroupedData
 
         private void LoadData()
         {
-            for (int i = 0; i < 100; i++)
+            for (var i = 0; i < 100; i++)
             {
                 LoadBatch(i);
             }
@@ -87,7 +87,7 @@ namespace ReactiveTables.Demo.GroupedData
         }
 
         public DelegateCommand LoadDataCommand { get; private set; }
-        public ObservableCollection<SimpleGroupItem> Items { get; private set; }
+        public ObservableCollection<SimpleGroupItem> Items { get; }
 
         public class SimpleGroupItem : ReactiveViewModelBase
         {
@@ -101,13 +101,13 @@ namespace ReactiveTables.Demo.GroupedData
                 grouped.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
             }
 
-            public int RowIndex { get { return _rowIndex; } }
-            public string Name { get { return _grouped.GetValue<string>(GroupColumnId, _rowIndex); } }
-            public int Count { get { return _grouped.GetValue<int>(CountColumnId, _rowIndex); } }
-            public int Sum { get { return _grouped.GetValue<int>(SumColumnId, _rowIndex); } }
-            public double Average { get { return _grouped.GetValue<double>(AverageColumnId, _rowIndex); } }
-            public double Min { get { return _grouped.GetValue<int>(MinColumnId, _rowIndex); } }
-            public double Max { get { return _grouped.GetValue<int>(MaxColumnId, _rowIndex); } }
+            public int RowIndex => _rowIndex;
+            public string Name => _grouped.GetValue<string>(GroupColumnId, _rowIndex);
+            public int Count => _grouped.GetValue<int>(CountColumnId, _rowIndex);
+            public int Sum => _grouped.GetValue<int>(SumColumnId, _rowIndex);
+            public double Average => _grouped.GetValue<double>(AverageColumnId, _rowIndex);
+            public double Min => _grouped.GetValue<int>(MinColumnId, _rowIndex);
+            public double Max => _grouped.GetValue<int>(MaxColumnId, _rowIndex);
         }
     }
 }

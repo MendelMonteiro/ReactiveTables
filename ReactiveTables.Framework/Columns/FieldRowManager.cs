@@ -72,7 +72,7 @@ namespace ReactiveTables.Framework.Columns
         {
             var deletedEnum = _deletedRows.GetEnumerator();
             var firstDeleted = -1;
-            for (int i = 0; i < RowCount; i++)
+            for (var i = 0; i < RowCount; i++)
             {
                 // Find the next deleted index
                 while (firstDeleted <= i)
@@ -104,7 +104,7 @@ namespace ReactiveTables.Framework.Columns
 
             if (_deletedRows.Count == 0) return position;
             
-            int deletedCount = 0;
+            var deletedCount = 0;
             foreach (var deletedRow in _deletedRows)
             {
                 // Add to the deleted
@@ -135,7 +135,7 @@ namespace ReactiveTables.Framework.Columns
 
             //GetRows().Count(i => i <= rowIndex);
             
-            int deletedCount = 0;
+            var deletedCount = 0;
             foreach (var deletedRow in _deletedRows)
             {
                 if (deletedRow < rowIndex)

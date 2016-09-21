@@ -24,38 +24,20 @@ namespace ReactiveTables.Demo.Services
     {
         public IKernel Kernel { get; set; }
 
-        public MainViewModel MainViewModel
-        {
-            get { return Kernel.Get<MainViewModel>(); }
-        }
+        public MainViewModel MainViewModel => Kernel.Get<MainViewModel>();
 
-        public SyncfusionTestViewModel SyncfusionTestViewModel
-        {
-            get { return Kernel.Get<SyncfusionTestViewModel>(); }
-        }
+        public SyncfusionTestViewModel SyncfusionTestViewModel => Kernel.Get<SyncfusionTestViewModel>();
 
-        public XceedTestViewModel XceedTestViewModel
-        {
-            get { return Kernel.Get<XceedTestViewModel>(); }
-        }
+        public XceedTestViewModel XceedTestViewModel => Kernel.Get<XceedTestViewModel>();
 
-        public FxClientViewModel FxClientViewModel
-        {
-            get { return Kernel.Get<FxClientViewModel>(); }
-        }
+        public FxClientViewModel FxClientViewModel => Kernel.Get<FxClientViewModel>();
 
-        public FxClientSyncfusionViewModel FxSyncfusionClientViewModel
-        {
-            get { return Kernel.Get<FxClientSyncfusionViewModel>(); }
-        }
+        public FxClientSyncfusionViewModel FxSyncfusionClientViewModel => Kernel.Get<FxClientSyncfusionViewModel>();
 
-        public BrokerFeedViewModel BrokerFeedViewModel
-        {
-            get { return Kernel.Get<BrokerFeedViewModel>(); }
-        }
+        public BrokerFeedViewModel BrokerFeedViewModel => Kernel.Get<BrokerFeedViewModel>();
 
-        public GroupTestViewModel GroupTestViewModel { get { return Kernel.Get<GroupTestViewModel>(); } }
+        public GroupTestViewModel GroupTestViewModel => Kernel.Get<GroupTestViewModel>();
 
-        public GroupTestViewModelSyncfusion GroupTestSyncfusionViewModel { get { return Kernel.Get<GroupTestViewModelSyncfusion>(); } }
+        public GroupTestViewModelSyncfusion GroupTestSyncfusionViewModel => Kernel.Get<GroupTestViewModelSyncfusion>();
     }
 }

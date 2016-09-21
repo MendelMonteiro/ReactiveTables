@@ -25,7 +25,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         public bool Equals(GroupByKey other)
         {
-            for (int i = 0; i < _values.Count; i++)
+            for (var i = 0; i < _values.Count; i++)
             {
                 if (!Equals(_values[i], other._values[i]))
                     return false;

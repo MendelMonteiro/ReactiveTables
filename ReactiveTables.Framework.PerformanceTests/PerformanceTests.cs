@@ -40,11 +40,11 @@ namespace ReactiveTables.Framework.PerformanceTests
         private static void TestWriteToTable(int rowCount)
         {
             var table = TableTestHelper.CreateReactiveTable();
-            for (int i = 0; i < rowCount; i++)
+            for (var i = 0; i < rowCount; i++)
             {
                 var rowIndex = table.AddRow();
                 table.SetValue(TestTableColumns.IdColumn, rowIndex, i);
-                table.SetValue(TestTableColumns.StringColumn, rowIndex, string.Format("Entry {0}", i));
+                table.SetValue(TestTableColumns.StringColumn, rowIndex, $"Entry {i}");
                 table.SetValue(TestTableColumns.DecimalColumn, rowIndex, (decimal) i);
             }
         }
@@ -61,11 +61,11 @@ namespace ReactiveTables.Framework.PerformanceTests
             var wireTable = new ReactiveTable(uiTable);
             new TableSynchroniser(wireTable, uiTable, new DefaultThreadMarshaller());
 
-            for (int i = 0; i < rowCount; i++)
+            for (var i = 0; i < rowCount; i++)
             {
                 var rowIndex = wireTable.AddRow();
                 wireTable.SetValue(TestTableColumns.IdColumn, rowIndex, i);
-                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, string.Format("Entry {0}", i));
+                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, $"Entry {i}");
                 wireTable.SetValue(TestTableColumns.DecimalColumn, rowIndex, (decimal)i);
             }
         }
@@ -81,11 +81,11 @@ namespace ReactiveTables.Framework.PerformanceTests
             var uiTable = TableTestHelper.CreateReactiveTable();
             var wireTable = new ReactivePassThroughTable(uiTable, new DefaultThreadMarshaller());
 
-            for (int i = 0; i < rowCount; i++)
+            for (var i = 0; i < rowCount; i++)
             {
                 var rowIndex = wireTable.AddRow();
                 wireTable.SetValue(TestTableColumns.IdColumn, rowIndex, i);
-                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, string.Format("Entry {0}", i));
+                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, $"Entry {i}");
                 wireTable.SetValue(TestTableColumns.DecimalColumn, rowIndex, (decimal)i);
             }
 
@@ -101,14 +101,14 @@ namespace ReactiveTables.Framework.PerformanceTests
         private void TestSyncrhonisedBatchPassThrough(int rowCount)
         {
             var uiTable = TableTestHelper.CreateReactiveTable();
-            TimeSpan delay = TimeSpan.FromMilliseconds(250);
+            var delay = TimeSpan.FromMilliseconds(250);
             var wireTable = new ReactiveBatchedPassThroughTable(uiTable, new DefaultThreadMarshaller(), delay);
 
-            for (int i = 0; i < rowCount; i++)
+            for (var i = 0; i < rowCount; i++)
             {
                 var rowIndex = wireTable.AddRow();
                 wireTable.SetValue(TestTableColumns.IdColumn, rowIndex, i);
-                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, string.Format("Entry {0}", i));
+                wireTable.SetValue(TestTableColumns.StringColumn, rowIndex, $"Entry {i}");
                 wireTable.SetValue(TestTableColumns.DecimalColumn, rowIndex, (decimal)i);
             }
 
@@ -124,7 +124,7 @@ namespace ReactiveTables.Framework.PerformanceTests
 
         private static void RunTest(Action<int> test, int rowCount)
         {
-            Stopwatch watch = new Stopwatch();
+            var watch = new Stopwatch();
             watch.Start();
 
             test(rowCount);
@@ -140,10 +140,10 @@ namespace ReactiveTables.Framework.PerformanceTests
         public void TestGrouping()
         {
             var table1 = new ReactiveTable();
-            string GroupColumnId = "GroupCol";
+            var GroupColumnId = "GroupCol";
             var groupColumn = new ReactiveColumn<string>(GroupColumnId);
             table1.AddColumn(groupColumn);
-            string ValueColumnId = "ValueCol";
+            var ValueColumnId = "ValueCol";
             var reactiveColumn = new ReactiveColumn<int>(ValueColumnId);
             var valueColumn = reactiveColumn;
             table1.AddColumn(valueColumn);
@@ -153,21 +153,21 @@ namespace ReactiveTables.Framework.PerformanceTests
 
             var groupedTable = new AggregatedTable(table1);
             groupedTable.GroupBy<string>(groupColumn.ColumnId);
-            string CountColumnId = "Count";
+            var CountColumnId = "Count";
             groupedTable.AddAggregate(groupColumn, CountColumnId, () => new Count<string>());
-            string SumColumnId = "Sum";
+            var SumColumnId = "Sum";
             groupedTable.AddAggregate(valueColumn, SumColumnId, () => new Sum<int>());
-            string AverageColumnId = "Average";
+            var AverageColumnId = "Average";
             groupedTable.AddAggregate(valueColumn, AverageColumnId, () => new Average<int>());
-            string MinColumnId = "Min";
+            var MinColumnId = "Min";
             groupedTable.AddAggregate(valueColumn, MinColumnId, () => new Min<int>());
-            string MaxColumnId = "Max";
+            var MaxColumnId = "Max";
             groupedTable.AddAggregate(valueColumn, MaxColumnId, () => new Max<int>());
 
             RunTest(
                 count =>
                 {
-                    for (int i = 0; i < count; i++)
+                    for (var i = 0; i < count; i++)
                     {
                         var name1 = "Mendel" + i;
                         var name2 = "Marie" + i;

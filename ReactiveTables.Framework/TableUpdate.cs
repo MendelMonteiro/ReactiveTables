@@ -85,26 +85,17 @@ namespace ReactiveTables.Framework
         /// <summary>
         /// The action being performed in this update
         /// </summary>
-        public TableUpdateAction Action
-        {
-            get { return _action; }
-        }
+        public TableUpdateAction Action => _action;
 
         /// <summary>
         /// The row index of the table being affected
         /// </summary>
-        public int RowIndex
-        {
-            get { return _rowIndex; }
-        }
+        public int RowIndex => _rowIndex;
 
         /// <summary>
         /// The column being affected (or first column if multiple columns are affected)
         /// </summary>
-        public IReactiveColumn Column
-        {
-            get { return _column; }
-        }
+        public IReactiveColumn Column => _column;
 
         /// <summary>
         /// Whether this change affects the whole row
@@ -166,7 +157,7 @@ namespace ReactiveTables.Framework
 
         public override string ToString()
         {
-            return string.Format("Action: {0}, RowIndex: {1}, Column: {2}", _action, _rowIndex, _column == null ? "null" : _column.ColumnId);
+            return $"Action: {_action}, RowIndex: {_rowIndex}, Column: {(_column == null ? "null" : _column.ColumnId)}";
         }
     }
 }

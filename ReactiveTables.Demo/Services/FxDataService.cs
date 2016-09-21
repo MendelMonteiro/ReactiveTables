@@ -62,15 +62,9 @@ namespace ReactiveTables.Demo.Services
             _fxRates = GetRatesTable();
         }
 
-        public ReactiveTable FxRates
-        {
-            get { return _fxRates; }
-        }
+        public ReactiveTable FxRates => _fxRates;
 
-        public ReactiveTable Currencies
-        {
-            get { return _currencies; }
-        }
+        public ReactiveTable Currencies => _currencies;
 
         public void Start(Dispatcher dispatcher)
         {
@@ -121,7 +115,7 @@ namespace ReactiveTables.Demo.Services
 
         private void StartReceiving(IWritableReactiveTable currenciesWire, Dictionary<string, int> columnsToFieldIds, int port)
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, port);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, port);
             var client = new ReactiveTableTcpClient<IWritableReactiveTable>(new ProtobufTableDecoder(), currenciesWire,
                                                                             new ProtobufDecoderState(columnsToFieldIds.InverseUniqueDictionary()), endPoint);
             _clients.Add(client);

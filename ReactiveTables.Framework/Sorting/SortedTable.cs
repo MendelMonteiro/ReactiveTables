@@ -72,7 +72,7 @@ namespace ReactiveTables.Framework.Sorting
 
         private void DeleteAllRows()
         {
-            for (int i = 0; i < _sorter.RowCount; i++)
+            for (var i = 0; i < _sorter.RowCount; i++)
             {
                 var delete = new TableUpdate(TableUpdateAction.Delete, i);
                 _subject.OnNext(delete);
@@ -116,19 +116,16 @@ namespace ReactiveTables.Framework.Sorting
             return _sourceTable.GetValue(columnId, sourceRowId);
         }
 
-        public int RowCount { get { return _sorter.RowCount; } }
+        public int RowCount => _sorter.RowCount;
 
-        public IReadOnlyList<IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns => _sourceTable.Columns;
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
             return _sourceTable.GetColumnByIndex(index);
         }
 
-        public PropertyChangedNotifier ChangeNotifier
-        {
-            get { return _changeNotifier.Value; }
-        }
+        public PropertyChangedNotifier ChangeNotifier => _changeNotifier.Value;
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {
@@ -181,7 +178,7 @@ namespace ReactiveTables.Framework.Sorting
             if (_rowPosUpdatedSubject != null) _rowPosUpdatedSubject.Dispose();
         }
 
-        public IObservable<bool> RowPositionsUpdated { get; private set; }
+        public IObservable<bool> RowPositionsUpdated { get; }
     }
 
     class DefaultSorter: ISorter
@@ -203,7 +200,7 @@ namespace ReactiveTables.Framework.Sorting
             return _sourceTable.GetRowAt(position);
         }
 
-        public int RowCount { get { return _sourceTable.RowCount; } }
+        public int RowCount => _sourceTable.RowCount;
 
         public IEnumerable<int> GetAllRows()
         {
@@ -281,7 +278,7 @@ namespace ReactiveTables.Framework.Sorting
             var keyValuePair = new KeyValuePair<T, int>(sortColValue, update.RowIndex);
 
             needToResort = false;
-            int sortedRowId = -1;
+            var sortedRowId = -1;
             switch (update.Action)
             {
                 case TableUpdateAction.Add:
@@ -336,7 +333,7 @@ namespace ReactiveTables.Framework.Sorting
             return _keysToRows[position].Value;
         }
 
-        public int RowCount { get { return _keysToRows.Count; } }
+        public int RowCount => _keysToRows.Count;
 
         public IEnumerable<int> GetAllRows()
         {

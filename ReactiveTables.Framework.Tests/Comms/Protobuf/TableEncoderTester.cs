@@ -60,12 +60,12 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             {
                 IReactiveColumn col;
                 Assert.IsTrue(table.GetColumnByName(column.ColumnId, out col));
-                for (int i = 0; i < expectedTable.RowCount; i++)
+                for (var i = 0; i < expectedTable.RowCount; i++)
                 {
                     // Cheating a little by relying on the fact that i know the row id starts at 0.
                     Assert.AreEqual(expectedTable.GetValue(column.ColumnId, i),
                                     table.GetValue(column.ColumnId, i),
-                                    string.Format("For column {0}", column.ColumnId));
+                                    $"For column {column.ColumnId}");
                 }
             }
         }

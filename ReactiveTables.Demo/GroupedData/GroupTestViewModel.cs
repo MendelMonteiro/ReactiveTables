@@ -32,7 +32,7 @@ namespace ReactiveTables.Demo.GroupedData
         public GroupTestViewModelSyncfusion(IAccountBalanceDataService service)
         {
             var accountsTable = service.Accounts;
-            AggregatedTable groupedAccounts = new AggregatedTable(accountsTable);
+            var groupedAccounts = new AggregatedTable(accountsTable);
             groupedAccounts.GroupBy<int>(AccountColumns.PersonId);
             var balanceColumn = (IReactiveColumn<decimal>)accountsTable.GetColumnByName(AccountColumns.AccountBalance);
             groupedAccounts.AddAggregate(balanceColumn, GroupTestViewModel.SumColumnId, () => new Sum<decimal>());
@@ -102,7 +102,7 @@ namespace ReactiveTables.Demo.GroupedData
         }
 
         public ObservableCollection<AccountViewModel> Accounts { get; private set; }
-        public ObservableCollection<BalanceGroup> Groups { get; private set; }
+        public ObservableCollection<BalanceGroup> Groups { get; }
 
         internal class BalanceGroup : ReactiveViewModelBase, IDisposable
         {
@@ -117,13 +117,13 @@ namespace ReactiveTables.Demo.GroupedData
                 groups.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
             }
 
-            public int PersonId { get { return _groups.GetValue<int>(AccountColumns.PersonId, _rowIndex); } }
+            public int PersonId => _groups.GetValue<int>(AccountColumns.PersonId, _rowIndex);
 
-            public decimal BalanceSum { get { return _groups.GetValue<decimal>(SumColumnId, _rowIndex); } }
+            public decimal BalanceSum => _groups.GetValue<decimal>(SumColumnId, _rowIndex);
 
-            public int Accounts { get { return _groups.GetValue<int>(CountColumnId, _rowIndex); } }
+            public int Accounts => _groups.GetValue<int>(CountColumnId, _rowIndex);
 
-            public int RowIndex { get { return _rowIndex; } }
+            public int RowIndex => _rowIndex;
 
             public void Dispose()
             {

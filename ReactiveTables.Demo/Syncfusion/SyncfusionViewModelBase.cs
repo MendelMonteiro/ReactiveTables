@@ -131,6 +131,6 @@ namespace ReactiveTables.Demo.Syncfusion
         }
 
         // TODO: Handle columns added after the ViewModel is created.
-        public int ColumnCount { get { return _table.Columns.Count; } }
+        public int ColumnCount => _table.Columns.Count;
     }
 }

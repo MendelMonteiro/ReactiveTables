@@ -45,9 +45,9 @@ namespace ReactiveTables.Demo
             StopData = new DelegateCommand(() => _dataService.Stop());
         }
 
-        public AccountsViewModel Accounts { get; private set; }
-        public PeopleViewModel People { get; private set; }
-        public PersonAccountsViewModel PersonAccounts { get; private set; }
+        public AccountsViewModel Accounts { get; }
+        public PeopleViewModel People { get; }
+        public PersonAccountsViewModel PersonAccounts { get; }
         public ReactiveBindingList PeopleBindingList { get; set; }
 
         public ICommand StopData { get; private set; }

@@ -77,10 +77,10 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                 Debug.WriteLine("Received {0} bytes - previous read {1} bytes", read, tornMessageSize);
                 read += tornMessageSize;
                 tornMessageSize = 0;
-                int bufferOffset = 0;
+                var bufferOffset = 0;
                 while (bufferOffset < read)
                 {
-                    int messageStart = bufferOffset;
+                    var messageStart = bufferOffset;
                     if (bufferOffset + MessageHeader.Size > read)
                     {
                         tornMessageSize = MoveTornMessage(read, messageStart);
@@ -143,7 +143,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
 
         private int MoveTornMessage(int read, int messageStart)
         {
-            int tornMessageSize = read - messageStart;
+            var tornMessageSize = read - messageStart;
             Buffer.BlockCopy(_byteArray, messageStart, _byteArray, 0, tornMessageSize);
             Debug.WriteLine("Moved torn message of size {0} from buffer {1} of {2}", tornMessageSize, messageStart, read);
             return tornMessageSize;
@@ -170,7 +170,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             else if (column.Type == typeof(string))
             {
                 if (remaining < sizeof(ushort)) return -1;
-                ushort stringLength = buffer.Uint16GetLittleEndian(bufferOffset);
+                var stringLength = buffer.Uint16GetLittleEndian(bufferOffset);
 
                 bufferOffset += sizeof(ushort);
                 remaining = read - bufferOffset;
@@ -184,7 +184,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             else if (column.Type == typeof(bool))
             {
                 if (remaining < sizeof(byte)) return -1;
-                byte b = buffer.CharGet(bufferOffset);
+                var b = buffer.CharGet(bufferOffset);
                 table.SetValue(columnId, rowId, b == 1);
                 return sizeof(byte);
             }
@@ -248,7 +248,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
 
         public static void TestDouble()
         {
-            DirectBuffer b = new DirectBuffer(new byte[16]);
+            var b = new DirectBuffer(new byte[16]);
             var initial = 123.456;
             b.DoublePutLittleEndian(0, initial);
 

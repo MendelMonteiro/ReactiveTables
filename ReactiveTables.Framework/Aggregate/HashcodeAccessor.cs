@@ -30,13 +30,14 @@ namespace ReactiveTables.Framework.Aggregate
             return value.GetHashCode();
         }
 
-        public string ColumnId { get { return _sourceColumn.ColumnId; } }
+        public string ColumnId => _sourceColumn.ColumnId;
+
         public void NotifyObserversOnNext(int index)
         {
             _updates.OnNext(new TableUpdate(TableUpdateAction.Update, index, this));
         }
 
-        public Type Type { get { return typeof (T); } }
+        public Type Type => typeof (T);
 
         public void AddField(int rowIndex)
         {

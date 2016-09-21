@@ -34,55 +34,25 @@ namespace ReactiveTables.Demo.Client
             _table.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowId);
         }
 
-        public string CurrencyPair
-        {
-            get { return _table.GetValue<string>(FxTableDefinitions.FxRates.CcyPairId, _rowId); }
-        }
+        public string CurrencyPair => _table.GetValue<string>(FxTableDefinitions.FxRates.CcyPairId, _rowId);
 
-        public double Bid
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.Bid, _rowId); }
-        }
+        public double Bid => _table.GetValue<double>(FxTableDefinitions.FxRates.Bid, _rowId);
 
-        public double Ask
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.Ask, _rowId); }
-        }
+        public double Ask => _table.GetValue<double>(FxTableDefinitions.FxRates.Ask, _rowId);
 
-        public double Open
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.Open, _rowId); }
-        }
+        public double Open => _table.GetValue<double>(FxTableDefinitions.FxRates.Open, _rowId);
 
-        public double Close
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.Close, _rowId); }
-        }
+        public double Close => _table.GetValue<double>(FxTableDefinitions.FxRates.Close, _rowId);
 
-        public double YearRangeStart
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.YearRangeStart, _rowId); }
-        }
+        public double YearRangeStart => _table.GetValue<double>(FxTableDefinitions.FxRates.YearRangeStart, _rowId);
 
-        public double YearRangeEnd
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.YearRangeEnd, _rowId); }
-        }
+        public double YearRangeEnd => _table.GetValue<double>(FxTableDefinitions.FxRates.YearRangeEnd, _rowId);
 
-        public double Change
-        {
-            get { return _table.GetValue<double>(FxTableDefinitions.FxRates.Change, _rowId); }
-        }
+        public double Change => _table.GetValue<double>(FxTableDefinitions.FxRates.Change, _rowId);
 
-        public DateTime Time
-        {
-            get { return _table.GetValue<DateTime>(FxTableDefinitions.FxRates.Time, _rowId); }
-        }
+        public DateTime Time => _table.GetValue<DateTime>(FxTableDefinitions.FxRates.Time, _rowId);
 
-        public double LongTime
-        {
-            get { return _table.GetValue<double>(FxDataService.CalculateColumns.FxRates.LongTime, _rowId); }
-        }
+        public double LongTime => _table.GetValue<double>(FxDataService.CalculateColumns.FxRates.LongTime, _rowId);
 
         public void Dispose()
         {

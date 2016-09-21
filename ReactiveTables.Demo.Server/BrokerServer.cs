@@ -183,7 +183,7 @@ namespace ReactiveTables.Demo.Server
             _table = table;
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// All Broker feeds must be started in same thread so that AddRow is called on same thread.
@@ -191,12 +191,12 @@ namespace ReactiveTables.Demo.Server
         public void Start()
         {
             _rowIndeces = new int[_ccyPairs.Length*_maturities.Length];
-            int count = 0;
+            var count = 0;
             foreach (var ccyPair in _ccyPairs)
             {
-                for (int i = 0; i < _maturities.Length; i++)
+                for (var i = 0; i < _maturities.Length; i++)
                 {
-                    int rowIndex = _table.AddRow();
+                    var rowIndex = _table.AddRow();
                     _rowIndeces[count++] = rowIndex;
                     _table.SetValue(BrokerTableDefinition.BrokerColumns.MaturityColumn, rowIndex, _maturities[i]);
                     _table.SetValue(BrokerTableDefinition.BrokerColumns.CcyPairColumn, rowIndex, ccyPair);
@@ -210,7 +210,7 @@ namespace ReactiveTables.Demo.Server
         {
             while (true)
             {
-                for (int i = 0; i < _rowIndeces.Length; i++)
+                for (var i = 0; i < _rowIndeces.Length; i++)
                 {
                     _table.SetValue(BrokerTableDefinition.BrokerColumns.BidColumn, _rowIndeces[i], _random.NextDouble());
                     _table.SetValue(BrokerTableDefinition.BrokerColumns.AskColumn, _rowIndeces[i], _random.NextDouble());

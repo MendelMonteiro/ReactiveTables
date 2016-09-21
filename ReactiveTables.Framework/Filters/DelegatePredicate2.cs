@@ -18,7 +18,7 @@ namespace ReactiveTables.Framework.Filters
             Columns = new List<string> { column1, column2 };
         }
 
-        public IList<string> Columns { get; private set; }
+        public IList<string> Columns { get; }
 
         public bool RowIsVisible(IReactiveTable sourceTable, int rowIndex)
         {

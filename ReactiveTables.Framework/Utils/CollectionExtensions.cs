@@ -33,8 +33,9 @@ namespace ReactiveTables.Framework.Utils
         public static int IndexOf<T>(this IList<T> collection, Predicate<T> predicate)
         {
             var i = 0;
-            foreach (var foo in collection)
+            for (var index = 0; index < collection.Count; index++)
             {
+                var foo = collection[index];
                 if (predicate(foo))
                 {
                     return i;

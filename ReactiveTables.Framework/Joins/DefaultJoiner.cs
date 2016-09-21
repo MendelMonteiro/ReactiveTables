@@ -44,7 +44,7 @@ namespace ReactiveTables.Framework.Joins
 
         public IEnumerable<int> GetRows()
         {
-            for (int i = 0; i < RowCount; i++)
+            for (var i = 0; i < RowCount; i++)
             {
                 yield return i;
             }

@@ -59,7 +59,7 @@ namespace ReactiveTables.Framework.Collections
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            int i = 0;
+            var i = 0;
             foreach (var row in _rowManager.GetRows())
             {
                 array[i++] = _list[row];
@@ -71,12 +71,9 @@ namespace ReactiveTables.Framework.Collections
             throw new System.NotImplementedException();
         }
 
-        public int Count
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public int Count => _rowManager.RowCount;
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         public int IndexOf(T item)
         {

@@ -13,7 +13,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, true));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 123.123m);
@@ -35,7 +35,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var rawTable = TestTableHelper.CreateReactiveTable();
             var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, false));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 123.123m);
@@ -57,7 +57,7 @@ namespace ReactiveTables.Framework.Tests.Filters
                 new DelegatePredicate1<string>(TestTableColumns.StringColumn,
                                                s => !string.IsNullOrEmpty(s) && s.EndsWith("2")));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 123.123m);
@@ -82,7 +82,7 @@ namespace ReactiveTables.Framework.Tests.Filters
                                                         TestTableColumns.DecimalColumn,
                                                         (s, d) => !string.IsNullOrEmpty(s) && s.StartsWith("Blah") && d > 100m));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 23.123m);
@@ -109,7 +109,7 @@ namespace ReactiveTables.Framework.Tests.Filters
 
             var filteredTable = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, false));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             Assert.AreEqual(0, filteredTable.RowCount);
@@ -117,7 +117,7 @@ namespace ReactiveTables.Framework.Tests.Filters
 
             var filteredTable2 = rawTable.Filter(new TestPredicate(new List<string> {TestTableColumns.IdColumn}, true));
 
-            RowUpdateHandler updateHandler2 = new RowUpdateHandler();
+            var updateHandler2 = new RowUpdateHandler();
             filteredTable2.Subscribe(updateHandler2);
 
             Assert.AreEqual(2, filteredTable2.RowCount);
@@ -134,7 +134,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var filteredTable = (FilteredTable)rawTable.Filter(
                 new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(table1, 1, "Blah1", 123.123m);
@@ -235,7 +235,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var filteredTable = (FilteredTable) rawTable.Filter(
                 new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             Assert.AreEqual(0, rawTable.RowCount);
@@ -277,7 +277,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var filteredTable = (FilteredTable)rawTable.Filter(
                 new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 123.123m);
@@ -322,7 +322,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var filteredTable = (FilteredTable)rawTable.Filter(
                 new DelegatePredicate1<string>(TestTableColumns.StringColumn, s => visible[0]));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 1, "Blah1", 123.123m);
@@ -403,7 +403,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             var filteredTable = (FilteredTable) rawTable.Filter(new DelegatePredicate1<decimal>(
                                                                     TestTableColumns.DecimalColumn, s => s > filter[0]));
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             filteredTable.Subscribe(updateHandler);
 
             AddRow(rawTable, 4, "Foo4", 4);
@@ -462,7 +462,7 @@ namespace ReactiveTables.Framework.Tests.Filters
             _rowIsVisible = rowIsVisible;
         }
 
-        public IList<string> Columns { get; private set; }
+        public IList<string> Columns { get; }
 
         public bool RowIsVisible(IReactiveTable sourceTable, int rowIndex)
         {

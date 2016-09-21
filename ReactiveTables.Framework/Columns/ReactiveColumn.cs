@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework.Columns
             Fields = initialSize == null ? new List<T>() : new List<T>(initialSize.Value);
         }
 
-        private List<T> Fields { get; set; }
+        private List<T> Fields { get; }
 
         public override void AddField(int rowIndex)
         {
@@ -73,7 +73,7 @@ namespace ReactiveTables.Framework.Columns
         {
             if (_index != null)
             {
-                T value = Fields[rowIndex];
+                var value = Fields[rowIndex];
                 _index.RemoveRowValue(value);
             }
             Fields[rowIndex] = default(T);
@@ -88,7 +88,7 @@ namespace ReactiveTables.Framework.Columns
         {
             if (_index != null)
             {
-                T oldValue = Fields[rowIndex];
+                var oldValue = Fields[rowIndex];
                 _index.SetRowValue(rowIndex, value, oldValue);
             }
             Fields[rowIndex] = value;

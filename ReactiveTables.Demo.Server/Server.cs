@@ -73,7 +73,7 @@ namespace ReactiveTables.Demo.Server
 
         private static ReactiveTable GetRatesTable()
         {
-            ReactiveTable fxRates = new ReactiveTable();
+            var fxRates = new ReactiveTable();
             fxRates.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.FxRates.CcyPairId));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Bid));
             fxRates.AddColumn(new ReactiveColumn<double>(FxTableDefinitions.FxRates.Ask));
@@ -89,7 +89,7 @@ namespace ReactiveTables.Demo.Server
 
         private static ReactiveTable GetCurrenciesTable()
         {
-            ReactiveTable currencies = new ReactiveTable();
+            var currencies = new ReactiveTable();
             currencies.AddColumn(new ReactiveColumn<int>(FxTableDefinitions.CurrencyPair.Id));
             currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.CcyPair));
             currencies.AddColumn(new ReactiveColumn<string>(FxTableDefinitions.CurrencyPair.Ccy1));
@@ -99,12 +99,12 @@ namespace ReactiveTables.Demo.Server
 
         private void StreamCurrencies(object o)
         {
-            ReactiveTable currencies = (ReactiveTable)o;
+            var currencies = (ReactiveTable)o;
 
-            int ccyPairId = 1;
-            for (int i = 0; i < _currencyList.Length; i++)
+            var ccyPairId = 1;
+            for (var i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < _currencyList.Length; j++)
+                for (var j = i + 1; j < _currencyList.Length; j++)
                 {
                     var ccy1 = _currencyList[i];
                     var ccy2 = _currencyList[j];
@@ -126,9 +126,9 @@ namespace ReactiveTables.Demo.Server
 
         private void StreamRates(object o)
         {
-            ReactiveTable fxRates = (ReactiveTable)o;
+            var fxRates = (ReactiveTable)o;
 
-            Dictionary<string, int> ccyPairsToRowIds = new Dictionary<string, int>();
+            var ccyPairsToRowIds = new Dictionary<string, int>();
             AddRates(fxRates, ccyPairsToRowIds);
             UpdateRates(ccyPairsToRowIds, fxRates);
 
@@ -143,9 +143,9 @@ namespace ReactiveTables.Demo.Server
         
         private void AddRates(ReactiveTable fxRates, Dictionary<string, int> ccyPairsToRowIds)
         {
-            for (int i = 0; i < _currencyList.Length; i++)
+            for (var i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < _currencyList.Length; j++)
+                for (var j = i + 1; j < _currencyList.Length; j++)
                 {
                     var ccy1 = _currencyList[i];
                     var ccy2 = _currencyList[j];
@@ -159,9 +159,9 @@ namespace ReactiveTables.Demo.Server
 
         private void UpdateRates(Dictionary<string, int> ccyPairsToRowIds, IWritableReactiveTable fxRates, bool full = true)
         {
-            for (int i = 0; i < _currencyList.Length; i++)
+            for (var i = 0; i < _currencyList.Length; i++)
             {
-                for (int j = i + 1; j < _currencyList.Length; j++)
+                for (var j = i + 1; j < _currencyList.Length; j++)
                 {
                     var ccy1 = _currencyList[i];
                     var ccy2 = _currencyList[j];
@@ -252,20 +252,11 @@ namespace ReactiveTables.Demo.Server
             }
         }
 
-        public override bool CanRead
-        {
-            get { return false; }
-        }
+        public override bool CanRead => false;
 
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
+        public override bool CanSeek => false;
 
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
+        public override bool CanWrite => true;
 
         public override long Length
         {

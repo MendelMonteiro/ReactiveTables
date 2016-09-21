@@ -27,10 +27,7 @@ namespace ReactiveTables.Demo.Utils
 
         public int Current { get; private set; }
 
-        object IEnumerator.Current
-        {
-            get { return _rows.Current; }
-        }
+        object IEnumerator.Current => _rows.Current;
 
         public void Dispose()
         {

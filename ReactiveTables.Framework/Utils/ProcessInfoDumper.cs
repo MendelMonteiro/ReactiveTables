@@ -23,13 +23,13 @@ namespace ReactiveTables.Framework.Utils
     {
         public static void Dump()
         {
-            string info = GetProcessInfo();
+            var info = GetProcessInfo();
             Console.WriteLine(info);
         }
 
         public static string GetProcessInfo()
         {
-            StringBuilder info = new StringBuilder();
+            var info = new StringBuilder();
             var categories = PerformanceCounterCategory.GetCategories();
             foreach (var category in categories.Where(c => c.CategoryName.StartsWith(".NET") &&
                                                            c.CategoryType == PerformanceCounterCategoryType.SingleInstance))
@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework.Utils
                         try
                         {
                             info.Append('\t');
-                            info.AppendLine(string.Format("{0} : {1:N}", counter.CounterName, counter.NextValue()));
+                            info.AppendLine($"{counter.CounterName} : {counter.NextValue():N}");
 //                            Console.WriteLine("\t" + counter.CounterName);
                         }
                         catch (Exception ex)

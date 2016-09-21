@@ -39,10 +39,7 @@ namespace ReactiveTables.Framework.Utils
             _rightToLeft.Clear();
         }
 
-        public int Count
-        {
-            get { return _leftToRight.Count; }
-        }
+        public int Count => _leftToRight.Count;
 
         public void Add(TLeft key, TRight value)
         {

@@ -12,8 +12,8 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <TextBlock  Margin="10">Filter balances below</TextBlock>
-            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10"></TextBox>
-            <TextBlock Text="Sort by: " Margin="10"/>
+            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10" />
+          <TextBlock Text="Sort by: " Margin="10"/>
             <ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding SortByColumn}" Margin="10"/>
         </StackPanel>
         <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black">

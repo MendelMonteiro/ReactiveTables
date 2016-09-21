@@ -32,35 +32,17 @@ namespace ReactiveTables.Demo
             _personAccounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowIndex);
         }
 
-        public int AccountId
-        {
-            get { return _personAccounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }
-        }
+        public int AccountId => _personAccounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex);
 
-        public int PersonId
-        {
-            get { return _personAccounts.GetValue<int>(PersonColumns.IdColumn, _rowIndex); }
-        }
+        public int PersonId => _personAccounts.GetValue<int>(PersonColumns.IdColumn, _rowIndex);
 
-        public decimal AccountBalance
-        {
-            get { return _personAccounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex); }
-        }
+        public decimal AccountBalance => _personAccounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex);
 
-        public string Name
-        {
-            get { return _personAccounts.GetValue<string>(PersonColumns.NameColumn, _rowIndex); }
-        }
+        public string Name => _personAccounts.GetValue<string>(PersonColumns.NameColumn, _rowIndex);
 
-        public string AccountDetails
-        {
-            get { return _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, _rowIndex); }
-        }
+        public string AccountDetails => _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, _rowIndex);
 
-        public int RowIndex
-        {
-            get { return _rowIndex; }
-        }
+        public int RowIndex => _rowIndex;
 
         public void Dispose()
         {

@@ -27,7 +27,7 @@ namespace ReactiveTables.Demo.Utils
             {
                 if (onCollectionChanged != null)
                 {
-                    object obj = _table.GetValue(update.Column.ColumnId, update.RowIndex);
+                    var obj = _table.GetValue(update.Column.ColumnId, update.RowIndex);
                     onCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, obj, update.RowIndex));
                 }
             }
@@ -43,7 +43,7 @@ namespace ReactiveTables.Demo.Utils
             {
                 if (onCollectionChanged != null)
                 {
-                    object obj = _table.GetValue(update.Column.ColumnId, update.RowIndex);
+                    var obj = _table.GetValue(update.Column.ColumnId, update.RowIndex);
                     onCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, obj, update.RowIndex));
                 }
             }
@@ -59,7 +59,7 @@ namespace ReactiveTables.Demo.Utils
             throw new NotImplementedException();
         }
 
-        public int Count { get { return _table.RowCount; } }
+        public int Count => _table.RowCount;
         public object SyncRoot { get; private set; }
         public bool IsSynchronized { get; private set; }
     }

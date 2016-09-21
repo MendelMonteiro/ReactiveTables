@@ -33,22 +33,13 @@ namespace ReactiveTables.Demo
             _accounts.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
-        public int RowIndex { get { return _rowIndex; } }
+        public int RowIndex => _rowIndex;
 
-        public int AccountId
-        {
-            get { return _accounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex); }
-        }
+        public int AccountId => _accounts.GetValue<int>(AccountColumns.IdColumn, _rowIndex);
 
-        public int PersonId
-        {
-            get { return _accounts.GetValue<int>(AccountColumns.PersonId, _rowIndex); }
-        }
+        public int PersonId => _accounts.GetValue<int>(AccountColumns.PersonId, _rowIndex);
 
-        public decimal AccountBalance
-        {
-            get { return _accounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex); }
-        }
+        public decimal AccountBalance => _accounts.GetValue<decimal>(AccountColumns.AccountBalance, _rowIndex);
 
         public void Dispose()
         {
@@ -70,7 +61,7 @@ namespace ReactiveTables.Demo
                     update => { if (update.IsRowUpdate()) Accounts.Add(new AccountViewModel(_accounts, update.RowIndex)); });
         }
 
-        public ObservableCollection<AccountViewModel> Accounts { get; private set; }
+        public ObservableCollection<AccountViewModel> Accounts { get; }
 
         public void Dispose()
         {

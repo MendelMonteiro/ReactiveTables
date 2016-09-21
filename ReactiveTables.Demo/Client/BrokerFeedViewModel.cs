@@ -95,10 +95,7 @@ namespace ReactiveTables.Demo.Client
             currencyPairsWire.SetValue(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected, row, false);
         }
 
-        public BrokerFeedCurrencyPairsViewModel CurrencyPairsViewModel
-        {
-            get { return _currencyPairsViewModel; }
-        }
+        public BrokerFeedCurrencyPairsViewModel CurrencyPairsViewModel => _currencyPairsViewModel;
 
         public DelegateCommand AddCcyCommand { get; private set; }
 

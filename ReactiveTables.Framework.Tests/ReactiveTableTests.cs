@@ -104,7 +104,7 @@ namespace ReactiveTables.Framework.Tests
             table.SetValue(TestTableColumns.StringColumn, addedRowIndex, "blah");
             table.SetValue(TestTableColumns.DecimalColumn, addedRowIndex, 324.34m);
 
-            int rowIndex = table.Find(TestTableColumns.StringColumn, "blah");
+            var rowIndex = table.Find(TestTableColumns.StringColumn, "blah");
             Assert.AreEqual(addedRowIndex, rowIndex);
 
             rowIndex = table.Find(TestTableColumns.StringColumn, "blah2");

@@ -122,26 +122,16 @@ namespace ReactiveTables.Framework.Joins
             return (IReactiveColumn<T>) _columns.GetColumnByName(columnId);
         }
 
-        public int RowCount
-        {
-            get
-            {
-                // Delegate to the joiner
-                return _joiner.RowCount;
-            }
-        }
+        public int RowCount => _joiner.RowCount;
 
-        public IReadOnlyList<IReactiveColumn> Columns { get { return _columns.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns => _columns.Columns;
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
             return _columns.GetColumnByIndex(index);
         }
 
-        public PropertyChangedNotifier ChangeNotifier
-        {
-            get { return _changeNotifier.Value; }
-        }
+        public PropertyChangedNotifier ChangeNotifier => _changeNotifier.Value;
 
         public IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
         {

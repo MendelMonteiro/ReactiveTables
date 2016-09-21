@@ -38,7 +38,7 @@ namespace ReactiveTables.Demo
             CurrentPerson = People.LastOrDefault();
         }
         
-        public ObservableCollection<PersonViewModel> People { get; private set; }
+        public ObservableCollection<PersonViewModel> People { get; }
 
         public PersonViewModel CurrentPerson { get; private set; }
 
@@ -47,9 +47,9 @@ namespace ReactiveTables.Demo
         public void Dispose()
         {
             _subscription.Dispose();
-            foreach (var PersonViewModel in People)
+            foreach (var personViewModel in People)
             {
-                PersonViewModel.Dispose();
+                personViewModel.Dispose();
             }
         }
     }

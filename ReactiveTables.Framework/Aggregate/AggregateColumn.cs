@@ -45,9 +45,9 @@ namespace ReactiveTables.Framework.Aggregate
             ColumnId = columnId;
         }
 
-        public IReactiveColumn SourceColumn { get { return _sourceColumn; } }
+        public IReactiveColumn SourceColumn => _sourceColumn;
 
-        private List<TOut> Fields { get; set; }
+        private List<TOut> Fields { get; }
 
         public void ProcessValue(int sourceRowIndex, int rowIndex)
         {

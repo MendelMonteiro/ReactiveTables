@@ -89,9 +89,9 @@ namespace ReactiveTables.Framework.Collections
             throw new NotImplementedException();
         }
 
-        public int Count { get { return _dictionary.Count; } }
+        public int Count => _dictionary.Count;
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         public int IndexOf(TValue item)
         {
@@ -194,7 +194,7 @@ namespace ReactiveTables.Framework.Collections
             }
         }
 
-        public ICollection<TKey> Keys { get { return _dictionary.Keys; } }
-        public ICollection<TValue> Values { get { return _dictionary.Values; } }
+        public ICollection<TKey> Keys => _dictionary.Keys;
+        public ICollection<TValue> Values => _dictionary.Values;
     }
 }

@@ -78,6 +78,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _highWaterMark = Math.Max(_table1.RowCount, _highWaterMark);
         }
 
-        public long Metric { get { return _highWaterMark; } }
+        public long Metric => _highWaterMark;
     }
 }

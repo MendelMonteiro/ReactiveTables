@@ -16,8 +16,8 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
         {
             var tableEncoderTester = new TableEncoderTester();
             // Setup encoder
-            SbeTableEncoder encoder = new SbeTableEncoder();
-            MemoryStream stream = new MemoryStream();
+            var encoder = new SbeTableEncoder();
+            var stream = new MemoryStream();
             var table = TestTableHelper.CreateReactiveTableFull();
             var columnsToFieldIds = new Dictionary<string, int>
                                         {
@@ -49,7 +49,7 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
 
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
-            SbeTableDecoder tableDecoder = new SbeTableDecoder();
+            var tableDecoder = new SbeTableDecoder();
             var t = Task.Run(() => 
             tableDecoder.Setup(stream, destTable, new SbeTableDecoderState {FieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary()})
                 );
@@ -65,8 +65,8 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
         {
             var tableEncoderTester = new TableEncoderTester();
             // Setup encoder
-            SbeTableEncoder encoder = new SbeTableEncoder();
-            MemoryStream stream = new MemoryStream();
+            var encoder = new SbeTableEncoder();
+            var stream = new MemoryStream();
             var table = TestTableHelper.CreateReactiveTableFull();
             var columnsToFieldIds = new Dictionary<string, int>
                                         {
@@ -100,7 +100,7 @@ namespace ReactiveTables.Framework.Tests.Comms.SimpleBinaryEncoding
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
             // Read in chunks to simulate receiving over a network stream
-            SbeTableDecoder tableDecoder = new SbeTableDecoder(60);
+            var tableDecoder = new SbeTableDecoder(60);
             var t = Task.Run(() =>
                              tableDecoder.Setup(stream, destTable, new SbeTableDecoderState {FieldIdsToColumns = columnsToFieldIds.InverseUniqueDictionary()})
                 );

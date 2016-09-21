@@ -73,12 +73,12 @@ namespace ReactiveTables.Framework.Protobuf
 
         private void ReadStream(Stream stream, Dictionary<int, int> remoteToLocalRowIds)
         {
-            int len = 0;
+            var len = 0;
             if (WithLengthPrefix)
             {
                 // Read the length of the message from the stream.
                 // DirectReadVarintInt32 calls Stream.ReadByte() which allocates a one byte array on every call - yuck!
-                int header = ProtoReader.DirectReadVarintInt32(stream);
+                var header = ProtoReader.DirectReadVarintInt32(stream);
                 len = ProtoReader.DirectReadVarintInt32(stream);
             }
             // Allocation of protoreader for each message - blurghh!
@@ -118,7 +118,7 @@ namespace ReactiveTables.Framework.Protobuf
         {
             var token = ProtoReader.StartSubItem(reader);
 
-            int fieldId = reader.ReadFieldHeader();
+            var fieldId = reader.ReadFieldHeader();
             if (fieldId == ProtobufFieldIds.RowId) // Check for row id
             {
                 var rowId = reader.ReadInt32();

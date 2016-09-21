@@ -62,7 +62,7 @@ namespace ReactiveTables.Framework.Comms
         /// <param name="encoderState"></param>
         public async Task Start(object encoderState)
         {
-            TcpListener listener = new TcpListener(_endPoint);
+            var listener = new TcpListener(_endPoint);
             listener.Start();
 
             AcceptClient(listener, encoderState);
@@ -106,7 +106,7 @@ namespace ReactiveTables.Framework.Comms
                     encoder.Setup(outputStream, output, state.EncoderState);
 
                     outputStream.Flush();
-                    int millisecondsTimeout = _testAction == null ? -1 : 50;
+                    var millisecondsTimeout = _testAction == null ? -1 : 50;
                     while (client.Connected && !_finished.Wait(millisecondsTimeout))
                     {
                         // Run the test action every 50 milliseconds if it has been set.
@@ -182,7 +182,7 @@ namespace ReactiveTables.Framework.Comms
         public void Start()
         {
             Console.WriteLine("Starting to listen to {0}", _endPoint);
-            TcpListener listener = new TcpListener(_endPoint);
+            var listener = new TcpListener(_endPoint);
             listener.Start();
 
             listener.BeginAcceptTcpClient(AcceptClient, listener);
@@ -197,7 +197,7 @@ namespace ReactiveTables.Framework.Comms
             var listener = (TcpListener)ar.AsyncState;
             var client = listener.EndAcceptTcpClient(ar);
             var networkStream = client.GetStream();
-            byte[] buffer = new byte[1024];
+            var buffer = new byte[1024];
             int read;
 
             Console.WriteLine("Waiting for data");

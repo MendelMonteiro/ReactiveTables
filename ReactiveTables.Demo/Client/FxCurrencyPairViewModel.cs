@@ -30,19 +30,10 @@ namespace ReactiveTables.Demo.Client
             _rowId = rowId;
         }
 
-        public string CurrencyPair
-        {
-            get { return _table.GetValue<string>(FxTableDefinitions.CurrencyPair.CcyPair, _rowId); }
-        }
+        public string CurrencyPair => _table.GetValue<string>(FxTableDefinitions.CurrencyPair.CcyPair, _rowId);
 
-        public string Currency1
-        {
-            get { return _table.GetValue<string>(FxTableDefinitions.CurrencyPair.Ccy1, _rowId); }
-        }
+        public string Currency1 => _table.GetValue<string>(FxTableDefinitions.CurrencyPair.Ccy1, _rowId);
 
-        public string Currency2
-        {
-            get { return _table.GetValue<string>(FxTableDefinitions.CurrencyPair.Ccy2, _rowId); }
-        }
+        public string Currency2 => _table.GetValue<string>(FxTableDefinitions.CurrencyPair.Ccy2, _rowId);
     }
 }

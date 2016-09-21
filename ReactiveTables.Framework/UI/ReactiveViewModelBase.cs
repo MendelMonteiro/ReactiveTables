@@ -34,7 +34,7 @@ namespace ReactiveTables.Framework.UI
 
         public virtual void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
 //            else Console.WriteLine("No handler for property " + propertyName);
         }

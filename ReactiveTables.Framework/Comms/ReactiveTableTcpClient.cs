@@ -68,7 +68,7 @@ namespace ReactiveTables.Framework.Comms
         // Aysnc version - not really necessary on the client side.
         private void OnConnect(IAsyncResult ar)
         {
-            TcpClient client = (TcpClient) ar.AsyncState;
+            var client = (TcpClient) ar.AsyncState;
             client.BeginConnect(_endPoint.Address, _endPoint.Port, OnConnect, client);
 
             try

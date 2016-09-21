@@ -46,6 +46,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             }
         }
 
-        public long Metric { get { return Table.RowCount; } }
+        public long Metric => Table.RowCount;
     }
 }

@@ -9,7 +9,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <Button Content="Start server"></Button>
+            <Button Content="Start server" />
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Horizontal">
             <ScrollViewer>
@@ -17,8 +17,7 @@
                     <Label Content="Currencies" HorizontalAlignment="Center" />
                     <DataGrid ItemsSource="{Binding Path=CurrencyPairs}" VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
+                          VirtualizingPanel.CacheLength="2" />
                 </StackPanel>
             </ScrollViewer>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -26,8 +25,7 @@
                     <Label Content="Fx Rates" HorizontalAlignment="Center" />
                     <DataGrid ItemsSource="{Binding Path=FxRates}" VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-                    </DataGrid>
+                          VirtualizingPanel.CacheLength="2" />
                 </StackPanel>
             </ScrollViewer>
         </StackPanel>

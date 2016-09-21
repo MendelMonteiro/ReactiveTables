@@ -40,7 +40,7 @@ namespace ReactiveTables.Framework.PerformanceTests
 
         static SystemState()
         {
-            string instance = Process.GetCurrentProcess().ProcessName;
+            var instance = Process.GetCurrentProcess().ProcessName;
             _allBytes = new PerformanceCounter(".NET CLR Memory", "# Bytes in all Heaps", instance);
 
             _gen0Collections = new PerformanceCounter(".NET CLR Memory", "# Gen 0 Collections", instance);
@@ -89,23 +89,23 @@ namespace ReactiveTables.Framework.PerformanceTests
             _timeInGc1 = systemState.TimeInGc - stateBefore.TimeInGc;
         }
 
-        public long HeapSize { get { return _heapSize; } }
+        public long HeapSize => _heapSize;
 
-        public long Gen0Size { get { return _gen0Size1; } }
+        public long Gen0Size => _gen0Size1;
 
-        public long Gen1Size { get { return _gen1Size1; } }
+        public long Gen1Size => _gen1Size1;
 
-        public long Gen2Size { get { return _gen2Size1; } }
+        public long Gen2Size => _gen2Size1;
 
-        public long LargeObjectHeapSize { get { return _largeObjectHeapSize; } }
+        public long LargeObjectHeapSize => _largeObjectHeapSize;
 
-        public int Gen0Collections { get { return _gen0Collections1; } }
+        public int Gen0Collections => _gen0Collections1;
 
-        public int Gen1Collections { get { return _gen1Collections1; } }
+        public int Gen1Collections => _gen1Collections1;
 
-        public int Gen2Collections { get { return _gen2Collections1; } }
+        public int Gen2Collections => _gen2Collections1;
 
-        public double TimeInGc { get { return _timeInGc1; } }
+        public double TimeInGc => _timeInGc1;
 
         public void DumpBeforeAndAfter(SystemState stateBefore)
         {
@@ -129,17 +129,14 @@ namespace ReactiveTables.Framework.PerformanceTests
 
         public string DumpCsv()
         {
-            return string.Format("{0:N0};{1:N0};{2:N0};{3:N0};{4:N0};{5:N0};{6:N0};{7:N0};{8:N0}",
-                                 HeapSize, Gen0Size, Gen1Size, Gen2Size, LargeObjectHeapSize, Gen0Collections, Gen1Collections,
-                                 Gen2Collections, TimeInGc);
+            return
+                $"{HeapSize:N0};{Gen0Size:N0};{Gen1Size:N0};{Gen2Size:N0};{LargeObjectHeapSize:N0};{Gen0Collections:N0};{Gen1Collections:N0};{Gen2Collections:N0};{TimeInGc:N0}";
         }
 
         public override string ToString()
         {
             return
-                string.Format(
-                    "HeapSize: {0:N0}\nGen0Size: {1:N0}\nGen1Size: {2:N0}\nGen2Size: {3:N0}\nLargeObjectHeapSize: {4:N0}\nGen0Collections: {5:N0}\nGen1Collections: {6:N0}\nGen2Collections: {7:N0}\nTimeInGc: {8:N0}",
-                    HeapSize, Gen0Size, Gen1Size, Gen2Size, LargeObjectHeapSize, Gen0Collections, Gen1Collections, Gen2Collections, TimeInGc);
+                $"HeapSize: {HeapSize:N0}\nGen0Size: {Gen0Size:N0}\nGen1Size: {Gen1Size:N0}\nGen2Size: {Gen2Size:N0}\nLargeObjectHeapSize: {LargeObjectHeapSize:N0}\nGen0Collections: {Gen0Collections:N0}\nGen1Collections: {Gen1Collections:N0}\nGen2Collections: {Gen2Collections:N0}\nTimeInGc: {TimeInGc:N0}";
         }
     }
 }

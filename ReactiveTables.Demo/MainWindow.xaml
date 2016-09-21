@@ -24,12 +24,12 @@
             <Button Content="Stop data" HorizontalAlignment="Left" VerticalAlignment="Top" 
                     Command="{Binding StopData}"  Margin="10"/>
             <TextBlock  Margin="10">Filter balances below</TextBlock>
-            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10"></TextBox>
+            <TextBox Text="{Binding BalanceBelowFilter}"  Margin="10" />
         </StackPanel>
         <Grid Grid.Row="1" Grid.ColumnSpan="8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="30" />
+              <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -41,16 +41,14 @@
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-            </DataGrid>
-            <Label Grid.Row="0" Grid.Column="1" Content="Accounts" HorizontalAlignment="Center" />
+                          VirtualizingPanel.CacheLength="2" />
+          <Label Grid.Row="0" Grid.Column="1" Content="Accounts" HorizontalAlignment="Center" />
             <DataGrid Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Accounts.Accounts}" VirtualizingPanel.IsVirtualizing="True"
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
                           VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Page"
-                          VirtualizingPanel.CacheLength="2">
-            </DataGrid>
-            <Label Grid.Row="0" Grid.Column="2" Content="Account details joined" HorizontalAlignment="Center" />
+                          VirtualizingPanel.CacheLength="2" />
+          <Label Grid.Row="0" Grid.Column="2" Content="Account details joined" HorizontalAlignment="Center" />
             <DataGrid Grid.Row="1" Grid.Column="2" ItemsSource="{Binding PersonAccounts.PersonAccounts}" VirtualizingPanel.IsVirtualizing="True"
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"

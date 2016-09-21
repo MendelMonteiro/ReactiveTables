@@ -33,7 +33,7 @@ namespace ReactiveTables.Framework.PerformanceTests
 
         protected static SystemState DumpStateAfter()
         {
-            SystemState stateAfter = SystemState.Create();
+            var stateAfter = SystemState.Create();
             LogAction("- State after:");
             Console.WriteLine(stateAfter);
             return stateAfter;
@@ -41,7 +41,7 @@ namespace ReactiveTables.Framework.PerformanceTests
 
         protected static SystemState DumpStateBefore()
         {
-            SystemState stateBefore = SystemState.Create();
+            var stateBefore = SystemState.Create();
             LogAction("- State before:");
             Console.WriteLine(stateBefore);
             return stateBefore;

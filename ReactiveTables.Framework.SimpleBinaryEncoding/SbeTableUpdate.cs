@@ -22,7 +22,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
         private int _actingBlockLength;
         private int _actingVersion;
 
-        public int Offset { get { return _offset; } }
+        public int Offset => _offset;
 
         public SbeTableUpdate()
         {
@@ -47,13 +47,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
             Limit = offset + _actingBlockLength;
         }
 
-        public int Size
-        {
-            get
-            {
-                return _limit - _offset;
-            }
-        }
+        public int Size => _limit - _offset;
 
         public int Limit
         {

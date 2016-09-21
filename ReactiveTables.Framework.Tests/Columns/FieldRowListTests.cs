@@ -11,7 +11,7 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestAdd()
         {
-            FieldRowList<string> list = new FieldRowList<string>();
+            var list = new FieldRowList<string>();
             var row = list.Add("42");
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("42", list[row]);
@@ -20,7 +20,7 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestEnumerate()
         {
-            FieldRowList<string> list = new FieldRowList<string>();
+            var list = new FieldRowList<string>();
             var row = list.Add("42");
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("42", list[row]);
@@ -37,7 +37,7 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestSet()
         {
-            FieldRowList<string> list = new FieldRowList<string>();
+            var list = new FieldRowList<string>();
             var row = list.Add("42");
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("42", list[row]);
@@ -50,7 +50,7 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestRemove()
         {
-            FieldRowList<string> list = new FieldRowList<string>();
+            var list = new FieldRowList<string>();
             var row = list.Add("42");
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("42", list[row]);
@@ -62,7 +62,7 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestClear()
         {
-            FieldRowList<string> list = new FieldRowList<string>();
+            var list = new FieldRowList<string>();
             var row = list.Add("42");
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("42", list[row]);

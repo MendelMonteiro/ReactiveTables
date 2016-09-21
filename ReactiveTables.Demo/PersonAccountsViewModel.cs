@@ -51,7 +51,7 @@ namespace ReactiveTables.Demo
             }
         }
 
-        public IndexedObservableCollection<PersonAccountViewModel, int> PersonAccounts { get; private set; }
+        public IndexedObservableCollection<PersonAccountViewModel, int> PersonAccounts { get; }
 
         public int CurrentRowIndex
         {
@@ -65,15 +65,9 @@ namespace ReactiveTables.Demo
             }
         }
 
-        public string AccountDetails
-        {
-            get { return _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, CurrentRowIndex); }
-        }
+        public string AccountDetails => _personAccounts.GetValue<string>(PersonAccountColumns.AccountDetails, CurrentRowIndex);
 
-        public IReactiveTable Table
-        {
-            get { return _personAccounts; }
-        }
+        public IReactiveTable Table => _personAccounts;
 
         public DelegateCommand Change { get; private set; }
 

@@ -23,7 +23,7 @@ namespace ReactiveTables.Framework.PerformanceTests
     {
         public static ReactiveTable CreateReactiveTable()
         {
-            ReactiveTable table = new ReactiveTable();
+            var table = new ReactiveTable();
             table.AddColumn(new ReactiveColumn<int>(TestTableColumns.IdColumn));
             table.AddColumn(new ReactiveColumn<string>(TestTableColumns.StringColumn));
             table.AddColumn(new ReactiveColumn<decimal>(TestTableColumns.DecimalColumn));

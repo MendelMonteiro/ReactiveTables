@@ -23,7 +23,8 @@ namespace ReactiveTables.Framework
         private readonly List<IReactiveColumn> _columns = new List<IReactiveColumn>();
         private readonly Dictionary<string, int> _columnIdsToIndeces = new Dictionary<string, int>();  
 
-        public IReadOnlyList<IReactiveColumn> Columns { get { return _columns; } }
+        // TODO: Check all usages and make sure they don't use foreach to avoid allocations
+        public IReadOnlyList<IReactiveColumn> Columns => _columns;
 
         public IReactiveColumn AddColumn(IReactiveColumn column)
         {
@@ -66,7 +67,7 @@ namespace ReactiveTables.Framework
             IReactiveColumn col;
             if (!GetColumnByName(columnId, out col))
             {
-                throw new ApplicationException(String.Format("Column {0} not found", columnId));
+                throw new ApplicationException($"Column {columnId} not found");
             }
             return col;
         }

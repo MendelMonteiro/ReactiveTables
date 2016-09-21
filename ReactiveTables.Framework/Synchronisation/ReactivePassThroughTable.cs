@@ -44,10 +44,7 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
-        public int RowCount
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public int RowCount => _rowManager.RowCount;
 
 //        public IDictionary<string, IReactiveColumn> Columns { get { throw new NotImplementedException(); } }
         public IReadOnlyList<IReactiveColumn> Columns { get { throw new NotImplementedException(); } }
@@ -137,7 +134,7 @@ namespace ReactiveTables.Framework.Synchronisation
         {
             lock (_rowManager)
             {
-                int rowIndex = _rowManager.AddRow();
+                var rowIndex = _rowManager.AddRow();
                 _marshaller.Dispatch(() => _targetTargetTable.AddRow());
                 return rowIndex;
             }

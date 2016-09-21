@@ -41,9 +41,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _table.SetValue("ValueCol", id, 23213214214.3423m);
         }
 
-        public long Metric
-        {
-            get { return _table.RowCount; }
-        }
+        public long Metric => _table.RowCount;
     }
 }

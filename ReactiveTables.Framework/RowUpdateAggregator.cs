@@ -23,26 +23,24 @@ namespace ReactiveTables.Framework
     {
         private readonly IReactiveTable _leftTable;
         private readonly IReactiveTable _rightTable;
-        private readonly System.IObserver<TableUpdate> _observer;
-        private int _leftUpdateCount = 0;
-        private int _rightUpdateCount = 0;
-        private bool _leftCompleted = false;
-        private bool _rightCompleted = false;
-        private readonly TableRowUpdateObserver _leftTableRowUpdateObserver;
-        private readonly TableRowUpdateObserver _rightTableRowUpdateObserver;
+        private readonly IObserver<TableUpdate> _observer;
+        private int _leftUpdateCount;
+        private int _rightUpdateCount;
+        private bool _leftCompleted;
+        private bool _rightCompleted;
         private readonly IDisposable _leftToken;
         private readonly IDisposable _rightToken;
 
-        public RowUpdateAggregator(IReactiveTable leftTable, IReactiveTable rightTable, System.IObserver<TableUpdate> observer)
+        public RowUpdateAggregator(IReactiveTable leftTable, IReactiveTable rightTable, IObserver<TableUpdate> observer)
         {
             _leftTable = leftTable;
             _rightTable = rightTable;
             _observer = observer;
 
-            _leftTableRowUpdateObserver = new TableRowUpdateObserver(this, _leftTable);
-            _leftToken = _leftTable.Where(TableUpdate.IsRowUpdate).Subscribe(_leftTableRowUpdateObserver);
-            _rightTableRowUpdateObserver = new TableRowUpdateObserver(this, _rightTable);
-            _rightToken = _rightTable.Where(TableUpdate.IsRowUpdate).Subscribe(_rightTableRowUpdateObserver);
+            var leftTableRowUpdateObserver = new TableRowUpdateObserver(this, _leftTable);
+            _leftToken = _leftTable.Where(TableUpdate.IsRowUpdate).Subscribe(leftTableRowUpdateObserver);
+            var rightTableRowUpdateObserver = new TableRowUpdateObserver(this, _rightTable);
+            _rightToken = _rightTable.Where(TableUpdate.IsRowUpdate).Subscribe(rightTableRowUpdateObserver);
         }
 
         public void Unsubscribe()
@@ -80,7 +78,7 @@ namespace ReactiveTables.Framework
             if (_leftCompleted && _rightCompleted) _observer.OnCompleted();
         }
 
-        private class TableRowUpdateObserver : System.IObserver<TableUpdate>
+        private class TableRowUpdateObserver : IObserver<TableUpdate>
         {
             private readonly RowUpdateAggregator _rowUpdateAggregator;
             private readonly IReactiveTable _table;

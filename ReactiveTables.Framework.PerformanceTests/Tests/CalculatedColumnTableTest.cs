@@ -54,9 +54,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             var calc2 = _table.GetValue<string>("CalcCol2", id);
         }
 
-        public long Metric
-        {
-            get { return _table.RowCount; }
-        }
+        public long Metric => _table.RowCount;
     }
 }

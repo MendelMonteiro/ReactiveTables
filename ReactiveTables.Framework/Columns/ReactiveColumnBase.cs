@@ -34,10 +34,7 @@ namespace ReactiveTables.Framework.Columns
 
         public string ColumnId { get; protected set; }
 
-        public virtual Type Type
-        {
-            get { return _type; }
-        }
+        public virtual Type Type => _type;
 
         /// <summary>
         /// Will be called before table level updates

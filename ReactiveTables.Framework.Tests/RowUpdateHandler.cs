@@ -23,8 +23,8 @@ namespace ReactiveTables.Framework.Tests
     {
         public int CurrentRowCount { get; private set; }
         public int LastRowUpdated { get; private set; }
-        public List<int> RowsUpdated { get; private set; }
-        public List<TableUpdate> RowUpdates { get; private set; }
+        public List<int> RowsUpdated { get; }
+        public List<TableUpdate> RowUpdates { get; }
 
         public RowUpdateHandler()
         {

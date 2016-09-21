@@ -69,7 +69,7 @@ namespace ReactiveTables.Framework
 
         public ReactiveTableBase()
         {
-            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));            
+            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
         }
 
         public abstract IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true);
@@ -81,10 +81,7 @@ namespace ReactiveTables.Framework
 
         public abstract IReactiveColumn GetColumnByIndex(int index);
 
-        public PropertyChangedNotifier ChangeNotifier
-        {
-            get { return _changeNotifier.Value; }
-        }
+        public PropertyChangedNotifier ChangeNotifier => _changeNotifier.Value;
 
         public abstract void ReplayRows(IObserver<TableUpdate> observer);
         public abstract int GetRowAt(int position);
@@ -168,8 +165,8 @@ namespace ReactiveTables.Framework
 
         public int AddRow()
         {
-            int rowIndex = _rowManager.AddRow();
-            for (int index = 0; index < Columns.Count; index++)
+            var rowIndex = _rowManager.AddRow();
+            for (var index = 0; index < Columns.Count; index++)
             {
                 var column = Columns[index];
                 column.AddField(rowIndex);
@@ -238,12 +235,9 @@ namespace ReactiveTables.Framework
             return _columns.GetColumnByName(columnId, out column);
         }
 
-        public override int RowCount
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public override int RowCount => _rowManager.RowCount;
 
-        public override IReadOnlyList<IReactiveColumn> Columns { get { return _columns.Columns; } }
+        public override IReadOnlyList<IReactiveColumn> Columns => _columns.Columns;
 
         public override IReactiveColumn GetColumnByIndex(int index)
         {
@@ -281,10 +275,7 @@ namespace ReactiveTables.Framework
             foreach (var reactiveColumn in Columns)
             {
                 var disposable = reactiveColumn as IDisposable;
-                if (disposable != null)
-                {
-                    disposable.Dispose();
-                }
+                disposable?.Dispose();
             }
         }
     }

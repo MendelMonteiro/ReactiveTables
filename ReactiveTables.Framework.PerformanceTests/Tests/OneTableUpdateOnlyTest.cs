@@ -30,7 +30,7 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
         public void Prepare(int limit)
         {
             _limit = limit;
-            for (int i = 0; i < limit; i++)
+            for (var i = 0; i < limit; i++)
             {
                 AddEntry(_iterationCount);
             }
@@ -48,6 +48,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             UpdateEntry(_iterationCount);
         }
 
-        public long Metric { get { return Table.RowCount; } }
+        public long Metric => Table.RowCount;
     }
 }

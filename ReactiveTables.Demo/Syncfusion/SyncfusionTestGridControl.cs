@@ -198,6 +198,6 @@ namespace ReactiveTables.Demo.Syncfusion
             _viewModel.SetValue(rowIndex, columnIndex, (T) style.CellValue);
         }
 
-        public Type Type { get { return typeof (T); } }
+        public Type Type => typeof (T);
     }
 }

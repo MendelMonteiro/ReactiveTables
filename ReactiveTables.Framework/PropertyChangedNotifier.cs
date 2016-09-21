@@ -78,7 +78,7 @@ namespace ReactiveTables.Framework
             HashSet<IReactivePropertyNotifiedConsumer> consumers;
             if (_consumersByRowIndex.TryGetValue(value.RowIndex, out consumers))
             {
-                string propertyName = GetPropertyName(value.Column.ColumnId);
+                var propertyName = GetPropertyName(value.Column.ColumnId);
                 foreach (var consumer in consumers)
                 {
                     consumer.OnPropertyChanged(propertyName);

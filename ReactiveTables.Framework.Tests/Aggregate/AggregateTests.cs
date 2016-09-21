@@ -47,9 +47,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             // Create group by
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
@@ -106,10 +106,10 @@ namespace ReactiveTables.Framework.Tests.Aggregate
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
 
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             // Add values
@@ -164,10 +164,10 @@ namespace ReactiveTables.Framework.Tests.Aggregate
 
             var column = groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
 
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             var groupedColumn = (IReactiveColumn<string>)column;
@@ -214,10 +214,10 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
             groupedTable.GroupBy<int>(TestTableColumns.IdColumn);
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
 
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             // Add values
@@ -267,9 +267,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
                                       countCol,
                                       () => new Count<string>());
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
             groupedTable.FinishInitialisation();
 
@@ -300,9 +300,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             // Create group by
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
@@ -346,9 +346,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             // Create group by
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);
@@ -421,9 +421,9 @@ namespace ReactiveTables.Framework.Tests.Aggregate
             // Create group by
             var baseTable = TestTableHelper.CreateReactiveTable();
             var groupedTable = new AggregatedTable(baseTable);
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             groupedTable.Subscribe(rowUpdates);
-            ColumnUpdateHandler colUpdates = new ColumnUpdateHandler();
+            var colUpdates = new ColumnUpdateHandler();
             groupedTable.Subscribe(colUpdates.OnColumnUpdate);
 
             groupedTable.GroupBy<string>(TestTableColumns.StringColumn);

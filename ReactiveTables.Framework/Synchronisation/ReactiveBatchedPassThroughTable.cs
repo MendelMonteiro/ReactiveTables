@@ -50,13 +50,10 @@ namespace ReactiveTables.Framework.Synchronisation
             throw new NotImplementedException();
         }
 
-        public int RowCount
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public int RowCount => _rowManager.RowCount;
 
 //        public IDictionary<string, IReactiveColumn> Columns { get { return _targetTable.Columns; } }
-        public IReadOnlyList<IReactiveColumn> Columns { get { return _targetTable.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns => _targetTable.Columns;
 
         public IReactiveColumn GetColumnByIndex(int index)
         {
@@ -177,7 +174,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 // Copy the adds
                 if (rowUpdatesAdd != null)
                 {
-                    for (int i = 0; i < rowUpdatesAdd.Count; i++)
+                    for (var i = 0; i < rowUpdatesAdd.Count; i++)
                     {
                         _targetTable.AddRow();
                     }
@@ -192,7 +189,7 @@ namespace ReactiveTables.Framework.Synchronisation
                 // Copy the deletes
                 if (rowUpdatesDelete != null)
                 {
-                    for (int i = 0; i < rowUpdatesDelete.Count; i++)
+                    for (var i = 0; i < rowUpdatesDelete.Count; i++)
                     {
                         _targetTable.DeleteRow(rowUpdatesDelete[i].RowIndex);
                     }
@@ -263,11 +260,11 @@ namespace ReactiveTables.Framework.Synchronisation
 
         public void SetValue<T>(string columnId, int rowIndex, T value)
         {
-            BatchedColumnUpdate<T> update = new BatchedColumnUpdate<T> {ColumnId = columnId, Value = value, RowIndex = rowIndex};
+            var update = new BatchedColumnUpdate<T> {ColumnId = columnId, Value = value, RowIndex = rowIndex};
             lock (_shared)
             {
                 ITypedTableColumnUpdater<T> updater;
-                Type type = typeof (T);
+                var type = typeof (T);
                 if (!_columnUpdaters.ContainsKey(type))
                 {
                     updater = _onlyKeepLastValue ? CreateNormalColumnUpdaterLastValue<T>() : CreateNormalColumnUpdater<T>();
@@ -302,7 +299,7 @@ namespace ReactiveTables.Framework.Synchronisation
             lock (_shared)
             {
                 rowIndex = _rowManager.AddRow();
-                TableUpdate update = new TableUpdate(TableUpdateAction.Add, rowIndex);
+                var update = new TableUpdate(TableUpdateAction.Add, rowIndex);
                 _rowUpdatesAdd.Enqueue(update);
             }
             //Debug.WriteLine("Added row {0} to batched passthrough", rowIndex);
@@ -314,7 +311,7 @@ namespace ReactiveTables.Framework.Synchronisation
             lock (_shared)
             {
                 _rowManager.DeleteRow(rowIndex);
-                TableUpdate update = new TableUpdate(TableUpdateAction.Delete, rowIndex);
+                var update = new TableUpdate(TableUpdateAction.Delete, rowIndex);
                 _rowUpdatesDelete.Enqueue(update);
             }
         }
@@ -382,7 +379,7 @@ namespace ReactiveTables.Framework.Synchronisation
             return new TableColumnUpdater<T>(_updates);
         }
 
-        public int UpdateCount { get { return _updates.Count; } }
+        public int UpdateCount => _updates.Count;
     }
 
     internal interface ITypedTableColumnUpdater<T> : ITableColumnUpdater
@@ -429,6 +426,6 @@ namespace ReactiveTables.Framework.Synchronisation
             return new TableColumnUpdaterLastValue<T>(_updatesByRow);
         }
 
-        public int UpdateCount { get { return _updatesByRow.Count; } }
+        public int UpdateCount => _updatesByRow.Count;
     }
 }

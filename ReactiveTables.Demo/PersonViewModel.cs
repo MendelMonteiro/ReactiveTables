@@ -32,23 +32,13 @@ namespace ReactiveTables.Demo
             _people.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
         }
 
-        public int PersonId
-        {
-            get { return _people.GetValue<int>(PersonColumns.IdColumn, _rowIndex); }
-        }
+        public int PersonId => _people.GetValue<int>(PersonColumns.IdColumn, _rowIndex);
 
-        public string Name
-        {
-            get { return _people.GetValue<string>(PersonColumns.NameColumn, _rowIndex); }
-//            set { _People.SetValue(PersonColumns.NameColumn, _rowIndex, value); }
-        }
+        public string Name => _people.GetValue<string>(PersonColumns.NameColumn, _rowIndex);
 
 //        public DelegateCommand Change { get; private set; }
 
-        public string IdName
-        {
-            get { return _people.GetValue<string>(PersonColumns.IdNameColumn, _rowIndex); }
-        }
+        public string IdName => _people.GetValue<string>(PersonColumns.IdNameColumn, _rowIndex);
 
         public void Dispose()
         {

@@ -35,24 +35,15 @@ namespace ReactiveTables.Demo
             table.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, rowId);
         }
 
-        public int Id
-        {
-            get { return _table.GetValue<int>(PersonColumns.IdColumn, _rowId); }
-        }
+        public int Id => _table.GetValue<int>(PersonColumns.IdColumn, _rowId);
 
-        public decimal AccountBalance
-        {
-            get { return _table.GetValue<decimal>(AccountColumns.AccountBalance, _rowId); }
-        }
+        public decimal AccountBalance => _table.GetValue<decimal>(AccountColumns.AccountBalance, _rowId);
 
-        public string Name
-        {
-            get { return _table.GetValue<string>(PersonColumns.NameColumn, _rowId); }
-        }
+        public string Name => _table.GetValue<string>(PersonColumns.NameColumn, _rowId);
 
         public void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
 
@@ -75,7 +66,7 @@ namespace ReactiveTables.Demo
             Accounts = dataService.AccountPeople;
 
             _objects = new List<TestViewModel>();
-            for (int i = 0; i < 200; i++)
+            for (var i = 0; i < 200; i++)
             {
                 _objects.Add(new TestViewModel {Id = i, Name = "test", AccountBalance = 1000*i});
             }
@@ -90,7 +81,7 @@ namespace ReactiveTables.Demo
                                    });
         }
 
-        private IReactiveTable Accounts { get; set; }
+        private IReactiveTable Accounts { get; }
 
         private void ViewSourceOnQueryItemCount(object sender, QueryItemCountEventArgs queryItemCountEventArgs)
         {
@@ -101,9 +92,9 @@ namespace ReactiveTables.Demo
         {
             var startIndex = queryItemsEventArgs.AsyncQueryInfo.StartIndex;
             var requestedItemCount = queryItemsEventArgs.AsyncQueryInfo.RequestedItemCount;
-            object[] updateObjects = new object[requestedItemCount];
-            int index = 0;
-            for (int i = startIndex; i < startIndex + requestedItemCount; i++)
+            var updateObjects = new object[requestedItemCount];
+            var index = 0;
+            for (var i = startIndex; i < startIndex + requestedItemCount; i++)
             {
                 var rowId = Accounts.GetRowAt(i);
                 var selector = new AccountPeopleSelector(Accounts, rowId);

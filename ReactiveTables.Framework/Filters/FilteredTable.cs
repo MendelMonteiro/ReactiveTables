@@ -24,10 +24,7 @@ namespace ReactiveTables.Framework.Filters
         private readonly Subject<TableUpdate> _updateSubject = new Subject<TableUpdate>(); 
         private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
 
-        public PropertyChangedNotifier ChangeNotifier
-        {
-            get { return _changeNotifier.Value; }
-        }
+        public PropertyChangedNotifier ChangeNotifier => _changeNotifier.Value;
 
         /// <summary>
         /// Filter the source table using the given predicate.
@@ -54,7 +51,7 @@ namespace ReactiveTables.Framework.Filters
                 return;
             }
 
-            bool shouldCheck = tableUpdate.Action == TableUpdateAction.Add ||
+            var shouldCheck = tableUpdate.Action == TableUpdateAction.Add ||
                                _predicate.Columns.Contains(tableUpdate.Column.ColumnId);
 
             if (!shouldCheck)
@@ -105,7 +102,7 @@ namespace ReactiveTables.Framework.Filters
 
         private void AddVisibleRow(int sourceRowIndex)
         {
-            int addRow = _rowManager.AddRow();
+            var addRow = _rowManager.AddRow();
             _sourceRowToFilterRow.Add(sourceRowIndex, addRow);
             _filterRowToSourceRow.Add(addRow, sourceRowIndex);
             OnAdd(addRow);
@@ -156,7 +153,7 @@ namespace ReactiveTables.Framework.Filters
 
         private int TryRemoveMapping(int rowIndex)
         {
-            int filterRow = -1;
+            var filterRow = -1;
             if (_sourceRowToFilterRow.TryGetValue(rowIndex, out filterRow))
             {
                 _sourceRowToFilterRow.Remove(rowIndex);
@@ -199,12 +196,9 @@ namespace ReactiveTables.Framework.Filters
             return null;
         }
 
-        public int RowCount
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public int RowCount => _rowManager.RowCount;
 
-        public IReadOnlyList<IReactiveColumn> Columns { get { return _sourceTable.Columns; } }
+        public IReadOnlyList<IReactiveColumn> Columns => _sourceTable.Columns;
 
         public IReactiveColumn GetColumnByIndex(int index)
         {

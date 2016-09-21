@@ -5,10 +5,10 @@ namespace ReactiveTables.Framework.Tests
 {
     internal class ColumnUpdateHandler
     {
-        public List<string> LastColumnsUpdated { get; private set; }
-        public List<int> LastRowsUpdated { get; private set; }
-        public int LastRowUpdated { get { return LastRowsUpdated.LastOrDefault(); } }
-        public string LastColumnUpdated { get { return LastColumnsUpdated.LastOrDefault(); } }
+        public List<string> LastColumnsUpdated { get; }
+        public List<int> LastRowsUpdated { get; }
+        public int LastRowUpdated => LastRowsUpdated.LastOrDefault();
+        public string LastColumnUpdated => LastColumnsUpdated.LastOrDefault();
 
         public ColumnUpdateHandler()
         {

@@ -35,7 +35,7 @@ namespace ReactiveTables.Framework.Utils
             where TValue : class, new()
         {
             TValue value;
-            bool exists = dictionary.TryGetValue(key, out value);
+            var exists = dictionary.TryGetValue(key, out value);
             if (!exists)
             {
                 value = new TValue();

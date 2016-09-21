@@ -54,15 +54,9 @@ namespace ReactiveTables.Demo.Services
             _currencyPairs.AddColumn(new ReactiveColumn<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected));
         }
 
-        public IReactiveTable Feeds
-        {
-            get { return _feeds; }
-        }
+        public IReactiveTable Feeds => _feeds;
 
-        public IWritableReactiveTable CurrencyPairs
-        {
-            get { return _currencyPairs; }
-        }
+        public IWritableReactiveTable CurrencyPairs => _currencyPairs;
 
         public void Start(Dispatcher dispatcher)
         {
@@ -117,7 +111,7 @@ namespace ReactiveTables.Demo.Services
 
         private void SetupFeedSubscription(IReactiveTable currenciesTable, IReactiveTableProcessor<IReactiveTable> encoder)
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeedClients);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, (int)ServerPorts.BrokerFeedClients);
             var selectedCurrencies = new FilteredTable(
                 currenciesTable,
                 new DelegatePredicate1<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected, selected => selected));
@@ -139,7 +133,7 @@ namespace ReactiveTables.Demo.Services
 
         private void StartReceiving(IWritableReactiveTable wireTable, Dictionary<string, int> columnsToFieldIds, int port, IReactiveTableProcessor<IWritableReactiveTable> decoder)
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, port);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, port);
             var client = new ReactiveTableTcpClient<IWritableReactiveTable>(decoder,
                                                                             wireTable,
                                                                             GetDecoderState(columnsToFieldIds),

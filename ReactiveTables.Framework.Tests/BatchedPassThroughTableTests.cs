@@ -28,10 +28,10 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestAdd()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             TestAdd(source, target, updateHandler);
@@ -68,12 +68,12 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestUpdate()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             target.RowUpdates().Subscribe(rowUpdates.OnRowUpdate);
-            ColumnUpdateHandler columnUpdates = new ColumnUpdateHandler();
+            var columnUpdates = new ColumnUpdateHandler();
             target.ColumnUpdates().Subscribe(columnUpdates.OnColumnUpdate);
 
             TestAdd(source, target, rowUpdates);
@@ -89,12 +89,12 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestUpdateOnlyLastValue()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), true);
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller(), true);
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             target.RowUpdates().Subscribe(rowUpdates.OnRowUpdate);
-            ColumnUpdateHandler columnUpdates = new ColumnUpdateHandler();
+            var columnUpdates = new ColumnUpdateHandler();
             target.ColumnUpdates().Subscribe(columnUpdates.OnColumnUpdate);
 
             TestAdd(source, target, rowUpdates);
@@ -118,10 +118,10 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestDelete()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactiveBatchedPassThroughTable source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactiveBatchedPassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             TestAdd(source, target, updateHandler);

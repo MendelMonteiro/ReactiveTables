@@ -57,9 +57,6 @@ namespace ReactiveTables.Demo
         {           
         }
 
-        public IKernel Kernel
-        {
-            get { return _kernel; }
-        }
+        public IKernel Kernel => _kernel;
     }
 }

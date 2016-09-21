@@ -84,12 +84,9 @@ namespace ReactiveTables.Framework.Aggregate
             _sourceTable.ReplayRows(Observer.Create<TableUpdate>(OnSourceValue));
         }
 
-        public override int RowCount
-        {
-            get { return _groupedRows.Count; }
-        }
+        public override int RowCount => _groupedRows.Count;
 
-        public override IReadOnlyList<IReactiveColumn> Columns { get { return _allColumns.Columns; } }
+        public override IReadOnlyList<IReactiveColumn> Columns => _allColumns.Columns;
 
         /// <summary>
         /// Group the source table by the given column
@@ -103,7 +100,7 @@ namespace ReactiveTables.Framework.Aggregate
             var column = (IReactiveColumn<T>) _sourceTable.GetColumnByName(columnId);
             if (_groupColumns.ContainsKey(column.ColumnId))
             {
-                throw new ArgumentException(string.Format("Column {0} is already in group by statement", column.ColumnId),
+                throw new ArgumentException($"Column {column.ColumnId} is already in group by statement",
                                             "columnId");
             }
 
@@ -120,7 +117,7 @@ namespace ReactiveTables.Framework.Aggregate
             var columnUpdated = tableUpdate.Column;
             var sourceIndex = tableUpdate.RowIndex;
             int groupedIndex;
-            bool groupChanged = false;
+            var groupChanged = false;
             if (tableUpdate.Action == TableUpdateAction.Add)
             {
                 // New source row added
@@ -321,14 +318,14 @@ namespace ReactiveTables.Framework.Aggregate
             var sourceColumn = FindKeyColumn(columnId, _keyColumns);
             if (sourceColumn != null)
             {
-                IReactiveColumn<T> column = (IReactiveColumn<T>) sourceColumn;
+                var column = (IReactiveColumn<T>) sourceColumn;
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
                 return column.GetValue(sourceRowIndex);
             }
             IReactiveColumn localColumn;
             if (_localColumns.TryGetValue(columnId, out localColumn))
             {
-                IReactiveColumn<T> localTyped = (IReactiveColumn<T>) localColumn;
+                var localTyped = (IReactiveColumn<T>) localColumn;
                 var sourceRowIndex = GetSourceRowIndex(rowIndex);
                 return localTyped.GetValue(sourceRowIndex);
             }
@@ -339,7 +336,7 @@ namespace ReactiveTables.Framework.Aggregate
                 return aggregateTyped.GetValue(rowIndex);
             }
 
-            throw new ArgumentException(string.Format("Column {0} does not existing in the table", columnId), "columnId");
+            throw new ArgumentException($"Column {columnId} does not existing in the table", "columnId");
         }
 
         /// <summary>
@@ -394,7 +391,7 @@ namespace ReactiveTables.Framework.Aggregate
                 return aggregateColumn.GetValue(rowIndex);
             }
 
-            throw new ArgumentException(string.Format("Column {0} does not existing in the table", columnId), "columnId");
+            throw new ArgumentException($"Column {columnId} does not existing in the table", "columnId");
         }
         
         private int GetSourceRowIndex(int rowIndex)
@@ -422,7 +419,7 @@ namespace ReactiveTables.Framework.Aggregate
 
         public override void ReplayRows(IObserver<TableUpdate> observer)
         {
-            for (int i = 0; i < _groupedRows.Count; i++)
+            for (var i = 0; i < _groupedRows.Count; i++)
             {
                 _updates.OnNext(TableUpdate.NewAddUpdate(i));
             }

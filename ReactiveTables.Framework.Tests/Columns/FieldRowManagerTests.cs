@@ -24,8 +24,8 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void Basic()
         {
-            FieldRowManager rowManager = new FieldRowManager();
-            int rowIndex = rowManager.AddRow();
+            var rowManager = new FieldRowManager();
+            var rowIndex = rowManager.AddRow();
             rowManager.DeleteRow(rowIndex);
             Assert.AreEqual(0, rowManager.RowCount);
 
@@ -51,8 +51,8 @@ namespace ReactiveTables.Framework.Tests.Columns
         [Test]
         public void TestReset()
         {
-            FieldRowManager rowManager = new FieldRowManager();
-            int rowIndex = rowManager.AddRow();
+            var rowManager = new FieldRowManager();
+            var rowIndex = rowManager.AddRow();
             rowManager.Reset();
             Assert.AreEqual(0, rowManager.RowCount);
 

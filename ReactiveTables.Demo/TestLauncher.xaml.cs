@@ -32,37 +32,37 @@ namespace ReactiveTables.Demo
 
         private void RealTimeButton_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow window = new MainWindow();
+            var window = new MainWindow();
             window.Show();
         }
 
         private void ExternalDataButton_Click(object sender, RoutedEventArgs e)
         {
-            FxClient window = new FxClient();
+            var window = new FxClient();
             window.Show();
         }
 
         private void ClientServerSyncfusionButton_Click(object sender, RoutedEventArgs e)
         {
-            FxClientSyncfusion window = new FxClientSyncfusion();
+            var window = new FxClientSyncfusion();
             window.Show();
         }
 
         private void SyncfusionButton_Click(object sender, RoutedEventArgs e)
         {
-            SyncfusionTest window = new SyncfusionTest();
+            var window = new SyncfusionTest();
             window.Show();
         }
 
         private void XceedButton_Click(object sender, RoutedEventArgs e)
         {
-            XceedTest window = new XceedTest();
+            var window = new XceedTest();
             window.Show();
         }
 
         private void BrokerFeedButton_OnClick(object sender, RoutedEventArgs e)
         {
-            BrokerFeed window = new BrokerFeed();
+            var window = new BrokerFeed();
             window.Show();
         }
 
@@ -70,7 +70,7 @@ namespace ReactiveTables.Demo
         {
 //            GroupTest window = new GroupTest();
             //GroupTestSyncfusion window = new GroupTestSyncfusion();
-            SimpleGroupTest window = new SimpleGroupTest();
+            var window = new SimpleGroupTest();
             window.Show();
         }
     }

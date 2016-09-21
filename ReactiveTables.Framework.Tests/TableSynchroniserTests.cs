@@ -27,11 +27,11 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestAdd()
         {
-            ReactiveTable source = TestTableHelper.CreateReactiveTable();
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            var source = TestTableHelper.CreateReactiveTable();
+            var target = TestTableHelper.CreateReactiveTable();
+            var synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
@@ -52,11 +52,11 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestUpdate()
         {
-            ReactiveTable source = TestTableHelper.CreateReactiveTable();
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            var source = TestTableHelper.CreateReactiveTable();
+            var target = TestTableHelper.CreateReactiveTable();
+            var synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
@@ -85,11 +85,11 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestDelete()
         {
-            ReactiveTable source = TestTableHelper.CreateReactiveTable();
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            TableSynchroniser synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
+            var source = TestTableHelper.CreateReactiveTable();
+            var target = TestTableHelper.CreateReactiveTable();
+            var synchroniser = new TableSynchroniser(source, target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();

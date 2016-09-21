@@ -16,8 +16,8 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
             var tableEncoderTester = new TableEncoderTester();
 
             // Setup encoder
-            ProtobufTableEncoder encoder = new ProtobufTableEncoder();
-            MemoryStream stream = new MemoryStream();
+            var encoder = new ProtobufTableEncoder();
+            var stream = new MemoryStream();
             var table = TestTableHelper.CreateReactiveTableFull();
             var columnsToFieldIds = new Dictionary<string, int>
                                         {
@@ -49,7 +49,7 @@ namespace ReactiveTables.Framework.Tests.Comms.Protobuf
 
             // Decode
             var destTable = TestTableHelper.CreateReactiveTableFull();
-            ProtobufTableDecoder tableDecoder = new ProtobufTableDecoder();
+            var tableDecoder = new ProtobufTableDecoder();
             tableDecoder.Setup(stream, destTable, columnsToFieldIds.InverseUniqueDictionary());
 //            Task.Run(() => tableDecoder.Start());
             Thread.Sleep(100);

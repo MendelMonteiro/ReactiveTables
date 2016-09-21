@@ -51,7 +51,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
 
         private void OnTableUpdate(TableUpdate tableUpdate, IReactiveTable table, SbeTableEncoderState encodeState)
         {
-            int offset = 0;
+            var offset = 0;
 
             _header.Wrap(_buffer, offset, MessageTemplateVersion);
             _header.SchemaId = SbeTableUpdate.SchemaId;
@@ -113,7 +113,7 @@ namespace ReactiveTables.Framework.SimpleBinaryEncoding
                 // Set the length
                 var length = (ushort) stringValue.Length;
                 buffer.Uint16PutLittleEndian(offset, length);
-                int written = sizeof(ushort);
+                var written = sizeof(ushort);
                 offset += written;
                 // And then the value
                 var bytesWritten = Encoding.Default.GetBytes(stringValue, 0, stringValue.Length, _stringBuffer, 0);

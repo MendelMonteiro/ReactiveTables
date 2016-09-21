@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework.Joins
 
             public override string ToString()
             {
-                return string.Format("ColRowMappings: {0}", ColRowMappings);
+                return $"ColRowMappings: {ColRowMappings}";
             }
         }
 
@@ -62,7 +62,7 @@ namespace ReactiveTables.Framework.Joins
 
             public override string ToString()
             {
-                return string.Format("RowId: {0}, LeftRowId: {1}, RightRowId: {2}, Key: {3}", RowId, LeftRowId, RightRowId, Key);
+                return $"RowId: {RowId}, LeftRowId: {LeftRowId}, RightRowId: {RightRowId}, Key: {Key}";
             }
         }
 
@@ -104,10 +104,7 @@ namespace ReactiveTables.Framework.Joins
 
         private readonly bool _replaying = true;
 
-        public int RowCount
-        {
-            get { return _rowManager.RowCount; }
-        }
+        public int RowCount => _rowManager.RowCount;
 
         public IEnumerable<int> GetRows()
         {
@@ -150,7 +147,7 @@ namespace ReactiveTables.Framework.Joins
         {
             if (joinRowIndex >= _rows.Count) return -1;
 
-            Row? row = _rows[joinRowIndex];
+            var row = _rows[joinRowIndex];
             IReactiveColumn leftColumn;
             if (_leftTable.GetColumnByName(column.ColumnId, out leftColumn)
                 && leftColumn.Equals(column)
@@ -235,7 +232,7 @@ namespace ReactiveTables.Framework.Joins
         private void ProcessColumnUpdate(TableUpdate update, IReactiveColumn column)
         {
             JoinSide side;
-            int columnRowIndex = update.RowIndex;
+            var columnRowIndex = update.RowIndex;
             if (column.Equals(_leftColumn))
             {
                 side = JoinSide.Left;
@@ -326,15 +323,15 @@ namespace ReactiveTables.Framework.Joins
 
         private List<RowToUpdate> OnColumnUpdate(int columnRowIndex, JoinSide side)
         {
-            List<RowToUpdate> updateRows = new List<RowToUpdate>();
-            IReactiveTable table = side == JoinSide.Left ? _leftTable : _rightTable;
-            IReactiveColumn column = side == JoinSide.Left ? _leftColumn : _rightColumn;
+            var updateRows = new List<RowToUpdate>();
+            var table = side == JoinSide.Left ? _leftTable : _rightTable;
+            var column = side == JoinSide.Left ? _leftColumn : _rightColumn;
             var key = table.GetValue<TKey>(column.ColumnId, columnRowIndex);
 
             ColumnRowMapping keyRowsMapping;
             // Has the key been used before?
-            Dictionary<int, HashSet<int>> otherColumnRowsToJoinRows = side == JoinSide.Left ? _rightColumnRowsToJoinRows : _leftColumnRowsToJoinRows;
-            Dictionary<int, HashSet<int>> columnRowsToJoinRows = side == JoinSide.Left ? _leftColumnRowsToJoinRows : _rightColumnRowsToJoinRows;
+            var otherColumnRowsToJoinRows = side == JoinSide.Left ? _rightColumnRowsToJoinRows : _leftColumnRowsToJoinRows;
+            var columnRowsToJoinRows = side == JoinSide.Left ? _leftColumnRowsToJoinRows : _rightColumnRowsToJoinRows;
             if (_rowsByKey.TryGetValue(key, out keyRowsMapping))
             {
                 HashSet<int> existingRowIndeces;
@@ -394,10 +391,10 @@ namespace ReactiveTables.Framework.Joins
                                   Dictionary<int, HashSet<int>> columnRowsToJoinRows)
         {
             // Other side rows exist with no mapping - try to join to an unlinked one
-            int unlinkedIndex = keyRowsMapping.ColRowMappings.FindIndex(IsRowUnlinked(side));
+            var unlinkedIndex = keyRowsMapping.ColRowMappings.FindIndex(IsRowUnlinked(side));
             if (unlinkedIndex >= 0)
             {
-                for (int i = unlinkedIndex; i < keyRowsMapping.ColRowMappings.Count; i++)
+                for (var i = unlinkedIndex; i < keyRowsMapping.ColRowMappings.Count; i++)
                 {
                     LinkNewItemToUnlinkedRows(columnRowIndex, side, keyRowsMapping, updateRows, otherColumnRowsToJoinRows, columnRowsToJoinRows, i);
                 }
@@ -457,7 +454,7 @@ namespace ReactiveTables.Framework.Joins
         {
             // For each distinct row on the other side we need to create a new row and link ourselves
             var otherRows = GetDistinctOtherRows(keyRowsMapping, side);
-            int?[] otherRowIds = otherRows.ToArray();
+            var otherRowIds = otherRows.ToArray();
             foreach (var otherRowId in otherRowIds)
             {
                 int? joinedRowId = GetNewRowId();
@@ -485,7 +482,7 @@ namespace ReactiveTables.Framework.Joins
                                               Dictionary<int, HashSet<int>> columnRowsToJoinRows)
         {
             // First time this key has been used so create a new (unlinked on the other side)
-            ColumnRowMapping keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
+            var keyRowsMapping = new ColumnRowMapping {ColRowMappings = new List<Row>()};
 
             UpdateNewKeyInExistingMapping(columnRowIndex, side, key, updateRows, columnRowsToJoinRows, keyRowsMapping);
 
@@ -499,8 +496,8 @@ namespace ReactiveTables.Framework.Joins
                                                    Dictionary<int, HashSet<int>> columnRowsToJoinRows,
                                                    ColumnRowMapping keyRowsMapping)
         {
-            bool shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
-            int? joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?) null;
+            var shouldAddUnlinkedRow = ShouldAddUnlinkedRow(side);
+            var joinedRowId = shouldAddUnlinkedRow ? GetNewRowId() : (int?) null;
             var joinRow = CreateNewJoinRow(columnRowIndex, key, joinedRowId, side);
             keyRowsMapping.ColRowMappings.Add(joinRow);
 
@@ -515,7 +512,7 @@ namespace ReactiveTables.Framework.Joins
 
         private int GetNewRowId()
         {
-            int newRowId = _rowManager.AddRow();
+            var newRowId = _rowManager.AddRow();
 //            Console.WriteLine("Adding row {0} to join {1} {2}", newRowId, _leftColumn.ColumnId, _rightColumn.ColumnId);
             return newRowId;
         }

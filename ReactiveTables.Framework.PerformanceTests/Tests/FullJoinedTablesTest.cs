@@ -56,9 +56,6 @@ namespace ReactiveTables.Framework.PerformanceTests.Tests
             _table2.SetValue("ValueCol2", id2, 23213214214.3423m);
         }
 
-        public long Metric
-        {
-            get { return _joinedTable.RowCount; }
-        }
+        public long Metric => _joinedTable.RowCount;
     }
 }

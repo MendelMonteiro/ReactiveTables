@@ -11,10 +11,10 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestAdd()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
@@ -35,10 +35,10 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestUpdate()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();
@@ -67,10 +67,10 @@ namespace ReactiveTables.Framework.Tests
         [Test]
         public void TestDelete()
         {
-            ReactiveTable target = TestTableHelper.CreateReactiveTable();
-            ReactivePassThroughTable source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
+            var target = TestTableHelper.CreateReactiveTable();
+            var source = new ReactivePassThroughTable(target, new DefaultThreadMarshaller());
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             target.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var sourceRow1 = source.AddRow();

@@ -43,7 +43,7 @@ namespace ReactiveTables.Framework.Protobuf
             // TODO: Find way to re-utilise the proto writers (object pool?)
             using (var writer = new ProtoWriter(_outputStream, null, null))
             {
-                SubItemToken outerToken = new SubItemToken();
+                var outerToken = new SubItemToken();
                 if (WithLengthPrefix)
                 {
                     // Encode the length of the stream (protobuf-net will automatically calculate the length of the 'String' field)

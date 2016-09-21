@@ -108,10 +108,7 @@ namespace ReactiveTables.Demo.Utils
             throw new NotImplementedException();
         }
 
-        public int Count
-        {
-            get { return _table.RowCount; }
-        }
+        public int Count => _table.RowCount;
 
         public object SyncRoot { get; private set; }
         public bool IsSynchronized { get; private set; }
@@ -189,13 +186,13 @@ namespace ReactiveTables.Demo.Utils
             throw new NotImplementedException();
         }
 
-        public bool AllowNew { get { return false; } }
-        public bool AllowEdit { get { return false; } }
-        public bool AllowRemove { get { return false; } }
-        public bool SupportsChangeNotification { get { return true; } }
-        public bool SupportsSearching { get { return false; } }
-        public bool SupportsSorting { get { return false; } }
-        public bool IsSorted { get { return false; } }
+        public bool AllowNew => false;
+        public bool AllowEdit => false;
+        public bool AllowRemove => false;
+        public bool SupportsChangeNotification => true;
+        public bool SupportsSearching => false;
+        public bool SupportsSorting => false;
+        public bool IsSorted => false;
         public PropertyDescriptor SortProperty { get; private set; }
         public ListSortDirection SortDirection { get; private set; }
         public event ListChangedEventHandler ListChanged;

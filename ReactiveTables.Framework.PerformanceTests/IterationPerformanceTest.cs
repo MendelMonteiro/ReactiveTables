@@ -40,14 +40,14 @@ namespace ReactiveTables.Framework.PerformanceTests
 
             var watch = new Stopwatch();
             watch.Start();
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 test.Iterate();
 //                if (iterationPause > 0) Thread.Sleep(iterationPause);
             }
 
             watch.Stop();
-            double opsPerMs = iterations/(double)watch.ElapsedMilliseconds;
+            var opsPerMs = iterations/(double)watch.ElapsedMilliseconds;
             Console.WriteLine("Operations: {0:N0} in {1:N0}ms - {2:N} ops/ms",
                               iterations, watch.ElapsedMilliseconds, opsPerMs);
         }

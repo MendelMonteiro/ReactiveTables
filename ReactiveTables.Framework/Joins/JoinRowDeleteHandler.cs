@@ -64,15 +64,15 @@ namespace ReactiveTables.Framework.Joins
             var joinRowIds = _columnRowsToJoinRows[update.RowIndex];
             if (joinRowIds.Count < 0) return;
             
-            List<TableUpdate> rowUpdates = new List<TableUpdate>();
+            var rowUpdates = new List<TableUpdate>();
 
             // Get the key and row id to use from the first element
             var firstJoinRowId = joinRowIds.First();
-            TKey key = _rows[firstJoinRowId].Value.Key;
+            var key = _rows[firstJoinRowId].Value.Key;
             var colRowMappings = _rowsByKey[key].ColRowMappings;
 
             // Make a copy as we'll modify the original inside the loop
-            List<int> joinRowIdsCopy = joinRowIds.ToList();
+            var joinRowIdsCopy = joinRowIds.ToList();
 
             /* 
              * 1. Blank our side
@@ -115,7 +115,7 @@ namespace ReactiveTables.Framework.Joins
             IEnumerable<int> joinRowIds)
         {
             // Remove the mappings where we don't have values on either side
-            for (int i = colRowMappings.Count - 1; i >= 0; i--)
+            for (var i = colRowMappings.Count - 1; i >= 0; i--)
             {
                 var mapping = colRowMappings[i];
                 if (!mapping.LeftRowId.HasValue && !mapping.RightRowId.HasValue)
@@ -136,7 +136,7 @@ namespace ReactiveTables.Framework.Joins
                         // Clear the row ids from the Join state
                         joinRow.RowId = null;
                         _rows[joinRowId] = joinRow;
-                        for (int i = 0; i < _rowsByKey[key].ColRowMappings.Count; i++)
+                        for (var i = 0; i < _rowsByKey[key].ColRowMappings.Count; i++)
                         {
                             var mapping = _rowsByKey[key].ColRowMappings[i];
                             mapping.RowId = null;
@@ -167,9 +167,9 @@ namespace ReactiveTables.Framework.Joins
 
         private void BlankSide(int joinRowId, List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex)
         {
-            for (int i = 0; i < colRowMappings.Count; i++)
+            for (var i = 0; i < colRowMappings.Count; i++)
             {
-                Join<TKey>.Row mapping = colRowMappings[i];
+                var mapping = colRowMappings[i];
                 // When doing the other side we need to check the other side rowId and this side's rowId
                 if (IsRow(mapping, joinSide, rowIndex))
                 {
@@ -180,7 +180,7 @@ namespace ReactiveTables.Framework.Joins
                 }
             }
 
-            Join<TKey>.Row rowValue = _rows[joinRowId].Value;
+            var rowValue = _rows[joinRowId].Value;
             if (joinSide == JoinSide.Left) rowValue.LeftRowId = null; else rowValue.RightRowId = null;
             _rows[joinRowId] = rowValue;
         }
@@ -188,9 +188,9 @@ namespace ReactiveTables.Framework.Joins
         
         private void BlankOtherSide(int joinRowId, List<Join<TKey>.Row> colRowMappings, JoinSide joinSide, int rowIndex)
         {
-            for (int i = 0; i < colRowMappings.Count; i++)
+            for (var i = 0; i < colRowMappings.Count; i++)
             {
-                Join<TKey>.Row mapping = colRowMappings[i];
+                var mapping = colRowMappings[i];
                 // When doing the other side we need to check the other side rowId and this side's rowId
                 if (IsRowForOtherSide(mapping, joinSide, rowIndex))
                 {
@@ -201,7 +201,7 @@ namespace ReactiveTables.Framework.Joins
                 }
             }
 
-            Join<TKey>.Row rowValue = _rows[joinRowId].Value;
+            var rowValue = _rows[joinRowId].Value;
             if (joinSide == JoinSide.Left) rowValue.LeftRowId = null; else rowValue.RightRowId = null;
             _rows[joinRowId] = rowValue;
         }

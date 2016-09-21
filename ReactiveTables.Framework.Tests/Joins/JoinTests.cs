@@ -48,7 +48,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -93,7 +93,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -114,7 +114,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -135,7 +135,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -166,7 +166,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -201,7 +201,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            var rowsUpdated = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
@@ -236,9 +236,9 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            ColumnUpdateHandler colsUpdated = new ColumnUpdateHandler();
+            var colsUpdated = new ColumnUpdateHandler();
             joinedTable.ColumnUpdates().Subscribe(colsUpdated.OnColumnUpdate);
-            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            var rowsUpdated = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
             
             var rightRowId = rightTable.AddRow();
@@ -278,7 +278,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            var rowsUpdated = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
@@ -313,7 +313,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            RowUpdateHandler rowsUpdated = new RowUpdateHandler();
+            var rowsUpdated = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowsUpdated.OnRowUpdate);
 
             var rightRowId = rightTable.AddRow();
@@ -350,7 +350,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.LeftOuter);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
@@ -385,7 +385,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.RightOuter);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
@@ -420,7 +420,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -443,7 +443,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             var leftRowId = leftTable.AddRow();
@@ -481,7 +481,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             int idCol1Updates = 0, idCol2Updates = 0;
@@ -525,7 +525,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             // Now delete the rows
             leftTable.DeleteRow(leftRowId1);
             TestRowCount(updateHandler, joinedTable, 2);
-            int firstRowIndex = updateHandler.RowsUpdated.First();
+            var firstRowIndex = updateHandler.RowsUpdated.First();
             Assert.AreEqual(0, joinedTable.GetValue<int>(TestLeftColumns.IdColumn, firstRowIndex));
 
             leftTable.DeleteRow(leftRowId2);
@@ -554,7 +554,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.LeftOuter);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the right row dissapears
@@ -597,7 +597,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.RightOuter);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the right row stays
@@ -640,7 +640,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            RowUpdateHandler updateHandler = new RowUpdateHandler();
+            var updateHandler = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(updateHandler.OnRowUpdate);
 
             // Add a coule of rows and then delete the left side, make sure the row goes
@@ -683,9 +683,9 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            RowUpdateHandler rowUpdates = new RowUpdateHandler();
+            var rowUpdates = new RowUpdateHandler();
             joinedTable.RowUpdates().Subscribe(rowUpdates.OnRowUpdate);
-            ColumnUpdateHandler columnUpdates = new ColumnUpdateHandler();
+            var columnUpdates = new ColumnUpdateHandler();
             joinedTable.ColumnUpdates().Subscribe(columnUpdates.OnColumnUpdate);
 
             // Add rows, first to the left and then to the right
@@ -765,9 +765,9 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       columnId,
                                       (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
                                       (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
-                                      (str, dec) => string.Format("{0} - {1}", str, dec)));
+                                      (str, dec) => $"{str} - {dec}"));
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -825,9 +825,9 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       columnId,
                                       (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
                                       (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
-                                      (str, dec) => string.Format("{0} - {1}", str, dec)));
+                                      (str, dec) => $"{str} - {dec}"));
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -876,7 +876,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(6789m, joinedTable.GetValue<decimal>(TestRightColumns.DecimalColumn, rightRowId));
             Assert.AreEqual("hello - 6789", joinedTable.GetValue<string>(columnId, 0));
 
-            PropertyChangedNotifier notifier = new PropertyChangedNotifier(joinedTable);
+            var notifier = new PropertyChangedNotifier(joinedTable);
             var testConsumer = new TestPropertyChangedConsumer();
             notifier.RegisterPropertyNotifiedConsumer(testConsumer, 0);
 
@@ -892,7 +892,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -941,7 +941,7 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       columnId,
                                       (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
                                       (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
-                                      (str, dec) => string.Format("{0} - {1}", str, dec)));
+                                      (str, dec) => $"{str} - {dec}"));
 
             Assert.AreEqual("hello - 9876", joinedTable.GetValue<string>(columnId, 0));
         }
@@ -953,7 +953,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -1011,9 +1011,9 @@ namespace ReactiveTables.Framework.Tests.Joins
                                       columnId,
                                       (IReactiveColumn<string>) leftTable.GetColumnByName(TestLeftColumns.StringColumn),
                                       (IReactiveColumn<decimal>) rightTable.GetColumnByName(TestRightColumns.DecimalColumn),
-                                      (str, dec) => string.Format("{0} - {1}", str, dec)));
+                                      (str, dec) => $"{str} - {dec}"));
 
-            int[] rowsUpdated = new int[1];
+            var rowsUpdated = new int[1];
             joinedTable.RowUpdates().Subscribe(update => rowsUpdated[0]++);
 
             var leftRowId = leftTable.AddRow();
@@ -1073,7 +1073,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var left = CreateJoinedTables(out right, out joinedTable);
 
-            int rightleftRowId = right.AddRow();
+            var rightleftRowId = right.AddRow();
             Assert.AreEqual(0, joinedTable.RowCount);
 
             right.SetValue(TestRightColumns.IdColumn, rightleftRowId, 111);
@@ -1084,7 +1084,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(111, joinedTable.GetValue<int>(TestRightColumns.IdColumn, 0));
             Assert.AreEqual(222, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, 0));
 
-            int rightrightRowId = right.AddRow();
+            var rightrightRowId = right.AddRow();
             Assert.AreEqual(1, joinedTable.RowCount);
 
             right.SetValue(TestRightColumns.IdColumn, rightrightRowId, 112);
@@ -1095,7 +1095,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             Assert.AreEqual(112, joinedTable.GetValue<int>(TestRightColumns.IdColumn, 1));
             Assert.AreEqual(223, joinedTable.GetValue<int>(TestRightColumns.LeftIdColumn, 1));
 
-            int leftleftRowId = left.AddRow();
+            var leftleftRowId = left.AddRow();
             left.SetValue(TestLeftColumns.IdColumn, leftleftRowId, 223);
             left.SetValue(TestLeftColumns.StringColumn, leftleftRowId, "hello");
             Assert.AreEqual(2, joinedTable.RowCount);
@@ -1110,7 +1110,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable);
 
-            TestPropertyChangedConsumer propertyChangedConsumer = new TestPropertyChangedConsumer();
+            var propertyChangedConsumer = new TestPropertyChangedConsumer();
             var leftRow = leftTable.AddRow();
             const int joinedRow = 0;
             joinedTable.ChangeNotifier.RegisterPropertyNotifiedConsumer(propertyChangedConsumer, joinedRow);
@@ -1148,7 +1148,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             IReactiveTable joinedTable;
             var leftTable = CreateJoinedTables(out rightTable, out joinedTable, JoinType.Inner);
 
-            TestPropertyChangedConsumer propertyChangedConsumer = new TestPropertyChangedConsumer();
+            var propertyChangedConsumer = new TestPropertyChangedConsumer();
             var leftRow = leftTable.AddRow();
             const int joinedRow = 0;
             joinedTable.ChangeNotifier.RegisterPropertyNotifiedConsumer(propertyChangedConsumer, joinedRow);
@@ -1198,7 +1198,7 @@ namespace ReactiveTables.Framework.Tests.Joins
             rightTable.SetValue(TestRightColumns.IdColumn, rightRow1, 1);
             rightTable.SetValue(TestRightColumns.LeftIdColumn, rightRow1, 1);
 
-            IReactiveTable joinedTable = leftTable.Join(rightTable, new Join<int>(leftTable, TestLeftColumns.IdColumn, rightTable, TestRightColumns.LeftIdColumn));
+            var joinedTable = leftTable.Join(rightTable, new Join<int>(leftTable, TestLeftColumns.IdColumn, rightTable, TestRightColumns.LeftIdColumn));
 
             Assert.AreEqual(1, joinedTable.RowCount);
         }
@@ -1215,7 +1215,7 @@ namespace ReactiveTables.Framework.Tests.Joins
 
         private static ReactiveTable CreateLeftTable()
         {
-            ReactiveTable leftTable = new ReactiveTable();
+            var leftTable = new ReactiveTable();
             leftTable.AddColumn(new ReactiveColumn<int>(TestLeftColumns.IdColumn));
             leftTable.AddColumn(new ReactiveColumn<string>(TestLeftColumns.StringColumn));
             leftTable.AddColumn(new ReactiveColumn<decimal>(TestLeftColumns.DecimalColumn));
@@ -1224,7 +1224,7 @@ namespace ReactiveTables.Framework.Tests.Joins
 
         private static ReactiveTable CreateRightTable()
         {
-            ReactiveTable rightTable = new ReactiveTable();
+            var rightTable = new ReactiveTable();
             rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.IdColumn));
             rightTable.AddColumn(new ReactiveColumn<int>(TestRightColumns.LeftIdColumn));
             rightTable.AddColumn(new ReactiveColumn<decimal>(TestRightColumns.DecimalColumn));

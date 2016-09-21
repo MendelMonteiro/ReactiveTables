@@ -31,9 +31,9 @@ namespace ReactiveTables.Framework.Tests.Collections
 
         private static ReactiveList<int> CreateAndTestList(int iterations)
         {
-            ReactiveList<int> list = new ReactiveList<int>();
+            var list = new ReactiveList<int>();
 
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 list.Add(iterations + i);
 
@@ -47,10 +47,10 @@ namespace ReactiveTables.Framework.Tests.Collections
 //        [Test]
         public void TestRemoveFromStart()
         {
-            int iterations = 100;
-            ReactiveList<int> list = CreateAndTestList(iterations);
+            var iterations = 100;
+            var list = CreateAndTestList(iterations);
 
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 list.RemoveAt(i);
 
@@ -64,10 +64,10 @@ namespace ReactiveTables.Framework.Tests.Collections
 //        [Test]
         public void TestRemoveFromEnd()
         {
-            int iterations = 100;
-            ReactiveList<int> list = CreateAndTestList(iterations);
+            var iterations = 100;
+            var list = CreateAndTestList(iterations);
 
-            for (int i = iterations; i >= 0; i--)
+            for (var i = iterations; i >= 0; i--)
             {
                 list.RemoveAt(i);
 
@@ -81,8 +81,8 @@ namespace ReactiveTables.Framework.Tests.Collections
 //        [Test]
         public void TestRemoveInTheMiddle()
         {
-            int iterations = 100;
-            ReactiveList<int> list = CreateAndTestList(iterations);
+            var iterations = 100;
+            var list = CreateAndTestList(iterations);
 
             list.RemoveAt(50);
 
