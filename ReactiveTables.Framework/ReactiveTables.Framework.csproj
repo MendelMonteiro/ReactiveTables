@@ -107,10 +107,12 @@
     <Compile Include="Collections\IndexedDictionary.cs" />
     <Compile Include="Collections\ReactiveList.cs" />
     <Compile Include="ColumnList.cs" />
+    <Compile Include="Columns\CalculatedColumnAttribute.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn1.cs" />
     <Compile Include="Columns\ColumnIndex.cs" />
     <Compile Include="Collections\FieldRowList.cs" />
     <Compile Include="Columns\IReactiveColumn.cs" />
+    <Compile Include="Columns\ReactiveColumn.cs" />
     <Compile Include="Comms\ClientState.cs" />
     <Compile Include="Comms\IReactiveTableProcessor.cs" />
     <Compile Include="Comms\ReactiveTableTcpClient.cs" />
@@ -122,13 +124,15 @@
     <Compile Include="IReactiveTable.cs" />
     <Compile Include="Joins\JoinedTable.cs" />
     <Compile Include="Marshalling\ThreadPoolThreadMarshaller.cs" />
+    <Compile Include="ReactiveTableBase.cs" />
+    <Compile Include="ReactiveTable`1.cs" />
     <Compile Include="Sorting\SortedTable.cs" />
     <Compile Include="Synchronisation\BatchedTableSynchroniser.cs" />
     <Compile Include="ColumnChangePublisher.cs" />
     <Compile Include="Columns\Calculated\ReactiveCalculatedColumn2.cs" />
     <Compile Include="Columns\ColumnSubscriptionAggregator.cs" />
     <Compile Include="Columns\FieldRowManager.cs" />
-    <Compile Include="Columns\ReactiveColumn.cs" />
+    <Compile Include="Columns\ReactiveColumn`1.cs" />
     <Compile Include="Columns\ReactiveColumnBase.cs" />
     <Compile Include="Marshalling\DefaultThreadMarshaller.cs" />
     <Compile Include="IColumnObserver.cs" />
@@ -150,6 +154,7 @@
     <Compile Include="Synchronisation\TableSynchroniser.cs" />
     <Compile Include="TableExtensions.cs" />
     <Compile Include="TableUpdate.cs" />
+    <Compile Include="UI\BaseModelFlyweight.cs" />
     <Compile Include="UI\ReactiveViewModelBase.cs" />
     <Compile Include="Utils\BidirectionalDictionary.cs" />
     <Compile Include="Utils\CollectionExtensions.cs" />

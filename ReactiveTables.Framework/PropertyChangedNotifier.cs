@@ -78,7 +78,7 @@ namespace ReactiveTables.Framework
             HashSet<IReactivePropertyNotifiedConsumer> consumers;
             if (_consumersByRowIndex.TryGetValue(value.RowIndex, out consumers))
             {
-                var propertyName = GetPropertyName(value.Column.ColumnId);
+                var propertyName = GetPropertyNameFrom(value.Column.ColumnId);
                 foreach (var consumer in consumers)
                 {
                     consumer.OnPropertyChanged(propertyName);
@@ -86,8 +86,9 @@ namespace ReactiveTables.Framework
             }
         }
 
-        private static string GetPropertyName(string columnId)
+        private static string GetPropertyNameFrom(string columnId)
         {
+            // TODO: Fix this as we scan the whole string on each update
             return columnId.Substring(columnId.LastIndexOf('.') + 1);
         }
 

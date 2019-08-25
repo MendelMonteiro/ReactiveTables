@@ -17,9 +17,9 @@ namespace ReactiveTables.Demo
 {
     internal static class PersonColumns
     {
-        public const string IdColumn = "Person.PersonId";
-        public const string NameColumn = "Person.Name";
-        public const string IdNameColumn = "Person.IdName";
+        public const string IdColumn = "PersonViewModel.PersonId";
+        public const string NameColumn = "PersonViewModel.Name";
+        public const string IdNameColumn = "PersonViewModel.IdName";
     }
 
     public static class AccountColumns

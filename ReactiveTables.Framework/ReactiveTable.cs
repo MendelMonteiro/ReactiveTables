@@ -18,8 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using ReactiveTables.Framework.Columns;
-using ReactiveTables.Framework.Filters;
-using ReactiveTables.Framework.Joins;
 
 namespace ReactiveTables.Framework
 {
@@ -58,48 +56,6 @@ namespace ReactiveTables.Framework
         /// </summary>
         /// <param name="rowIndex"></param>
         void DeleteRow(int rowIndex);
-    }
-
-    /// <summary>
-    /// Contains functionality common to all tables
-    /// </summary>
-    public abstract class ReactiveTableBase : IReactiveTable
-    {
-        private readonly Lazy<PropertyChangedNotifier> _changeNotifier;
-
-        public ReactiveTableBase()
-        {
-            _changeNotifier = new Lazy<PropertyChangedNotifier>(() => new PropertyChangedNotifier(this));
-        }
-
-        public abstract IReactiveColumn AddColumn(IReactiveColumn column, bool shouldSubscribe = true);
-        public abstract T GetValue<T>(string columnId, int rowIndex);
-        public abstract object GetValue(string columnId, int rowIndex);
-        public abstract int RowCount { get; }
-//        public abstract IDictionary<string, IReactiveColumn> Columns { get; }
-        public abstract IReadOnlyList<IReactiveColumn> Columns { get; }
-
-        public abstract IReactiveColumn GetColumnByIndex(int index);
-
-        public PropertyChangedNotifier ChangeNotifier => _changeNotifier.Value;
-
-        public abstract void ReplayRows(IObserver<TableUpdate> observer);
-        public abstract int GetRowAt(int position);
-        public abstract int GetPositionOfRow(int rowIndex);
-        public abstract IReactiveColumn GetColumnByName(string columnId);
-        public abstract bool GetColumnByName(string columnId, out IReactiveColumn column);
-
-        public abstract IDisposable Subscribe(IObserver<TableUpdate> observer);
-
-        public virtual IReactiveTable Filter(IReactivePredicate predicate)
-        {
-            return new FilteredTable(this, predicate);
-        }
-
-        public virtual IReactiveTable Join(IReactiveTable otherTable, IReactiveTableJoiner joiner)
-        {
-            return new JoinedTable(this, otherTable, joiner);
-        }
     }
 
     /// <summary>
@@ -255,6 +211,11 @@ namespace ReactiveTables.Framework
         public override IDisposable Subscribe(IObserver<TableUpdate> observer)
         {
             return _subject.Subscribe(observer);
+        }
+
+        public IDisposable Subscribe(Action<TableUpdate> onNext)
+        {
+            return _subject.Subscribe(onNext);
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace ReactiveTables.Demo.Services
 {
     internal interface IAccountBalanceDataService
     {
-        IReactiveTable People { get; set; }
+        IReactiveTable<PersonViewModel> People { get; set; }
         IReactiveTable Accounts { get; }
         IReactiveTable AccountPeople { get; }
         void Start();
@@ -53,7 +53,7 @@ namespace ReactiveTables.Demo.Services
 
         private readonly ManualResetEventSlim _running = new ManualResetEventSlim(true);
 
-        public IReactiveTable People { get; set; }
+        public IReactiveTable<PersonViewModel> People { get; set; }
         public IReactiveTable Accounts { get; }
         public IReactiveTable AccountPeople { get; }
 
@@ -70,7 +70,7 @@ namespace ReactiveTables.Demo.Services
         public AccountBalanceDataService(Dispatcher dispatcher, int maxEntries = int.MaxValue)
         {
             _maxEntries = maxEntries;
-            People = new ReactiveTable();
+            People = new ReactiveTable<PersonViewModel>();
             var basePersonColumns = new List<IReactiveColumn>
                                                       {
                                                           new ReactiveColumn<int>(PersonColumns.IdColumn),
@@ -152,8 +152,6 @@ namespace ReactiveTables.Demo.Services
                                                         List<IReactiveColumn> baseColumns,
                                                         Dispatcher dispatcher)
         {
-            baseColumns.ForEach(col => people.AddColumn(col));
-
             // Wire up the two tables before the dynamic columns
             var peopleWire = new ReactiveBatchedPassThroughTable(people, new WpfThreadMarshaller(dispatcher), _synchroniseTablesDelay);
             //            var PeopleWire = new ReactiveTable(People);

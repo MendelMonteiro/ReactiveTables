@@ -13,36 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with ReactiveTables.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using ReactiveTables.Framework;
+using ReactiveTables.Framework.Columns;
 using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class PersonViewModel : ReactiveViewModelBase, IDisposable
+    public class PersonViewModel : BaseModelFlyweight<PersonViewModel>
     {
-        private readonly IReactiveTable _people;
-        private readonly int _rowIndex;
-
-        public PersonViewModel(IReactiveTable people, int rowIndex)
-        {
-            _rowIndex = rowIndex;
-            _people = people;
-//            Change = new DelegateCommand(() => Name += "was changed");
-            _people.ChangeNotifier.RegisterPropertyNotifiedConsumer(this, _rowIndex);
-        }
-
-        public int PersonId => _people.GetValue<int>(PersonColumns.IdColumn, _rowIndex);
-
-        public string Name => _people.GetValue<string>(PersonColumns.NameColumn, _rowIndex);
+        public int PersonId => GetValue<int>();
+        public string Name => GetValue<string>();
 
 //        public DelegateCommand Change { get; private set; }
 
-        public string IdName => _people.GetValue<string>(PersonColumns.IdNameColumn, _rowIndex);
-
-        public void Dispose()
-        {
-            _people.ChangeNotifier.UnregisterPropertyNotifiedConsumer(this, _rowIndex);
-        }
+        [CalculatedColumn]
+        public string IdName => GetValue<string>();
     }
 }

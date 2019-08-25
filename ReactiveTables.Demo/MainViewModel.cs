@@ -65,7 +65,6 @@ namespace ReactiveTables.Demo
 
         public void Dispose()
         {
-            People.Dispose();
             Accounts.Dispose();
             PersonAccounts.Dispose();
         }

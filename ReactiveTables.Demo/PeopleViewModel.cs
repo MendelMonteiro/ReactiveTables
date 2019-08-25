@@ -22,18 +22,11 @@ using ReactiveTables.Framework.UI;
 
 namespace ReactiveTables.Demo
 {
-    public class PeopleViewModel : ReactiveViewModelBase, IDisposable
+    public class PeopleViewModel : ReactiveViewModelBase
     {
-        private readonly IReactiveTable _people;
-        private readonly IDisposable _subscription;
-
-        public PeopleViewModel(IReactiveTable people)
+        public PeopleViewModel(IReactiveTable<PersonViewModel> people)
         {
-            _people = people;
-            People = new ObservableCollection<PersonViewModel>();
-
-            _subscription =
-                _people.ReplayAndSubscribe(update => { if (update.IsRowUpdate()) People.Add(new PersonViewModel(_people, update.RowIndex)); });
+            People = people.Flyweights;
 
             CurrentPerson = People.LastOrDefault();
         }
@@ -43,14 +36,5 @@ namespace ReactiveTables.Demo
         public PersonViewModel CurrentPerson { get; private set; }
 
         public DelegateCommand Add { get; private set; }
-
-        public void Dispose()
-        {
-            _subscription.Dispose();
-            foreach (var personViewModel in People)
-            {
-                personViewModel.Dispose();
-            }
-        }
     }
 }
