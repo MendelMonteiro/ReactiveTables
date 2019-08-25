@@ -13,7 +13,7 @@ ReactiveTables is written to be as efficient as possible and to put as little pr
 Install-Package ReactiveTables.Framework
 ```
 
-The source for ReactiveTables is available from the [BitBucket](https://bitbucket.org/mendelmonteiro/reactivetables) page.
+The source for ReactiveTables is available from the [GitHub](https://github.com/MendelMonteiro/ReactiveTables) page.
 
 ## What can I use ReactiveTables for?
 
@@ -23,7 +23,7 @@ The source for ReactiveTables is available from the [BitBucket](https://bitbucke
 
 ## How do I use ReactiveTables?
 
-See the Demo project available along with the [source code](https://bitbucket.org/mendelmonteiro/reactivetables/src) for more in depth examples.
+See the Demo project available along with the [source code](https://github.com/MendelMonteiro/ReactiveTables) for more in depth examples.
 
 Creating a table:
 
