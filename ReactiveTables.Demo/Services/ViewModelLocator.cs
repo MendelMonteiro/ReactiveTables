@@ -26,9 +26,9 @@ namespace ReactiveTables.Demo.Services
 
         public MainViewModel MainViewModel => Kernel.Get<MainViewModel>();
 
-        public SyncfusionTestViewModel SyncfusionTestViewModel => Kernel.Get<SyncfusionTestViewModel>();
+        //public SyncfusionTestViewModel SyncfusionTestViewModel => Kernel.Get<SyncfusionTestViewModel>();
 
-        public XceedTestViewModel XceedTestViewModel => Kernel.Get<XceedTestViewModel>();
+        //public XceedTestViewModel XceedTestViewModel => Kernel.Get<XceedTestViewModel>();
 
         public FxClientViewModel FxClientViewModel => Kernel.Get<FxClientViewModel>();
 

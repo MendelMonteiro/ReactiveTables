@@ -19,7 +19,7 @@ using ReactiveTables.Framework.Columns;
 
 namespace ReactiveTables.Demo.Server
 {
-    static class BrokerTableDefinition
+    public static class BrokerTableDefinition
     {
         public static class BrokerColumns
         {

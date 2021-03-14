@@ -20,18 +20,18 @@
             CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
-                <Syncfusion:SyncfusionTestGridControl x:Name="Grid" 
+                <!--<Syncfusion:SyncfusionTestGridControl x:Name="Grid" 
                                                       ViewModel="{Binding}" 
-                                                      ColumnCount="{Binding Path=ColumnCount}" />
+                                                      ColumnCount="{Binding Path=ColumnCount}" />-->
             </ScrollViewer>
             <Border BorderThickness="2">
                 <ScrollViewer
                           CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
-                    <Syncfusion:SyncfusionTestGridControl x:Name="CurrencyPairsGrid" 
+                    <!--<Syncfusion:SyncfusionTestGridControl x:Name="CurrencyPairsGrid" 
                                                       ViewModel="{Binding CurrencyPairsViewModel}" 
-                                                      ColumnCount="{Binding Path=CurrencyPairsViewModel.ColumnCount}" />
+                                                      ColumnCount="{Binding Path=CurrencyPairsViewModel.ColumnCount}" />-->
                 </ScrollViewer>
             </Border>
         </StackPanel>

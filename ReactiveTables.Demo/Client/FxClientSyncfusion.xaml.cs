@@ -13,16 +13,16 @@ namespace ReactiveTables.Demo.Client
         {
             InitializeComponent();
             
-            Grid.AddColumn<string>(FxTableDefinitions.FxRates.CcyPairId);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Bid);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Ask);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Open);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Close);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Change);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.YearRangeStart);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.YearRangeEnd);
-            Grid.AddColumn<DateTime>(FxTableDefinitions.FxRates.Time);
-            Grid.AddColumn<double>(FxTableDefinitions.FxRates.Ticks);
+            //Grid.AddColumn<string>(FxTableDefinitions.FxRates.CcyPairId);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Bid);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Ask);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Open);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Close);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Change);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.YearRangeStart);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.YearRangeEnd);
+            //Grid.AddColumn<DateTime>(FxTableDefinitions.FxRates.Time);
+            //Grid.AddColumn<double>(FxTableDefinitions.FxRates.Ticks);
         }
     }
 }

@@ -9,9 +9,9 @@
             CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
-            <syncfusion:SyncfusionTestGridControl x:Name="Grid" 
+            <!--<syncfusion:SyncfusionTestGridControl x:Name="Grid" 
                                                       ViewModel="{Binding}" 
-                                                      ColumnCount="{Binding Path=ColumnCount}" />
+                                                      ColumnCount="{Binding Path=ColumnCount}" />-->
         </ScrollViewer>
     </Grid>
 </Window>

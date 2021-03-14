@@ -26,9 +26,9 @@ namespace ReactiveTables.Demo.GroupedData
         {
             InitializeComponent();
 
-            Grid.AddColumn<int>(AccountColumns.PersonId);
-            Grid.AddColumn<int>(GroupTestViewModel.CountColumnId);
-            Grid.AddColumn<decimal>(GroupTestViewModel.SumColumnId);
+            //Grid.AddColumn<int>(AccountColumns.PersonId);
+            //Grid.AddColumn<int>(GroupTestViewModel.CountColumnId);
+            //Grid.AddColumn<decimal>(GroupTestViewModel.SumColumnId);
         }
         
         protected override void OnClosed(System.EventArgs e)

@@ -1,6 +1,6 @@
 ﻿namespace ReactiveTables.Demo.Server
 {
-    enum ServerPorts
+    public enum ServerPorts
     {
         Currencies = 1337,
         FxRates = 1338,

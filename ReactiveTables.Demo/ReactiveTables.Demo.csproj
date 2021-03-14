@@ -1,316 +1,49 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5F235481-E866-4533-A67E-590ABE24CF5C}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ReactiveTables.Demo</RootNamespace>
-    <AssemblyName>ReactiveTables.Demo</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="log4net, Version=2.0.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.12\lib\net45\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject, Version=4.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.4.0.0-beta-0134\lib\net45\Ninject.dll</HintPath>
-    </Reference>
-    <Reference Include="ReachFramework" />
-    <Reference Include="Syncfusion.Grid.Wpf, Version=11.3045.0.30, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
-    <Reference Include="Syncfusion.GridCommon.Wpf, Version=11.3045.0.30, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Entity" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Printing" />
-    <Reference Include="System.Reactive.Core, Version=2.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Core.2.2.4\lib\net45\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=2.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Interfaces.2.2.4\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=2.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Linq.2.2.4\lib\net45\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=2.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-PlatformServices.2.2.4\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="UIAutomationTypes" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.Controls.v5.0, Version=5.0.13327.15450, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files (x86)\Xceed\Xceed DataGrid for WPF Professional Edition v5.0\Bin\Xceed.Wpf.Controls.v5.0.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid.v5.0, Version=5.0.13327.15450, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files (x86)\Xceed\Xceed DataGrid for WPF Professional Edition v5.0\Bin\Xceed.Wpf.DataGrid.v5.0.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="..\ReactiveTables.Demo.Server\BrokerTableDefinition.cs">
-      <Link>Services\BrokerTableDefinition.cs</Link>
-    </Compile>
-    <Compile Include="..\ReactiveTables.Demo.Server\FxTableDefinitions.cs">
-      <Link>Client\FxTableDefinitions.cs</Link>
-    </Compile>
-    <Compile Include="..\ReactiveTables.Demo.Server\ServerPorts.cs">
-      <Link>Services\ServerPorts.cs</Link>
-    </Compile>
-    <Compile Include="AccountViewModel.cs" />
-    <Compile Include="Client\BrokerFeed.xaml.cs">
-      <DependentUpon>BrokerFeed.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Client\BrokerFeedViewModel.cs" />
-    <Compile Include="Client\FxClient.xaml.cs">
-      <DependentUpon>FxClient.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Client\FxClientSyncfusion.xaml.cs">
-      <DependentUpon>FxClientSyncfusion.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Client\FxClientSyncfusionViewModel.cs" />
-    <Compile Include="Client\FxClientViewModel.cs" />
-    <Compile Include="Client\FxCurrencyPairViewModel.cs" />
-    <Compile Include="GroupedData\GroupTest.xaml.cs">
-      <DependentUpon>GroupTest.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GroupedData\GroupTestSyncfusion.xaml.cs">
-      <DependentUpon>GroupTestSyncfusion.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GroupedData\GroupTestViewModel.cs" />
-    <Compile Include="GroupedData\SimpleGroupTest.xaml.cs">
-      <DependentUpon>SimpleGroupTest.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GroupedData\SimpleGroupTestViewModel.cs" />
-    <Compile Include="Services\AccountBalanceDataService.cs" />
-    <Compile Include="Services\BrokerFeedDataService.cs" />
-    <Compile Include="Services\FxDataService.cs" />
-    <Compile Include="Client\FxRateViewModel.cs" />
-    <Compile Include="PersonAccountsViewModel.cs" />
-    <Compile Include="PersonAccountViewModel.cs" />
-    <Compile Include="PeopleViewModel.cs" />
-    <Compile Include="MainViewModel.cs" />
-    <Compile Include="Services\GroupedDataService.cs" />
-    <Compile Include="Services\ViewModelLocator.cs" />
-    <Compile Include="Syncfusion\SyncfusionTest.xaml.cs">
-      <DependentUpon>SyncfusionTest.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Syncfusion\SyncfusionTestViewModel.cs" />
-    <Compile Include="Syncfusion\ISyncfusionViewModel.cs" />
-    <Compile Include="Syncfusion\SyncfusionTestGridControl.cs" />
-    <Compile Include="Syncfusion\SyncfusionViewModelBase.cs" />
-    <Compile Include="Syncfusion\SyncfusionWindow.cs" />
-    <Compile Include="TestLauncher.xaml.cs">
-      <DependentUpon>TestLauncher.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utils\BaseViewModel.cs" />
-    <Compile Include="Utils\BatchingObservableCollection.cs" />
-    <Compile Include="Utils\DelegateCommand.cs" />
-    <Compile Include="Columns.cs" />
-    <Compile Include="NormalViewModel.cs" />
-    <Compile Include="PersonViewModel.cs" />
-    <Compile Include="Utils\IndexedObservableCollection.cs" />
-    <Compile Include="Utils\ReactiveBindingList.cs" />
-    <Compile Include="Utils\ReactiveObservableCollection.cs" />
-    <Compile Include="Utils\ReactiveTableEnumerator.cs" />
-    <Compile Include="XceedTest.xaml.cs">
-      <DependentUpon>XceedTest.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="XceedTestViewModel.cs" />
-    <Page Include="Client\BrokerFeed.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Client\FxClient.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Client\FxClientSyncfusion.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GroupedData\GroupTest.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GroupedData\GroupTestSyncfusion.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GroupedData\SimpleGroupTest.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Syncfusion\SyncfusionTest.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TestLauncher.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="XceedTest.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <AppDesigner Include="Properties\" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Notes.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj">
-      <Project>{dd7b70dd-d622-4b6f-b654-bb1f58a3a562}</Project>
-      <Name>ReactiveTables.Framework.Protobuf</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ReactiveTables.Framework.SimpleBinaryEncoding\ReactiveTables.Framework.SimpleBinaryEncoding.csproj">
-      <Project>{3502a634-b1c1-448e-9e32-cc900edb30a1}</Project>
-      <Name>ReactiveTables.Framework.SimpleBinaryEncoding</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj">
-      <Project>{a2a116d0-98cc-40b0-9c09-9151a657f5c7}</Project>
-      <Name>ReactiveTables.Framework</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<UseWpf>true</UseWpf>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Syncfusion\SyncfusionTest.xaml.cs" />
+	  <Compile Remove="Syncfusion\SyncfusionTestGridControl.cs" />
+	  <Compile Remove="XceedTest.xaml.cs" />
+	  <Compile Remove="XceedTestViewModel.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Remove="Syncfusion\SyncfusionTest.xaml" />
+	  <Page Remove="XceedTest.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="log4net">
+			<Version>2.0.12</Version>
+		</PackageReference>
+		<PackageReference Include="Ninject">
+			<Version>4.0.0-beta-0134</Version>
+		</PackageReference>
+		<PackageReference Include="Rx-Core">
+			<Version>2.2.4</Version>
+		</PackageReference>
+		<PackageReference Include="Rx-Interfaces">
+			<Version>2.2.4</Version>
+		</PackageReference>
+		<PackageReference Include="Rx-Linq">
+			<Version>2.2.4</Version>
+		</PackageReference>
+		<PackageReference Include="Rx-Main">
+			<Version>2.2.4</Version>
+		</PackageReference>
+		<PackageReference Include="Rx-PlatformServices">
+			<Version>2.2.4</Version>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ReactiveTables.Demo.Server\ReactiveTables.Demo.Server.csproj" />
+		<ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj" />
+		<ProjectReference Include="..\ReactiveTables.Framework.SimpleBinaryEncoding\ReactiveTables.Framework.SimpleBinaryEncoding.csproj" />
+		<ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj" />
+	</ItemGroup>
 </Project>

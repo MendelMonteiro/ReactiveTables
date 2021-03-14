@@ -50,14 +50,14 @@ namespace ReactiveTables.Demo
 
         private void SyncfusionButton_Click(object sender, RoutedEventArgs e)
         {
-            var window = new SyncfusionTest();
-            window.Show();
+            //var window = new SyncfusionTest();
+            //window.Show();
         }
 
         private void XceedButton_Click(object sender, RoutedEventArgs e)
         {
-            var window = new XceedTest();
-            window.Show();
+            //var window = new XceedTest();
+            //window.Show();
         }
 
         private void BrokerFeedButton_OnClick(object sender, RoutedEventArgs e)

@@ -25,15 +25,15 @@ namespace ReactiveTables.Demo.Client
         {
             InitializeComponent();
 
-            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.CcyPairColumn);
-            Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.BidColumn);
-            Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.AskColumn);
-            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.BrokerNameColumn);
-            Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.MaturityColumn);
+            //Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.CcyPairColumn);
+            //Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.BidColumn);
+            //Grid.AddColumn<double>(BrokerTableDefinition.BrokerColumns.AskColumn);
+            //Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.BrokerNameColumn);
+            //Grid.AddColumn<string>(BrokerTableDefinition.BrokerColumns.MaturityColumn);
 
-            CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn);
-            CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn);
-            CurrencyPairsGrid.AddColumn<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected);
+            //CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientCcyPairColumn);
+            //CurrencyPairsGrid.AddColumn<string>(BrokerTableDefinition.BrokerClientColumns.ClientIpColumn);
+            //CurrencyPairsGrid.AddColumn<bool>(BrokerTableDefinition.BrokerClientColumns.ClientSide.Selected);
         }
     }
 }

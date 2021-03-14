@@ -19,7 +19,7 @@
             CanContentScroll="True"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto" Grid.RowSpan="2">
-            <Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="{Binding Path=ColumnCount}" />
+            <!--<Syncfusion:SyncfusionTestGridControl x:Name="Grid" ViewModel="{Binding}" ColumnCount="{Binding Path=ColumnCount}" />-->
         </ScrollViewer>
     </Grid>
 </Syncfusion:SyncfusionWindow>

@@ -19,7 +19,7 @@ namespace ReactiveTables.Framework.PerformanceTests
 {
     static class TestLauncher
     {
-        public static void Main(string[] args)
+        public static void Main1(string[] args)
         {
             try
             {
