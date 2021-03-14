@@ -1,22 +1,6 @@
 syntax: regexp
 _ReSharper.ReactiveTables/.*
 packages/.*
-ReactiveTables.Demo/obj/.*
-ReactiveTables.Demo/bin/.*
-ReactiveTables.Demo.Server/obj/.*
-ReactiveTables.Demo.Server/bin/.*
-ReactiveTables.Framework.Tests/bin/.*
-ReactiveTables.Framework.Tests/obj/.*
-ReactiveTables.Framework/bin/.*
-ReactiveTables.Framework/obj/.*
-ReactiveTables.Framework.Comms/bin/.*
-ReactiveTables.Framework.Comms/obj/.*
-ReactiveTables.Framework.Protobuf/bin/.*
-ReactiveTables.Framework.Protobuf/obj/.*
-ReactiveTables.Framework.SimpleBinaryEncoding/bin/.*
-ReactiveTables.Framework.SimpleBinaryEncoding/obj/.*
-ReactiveTables.Framework.PerformanceTests/bin/.*
-ReactiveTables.Framework.PerformanceTests/obj/.*
 .*user
 .*suo
 syntax: glob
@@ -24,4 +8,4 @@ ReactiveTables.sln.DotSettings.user
 ReactiveTables.v11.suo
 ReactiveTables/ReactiveTables.csproj.DotSettings.user
 ReactiveTables/ReactiveTables.csproj.user
-ReactiveTables.Framework/obj/.*
+**/obj/
