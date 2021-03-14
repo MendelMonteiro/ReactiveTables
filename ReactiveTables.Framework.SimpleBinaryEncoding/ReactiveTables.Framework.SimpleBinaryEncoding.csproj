@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ReactiveTables.Framework.SimpleBinaryEncoding</RootNamespace>
     <AssemblyName>ReactiveTables.Framework.SimpleBinaryEncoding</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -34,9 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SBE, Version=1.0.0.93, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Adaptive.SBE.1.0.0.93\lib\net40\SBE.dll</HintPath>
+    <Reference Include="SBE, Version=1.0.0.112, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Adaptive.SBE.1.0.0.112\lib\net40\SBE.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

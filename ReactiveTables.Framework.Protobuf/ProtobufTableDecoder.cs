@@ -82,7 +82,7 @@ namespace ReactiveTables.Framework.Protobuf
                 len = ProtoReader.DirectReadVarintInt32(stream);
             }
             // Allocation of protoreader for each message - blurghh!
-            using (var reader = new ProtoReader(stream, null, null, len))
+            using (var reader = ProtoReader.Create(stream, null, null, len))
             {
                 int fieldId;
                 while ((fieldId = reader.ReadFieldHeader()) != 0)

@@ -1,6 +1,5 @@
 syntax: regexp
 _ReSharper.ReactiveTables/.*
-packages/.*
 .*user
 .*suo
 syntax: glob
@@ -9,3 +8,5 @@ ReactiveTables.v11.suo
 ReactiveTables/ReactiveTables.csproj.DotSettings.user
 ReactiveTables/ReactiveTables.csproj.user
 **/obj/
+**/bin/
+packages
