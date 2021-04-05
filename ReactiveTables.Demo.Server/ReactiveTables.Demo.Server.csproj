@@ -4,24 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Rx-Core">
-      <Version>2.2.4</Version>
-    </PackageReference>
-    <PackageReference Include="Rx-Interfaces">
-      <Version>2.2.4</Version>
-    </PackageReference>
-    <PackageReference Include="Rx-Linq">
-      <Version>2.2.4</Version>
-    </PackageReference>
-    <PackageReference Include="Rx-Main">
-      <Version>2.2.4</Version>
-    </PackageReference>
-    <PackageReference Include="Rx-PlatformServices">
-      <Version>2.2.4</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ReactiveTables.Framework.Protobuf\ReactiveTables.Framework.Protobuf.csproj" />
     <ProjectReference Include="..\ReactiveTables.Framework.SimpleBinaryEncoding\ReactiveTables.Framework.SimpleBinaryEncoding.csproj" />
     <ProjectReference Include="..\ReactiveTables.Framework\ReactiveTables.Framework.csproj" />

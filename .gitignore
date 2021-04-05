@@ -11,3 +11,4 @@ ReactiveTables/ReactiveTables.csproj.user
 **/bin/
 packages
 .vs/
+.ionide/
